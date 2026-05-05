@@ -10,6 +10,7 @@ import ProjectBoard from "@/app/components/ProjectBoard";
 import ProfileScreen from "@/app/components/ProfileScreen";
 import ChatsScreen from "@/app/components/ChatsScreen";
 import ChatWindow from "@/app/components/ChatWindow";
+import ProfileDashboard from "@/app/components/ProfileDashboard";
 
 type Tab = "discover" | "match" | "chats" | "projects" | "profile";
 
@@ -44,8 +45,6 @@ export default function AppShell({
   const [chatWith, setChatWith] = useState<User | null>(null);
   const [followed, setFollowed] = useState<Record<number, boolean>>({});
   const [activeCategory, setActiveCategory] = useState("all");
-  const [loggingOut, setLoggingOut] = useState(false);
-
   const openChat = (user: User) => {
     setChatWith(user);
     setTab("chats");
@@ -64,7 +63,6 @@ export default function AppShell({
   };
 
   const handleLogout = async () => {
-    setLoggingOut(true);
     const supabase = createClient();
     await supabase.auth.signOut();
     router.push("/login");
@@ -131,41 +129,11 @@ export default function AppShell({
             currentUserColor={currentUserColor}
           />
         ) : (
-          /* Profile tab */
-          <div style={{ padding: "48px 24px", display: "flex", flexDirection: "column", alignItems: "center", gap: 24 }}>
-            <div style={{
-              width: 80, height: 80, borderRadius: 24,
-              background: currentUserColor
-                ? `linear-gradient(135deg, ${currentUserColor}, ${currentUserColor}88)`
-                : "linear-gradient(135deg, #6366f1, #8b5cf6)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: 28, fontWeight: 700,
-              boxShadow: `0 8px 32px ${currentUserColor ?? "#6366f1"}44`,
-            }}>
-              {currentUserAvatar ?? "◉"}
-            </div>
-            <div style={{ textAlign: "center" }}>
-              <div style={{ fontSize: 20, fontWeight: 800 }}>{currentUserName ?? "Dein Profil"}</div>
-              <div style={{ fontSize: 13, color: "rgba(255,255,255,0.35)", marginTop: 4 }}>
-                Mitglied bei FounderConnect
-              </div>
-            </div>
-            <button
-              onClick={handleLogout}
-              disabled={loggingOut}
-              style={{
-                padding: "13px 32px",
-                borderRadius: 14,
-                background: "rgba(255,255,255,0.06)",
-                border: "1px solid rgba(255,255,255,0.1)",
-                color: loggingOut ? "rgba(255,255,255,0.3)" : "#fff",
-                fontWeight: 700, fontSize: 15,
-                cursor: loggingOut ? "default" : "pointer",
-              }}
-            >
-              {loggingOut ? "Abmelden..." : "Abmelden"}
-            </button>
-          </div>
+          <ProfileDashboard
+            currentUserId={currentUserId}
+            onLogout={handleLogout}
+            onOpenChat={openChat}
+          />
         )}
       </div>
 
