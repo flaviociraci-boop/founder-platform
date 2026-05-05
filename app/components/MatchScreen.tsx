@@ -9,9 +9,10 @@ type MatchState = "sent" | "matched";
 type Props = {
   users: User[];
   currentUserId: number | null;
+  onOpenChat: (user: User) => void;
 };
 
-export default function MatchScreen({ users, currentUserId }: Props) {
+export default function MatchScreen({ users, currentUserId, onOpenChat }: Props) {
   const [matchStates, setMatchStates] = useState<Record<number, MatchState>>({});
   const [showMatchPopup, setShowMatchPopup] = useState<User | null>(null);
 
@@ -104,7 +105,11 @@ export default function MatchScreen({ users, currentUserId }: Props) {
                 Später
               </button>
               <button
-                onClick={() => setShowMatchPopup(null)}
+                onClick={() => {
+                  const user = showMatchPopup;
+                  setShowMatchPopup(null);
+                  onOpenChat(user);
+                }}
                 style={{
                   flex: 1,
                   padding: "12px 0",
@@ -290,6 +295,7 @@ export default function MatchScreen({ users, currentUserId }: Props) {
                   }}
                 >
                   <button
+                    onClick={() => onOpenChat(user)}
                     style={{
                       flex: 1,
                       padding: "10px 0",
