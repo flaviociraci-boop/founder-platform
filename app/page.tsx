@@ -7,13 +7,18 @@ export default async function Page() {
   const cookieStore = await cookies();
   const supabase = createClient(cookieStore);
 
-  const [{ data: profiles, error: profilesError }, { data: rawProjects }] =
+  const { data: { user } } = await supabase.auth.getUser();
+
+  const [{ data: profiles, error: profilesError }, { data: rawProjects }, { data: currentProfile }] =
     await Promise.all([
       supabase.from("profiles").select("*, companies(*)").order("id"),
       supabase
         .from("projects")
         .select("*")
         .order("created_at", { ascending: false }),
+      user
+        ? supabase.from("profiles").select("id, name, avatar, color").eq("auth_id", user.id).maybeSingle()
+        : Promise.resolve({ data: null }),
     ]);
 
   if (profilesError) {
@@ -62,5 +67,14 @@ export default async function Page() {
     timeAgo: timeAgo(p.created_at),
   }));
 
-  return <AppShell initialUsers={users} initialProjects={projects} />;
+  return (
+    <AppShell
+      initialUsers={users}
+      initialProjects={projects}
+      currentUserId={currentProfile?.id ?? null}
+      currentUserName={currentProfile?.name ?? null}
+      currentUserAvatar={currentProfile?.avatar ?? null}
+      currentUserColor={currentProfile?.color ?? null}
+    />
+  );
 }

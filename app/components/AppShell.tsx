@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { User, Project } from "@/app/lib/data";
 import { createClient } from "@/utils/supabase/client";
 import DiscoverScreen from "@/app/components/DiscoverScreen";
@@ -17,21 +18,25 @@ const navItems = [
   { icon: "◉", label: "Profil", id: "profile" as Tab },
 ];
 
-// Demo: use profile 1 as the logged-in user until auth is added.
-const DEMO_USER_ID = 1;
-
 type Props = {
   initialUsers: User[];
   initialProjects: Project[];
+  currentUserId: number | null;
+  currentUserName: string | null;
+  currentUserAvatar: string | null;
+  currentUserColor: string | null;
 };
 
-export default function AppShell({ initialUsers, initialProjects }: Props) {
+export default function AppShell({ initialUsers, initialProjects, currentUserId, currentUserName, currentUserAvatar, currentUserColor }: Props) {
+  const router = useRouter();
   const [tab, setTab] = useState<Tab>("discover");
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [followed, setFollowed] = useState<Record<number, boolean>>({});
   const [activeCategory, setActiveCategory] = useState("all");
+  const [loggingOut, setLoggingOut] = useState(false);
 
   const toggleFollow = async (id: number) => {
+    if (!currentUserId) return;
     const isFollowed = !!followed[id];
     setFollowed((prev) => ({ ...prev, [id]: !isFollowed }));
 
@@ -40,13 +45,21 @@ export default function AppShell({ initialUsers, initialProjects }: Props) {
       await supabase
         .from("follows")
         .delete()
-        .eq("follower_id", DEMO_USER_ID)
+        .eq("follower_id", currentUserId)
         .eq("following_id", id);
     } else {
       await supabase
         .from("follows")
-        .insert({ follower_id: DEMO_USER_ID, following_id: id });
+        .insert({ follower_id: currentUserId, following_id: id });
     }
+  };
+
+  const handleLogout = async () => {
+    setLoggingOut(true);
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    router.push("/login");
+    router.refresh();
   };
 
   return (
@@ -104,13 +117,45 @@ export default function AppShell({ initialUsers, initialProjects }: Props) {
             setActiveCategory={setActiveCategory}
           />
         ) : tab === "match" ? (
-          <MatchScreen users={initialUsers} />
+          <MatchScreen users={initialUsers} currentUserId={currentUserId} />
         ) : tab === "projects" ? (
-          <ProjectBoard initialProjects={initialProjects} />
+          <ProjectBoard
+            initialProjects={initialProjects}
+            currentUserId={currentUserId}
+            currentUserName={currentUserName}
+            currentUserAvatar={currentUserAvatar}
+            currentUserColor={currentUserColor}
+          />
         ) : (
-          <div style={{ padding: 40, textAlign: "center", color: "rgba(255,255,255,0.3)" }}>
-            <div style={{ fontSize: 48, marginBottom: 12 }}>◉</div>
-            <div>Eigenes Profil — kommt bald</div>
+          <div style={{ padding: "48px 24px", display: "flex", flexDirection: "column", alignItems: "center", gap: 24 }}>
+            <div style={{
+              width: 80, height: 80, borderRadius: 24,
+              background: currentUserColor ? `linear-gradient(135deg, ${currentUserColor}, ${currentUserColor}88)` : "linear-gradient(135deg, #6366f1, #8b5cf6)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: 28, fontWeight: 700, boxShadow: `0 8px 32px ${currentUserColor ?? "#6366f1"}44`,
+            }}>
+              {currentUserAvatar ?? "◉"}
+            </div>
+            <div style={{ textAlign: "center" }}>
+              <div style={{ fontSize: 20, fontWeight: 800 }}>{currentUserName ?? "Dein Profil"}</div>
+              <div style={{ fontSize: 13, color: "rgba(255,255,255,0.35)", marginTop: 4 }}>Mitglied bei FounderConnect</div>
+            </div>
+            <button
+              onClick={handleLogout}
+              disabled={loggingOut}
+              style={{
+                padding: "13px 32px",
+                borderRadius: 14,
+                background: "rgba(255,255,255,0.06)",
+                border: "1px solid rgba(255,255,255,0.1)",
+                color: loggingOut ? "rgba(255,255,255,0.3)" : "#fff",
+                fontWeight: 700,
+                fontSize: 15,
+                cursor: loggingOut ? "default" : "pointer",
+              }}
+            >
+              {loggingOut ? "Abmelden..." : "Abmelden"}
+            </button>
           </div>
         )}
       </div>

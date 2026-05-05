@@ -4,26 +4,25 @@ import { useState } from "react";
 import { seekingColors, User } from "@/app/lib/data";
 import { createClient } from "@/utils/supabase/client";
 
-// Demo: use profile 1 as the logged-in user until auth is added.
-const DEMO_USER_ID = 1;
-
 type MatchState = "sent" | "matched";
 
 type Props = {
   users: User[];
+  currentUserId: number | null;
 };
 
-export default function MatchScreen({ users }: Props) {
+export default function MatchScreen({ users, currentUserId }: Props) {
   const [matchStates, setMatchStates] = useState<Record<number, MatchState>>({});
   const [showMatchPopup, setShowMatchPopup] = useState<User | null>(null);
 
   const sendConnect = async (userId: number) => {
+    if (!currentUserId) return;
     setMatchStates((prev) => ({ ...prev, [userId]: "sent" }));
 
     const supabase = createClient();
     await supabase
       .from("connections")
-      .insert({ user_id: DEMO_USER_ID, target_id: userId })
+      .insert({ user_id: currentUserId, target_id: userId })
       .select();
 
     // Check for a mutual connection (the other side already sent one)
@@ -31,7 +30,7 @@ export default function MatchScreen({ users }: Props) {
       .from("connections")
       .select("*")
       .eq("user_id", userId)
-      .eq("target_id", DEMO_USER_ID)
+      .eq("target_id", currentUserId)
       .maybeSingle();
 
     const isMatch = !!mutual;
@@ -41,11 +40,10 @@ export default function MatchScreen({ users }: Props) {
       setMatchStates((prev) => ({ ...prev, [userId]: "matched" }));
       setShowMatchPopup(users.find((u) => u.id === userId) ?? null);
 
-      if (!isMatch) {
-        // Insert the reverse connection for the demo so both sides exist
+      if (!isMatch && currentUserId) {
         supabase
           .from("connections")
-          .insert({ user_id: userId, target_id: DEMO_USER_ID })
+          .insert({ user_id: userId, target_id: currentUserId })
           .then(() => {});
       }
     }, 900);

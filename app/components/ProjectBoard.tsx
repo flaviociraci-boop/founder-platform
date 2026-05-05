@@ -5,14 +5,15 @@ import { categories, modelColors, Project } from "@/app/lib/data";
 import { createClient } from "@/utils/supabase/client";
 import { timeAgo } from "@/app/lib/data";
 
-// Demo: use profile 1 as the logged-in user until auth is added.
-const DEMO_USER_ID = 1;
-
 type Props = {
   initialProjects: Project[];
+  currentUserId: number | null;
+  currentUserName: string | null;
+  currentUserAvatar: string | null;
+  currentUserColor: string | null;
 };
 
-export default function ProjectBoard({ initialProjects }: Props) {
+export default function ProjectBoard({ initialProjects, currentUserId, currentUserName, currentUserAvatar, currentUserColor }: Props) {
   const [projects, setProjects] = useState<Project[]>(initialProjects);
   const [applied, setApplied] = useState<Record<number, boolean>>({});
   const [filterCat, setFilterCat] = useState("all");
@@ -27,6 +28,7 @@ export default function ProjectBoard({ initialProjects }: Props) {
   const filtered = filterCat === "all" ? projects : projects.filter((p) => p.category === filterCat);
 
   const applyToProject = async (id: number) => {
+    if (!currentUserId) return;
     setApplied((prev) => ({ ...prev, [id]: true }));
     setProjects((prev) =>
       prev.map((p) => (p.id === id ? { ...p, applicants: p.applicants + 1 } : p))
@@ -34,19 +36,19 @@ export default function ProjectBoard({ initialProjects }: Props) {
 
     const supabase = createClient();
     await Promise.all([
-      supabase.from("applications").insert({ project_id: id, user_id: DEMO_USER_ID }),
+      supabase.from("applications").insert({ project_id: id, user_id: currentUserId }),
       supabase.rpc("increment_applicants", { project_id: id }),
     ]);
   };
 
   const postProject = async () => {
-    if (!newProject.title.trim()) return;
+    if (!newProject.title.trim() || !currentUserId) return;
 
     const supabase = createClient();
     const { data, error } = await supabase
       .from("projects")
       .insert({
-        user_id: DEMO_USER_ID,
+        user_id: currentUserId,
         title: newProject.title,
         description: newProject.desc,
         category: newProject.category,
@@ -54,9 +56,9 @@ export default function ProjectBoard({ initialProjects }: Props) {
         model: newProject.model,
         tags: [],
         applicants: 0,
-        color: "#6366f1",
-        avatar: "DU",
-        user_name: "Du",
+        color: currentUserColor ?? "#6366f1",
+        avatar: currentUserAvatar ?? "◉",
+        user_name: currentUserName ?? "Anonym",
       })
       .select()
       .single();
