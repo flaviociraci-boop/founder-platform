@@ -23,6 +23,15 @@ type ProfileData = {
   is_public: boolean;
 };
 
+type Company = {
+  id: number;
+  name: string;
+  role: string;
+  type: string;
+  year: string;
+  active: boolean;
+};
+
 type Connection = {
   id: number;
   name: string;
@@ -111,6 +120,7 @@ export default function ProfileDashboard({ currentUserId, onLogout, onOpenChat }
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [stats, setStats] = useState({ connections: 0, projects: 0, matches: 0 });
   const [connections, setConnections] = useState<Connection[]>([]);
+  const [companies, setCompanies] = useState<Company[]>([]);
   const [loading, setLoading] = useState(true);
   const [loggingOut, setLoggingOut] = useState(false);
 
@@ -140,6 +150,13 @@ export default function ProfileDashboard({ currentUserId, onLogout, onOpenChat }
           is_public: p.is_public ?? true,
         });
       }
+
+      const { data: companiesData } = await supabase
+        .from("companies").select("*").eq("profile_id", currentUserId).order("created_at");
+      setCompanies((companiesData ?? []).map((c) => ({
+        id: c.id, name: c.name, role: c.role ?? "",
+        type: c.type ?? "", year: c.year ?? "", active: c.active ?? true,
+      })));
 
       const { count: projectCount } = await supabase
         .from("projects")
@@ -346,7 +363,7 @@ export default function ProfileDashboard({ currentUserId, onLogout, onOpenChat }
 
           {/* Tags */}
           {(profile?.tags ?? []).length > 0 && (
-            <div>
+            <div style={{ marginBottom: 20 }}>
               <h3 style={sLabel}>Skills</h3>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
                 {(profile?.tags ?? []).map((tag) => (
@@ -359,6 +376,66 @@ export default function ProfileDashboard({ currentUserId, onLogout, onOpenChat }
               </div>
             </div>
           )}
+
+          {/* Firmen & Brands */}
+          <div>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+              <h3 style={{ ...sLabel, margin: 0 }}>Firmen & Brands</h3>
+              <button onClick={() => router.push("/profil/firmen")} style={{
+                background: "none", border: "none", color: "#6366f1",
+                fontSize: 12, fontWeight: 600, cursor: "pointer", padding: 0,
+              }}>Verwalten →</button>
+            </div>
+
+            {companies.length === 0 ? (
+              <button onClick={() => router.push("/profil/firmen")} style={{
+                width: "100%", padding: "16px", borderRadius: 14,
+                background: "rgba(255,255,255,0.03)", border: "1px dashed rgba(255,255,255,0.12)",
+                color: "rgba(255,255,255,0.3)", fontSize: 14, cursor: "pointer", textAlign: "center",
+              }}>+ Firma oder Brand hinzufügen</button>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {companies.map((company) => (
+                  <div key={company.id} style={{
+                    background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)",
+                    borderRadius: 14, padding: "13px 16px",
+                    display: "flex", alignItems: "center", gap: 12,
+                  }}>
+                    <div style={{
+                      width: 40, height: 40, borderRadius: 11, flexShrink: 0,
+                      background: "linear-gradient(135deg, rgba(99,102,241,0.25), rgba(99,102,241,0.08))",
+                      border: "1px solid rgba(99,102,241,0.25)",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      fontSize: 16, fontWeight: 800, color: "#6366f1",
+                    }}>
+                      {company.name.charAt(0).toUpperCase()}
+                    </div>
+                    <div style={{ flex: 1, overflow: "hidden" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 7, flexWrap: "wrap" }}>
+                        <span style={{ fontWeight: 700, fontSize: 14 }}>{company.name}</span>
+                        <span style={{
+                          fontSize: 10, padding: "2px 7px", borderRadius: 20, fontWeight: 600,
+                          background: company.active ? "rgba(16,185,129,0.12)" : "rgba(255,255,255,0.05)",
+                          border: company.active ? "1px solid rgba(16,185,129,0.28)" : "1px solid rgba(255,255,255,0.1)",
+                          color: company.active ? "#10b981" : "rgba(255,255,255,0.3)",
+                        }}>
+                          {company.active ? "● AKTIV" : "INAKTIV"}
+                        </span>
+                      </div>
+                      <div style={{ fontSize: 12, color: "rgba(255,255,255,0.38)", marginTop: 2 }}>
+                        {[company.role, company.type, company.year ? `seit ${company.year}` : ""].filter(Boolean).join(" · ")}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                <button onClick={() => router.push("/profil/firmen")} style={{
+                  padding: "10px 0", borderRadius: 12,
+                  background: "rgba(255,255,255,0.03)", border: "1px dashed rgba(255,255,255,0.1)",
+                  color: "rgba(255,255,255,0.3)", fontSize: 13, cursor: "pointer", textAlign: "center",
+                }}>+ Weitere hinzufügen</button>
+              </div>
+            )}
+          </div>
         </div>
       )}
 
