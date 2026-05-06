@@ -11,12 +11,13 @@ export async function POST(req: NextRequest) {
 
   const apiKey = process.env.BREVO_API_KEY;
   const listId = process.env.BREVO_LIST_ID;
+  const templateId = process.env.BREVO_DOI_TEMPLATE_ID;
 
-  if (!apiKey || !listId) {
+  if (!apiKey || !listId || !templateId) {
     return NextResponse.json({ error: "Server-Konfigurationsfehler." }, { status: 500 });
   }
 
-  const res = await fetch("https://api.brevo.com/v3/contacts", {
+  const res = await fetch("https://api.brevo.com/v3/contacts/doubleOptinConfirmation", {
     method: "POST",
     headers: {
       "api-key": apiKey,
@@ -25,17 +26,14 @@ export async function POST(req: NextRequest) {
     },
     body: JSON.stringify({
       email,
-      listIds: [parseInt(listId, 10)],
-      updateEnabled: true,
+      includeListIds: [parseInt(listId, 10)],
+      templateId: parseInt(templateId, 10),
+      redirectionUrl: "https://founder-platform-five.vercel.app/willkommen",
     }),
   });
 
-  // 204 = contact already existed and was updated → already subscribed
+  // DOI endpoint returns 204 on success (no body)
   if (res.status === 204) {
-    return NextResponse.json({ alreadySubscribed: true }, { status: 200 });
-  }
-
-  if (res.status === 201) {
     return NextResponse.json({ success: true }, { status: 200 });
   }
 
