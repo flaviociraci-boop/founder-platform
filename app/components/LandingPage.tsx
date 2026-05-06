@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import EmailSignupForm from "@/app/components/EmailSignupForm";
 
 const features = [
   { icon: "◆", title: "Connect", desc: "Sende gezielte Connect-Anfragen an Founder die zu dir und deinen Zielen passen.", color: "#6366f1" },
@@ -145,6 +146,11 @@ export default function LandingPage() {
             Andere Communities sind voll mit Anfängern ohne Erfahrung. Bei uns? Nur Menschen die etwas aufgebaut haben — mit echten Firmen, echten Projekten, echten Resultaten. Du siehst sofort wer ernst meint.
           </p>
         </div>
+      </section>
+
+      {/* Email signup — between USP and Features */}
+      <section style={{ padding: "0 24px 40px", display: "flex", justifyContent: "center", position: "relative", zIndex: 1 }}>
+        <EmailSignupForm />
       </section>
 
       {/* Features */}
@@ -334,6 +340,11 @@ export default function LandingPage() {
             boxShadow: "0 8px 20px rgba(99,102,241,0.4)",
           }}>Jetzt 3 Tage kostenlos starten</button>
         </div>
+      </section>
+
+      {/* Email signup — before footer */}
+      <section style={{ padding: "0 24px 48px", display: "flex", justifyContent: "center", position: "relative", zIndex: 1 }}>
+        <EmailSignupForm />
       </section>
 
       {/* Footer */}
