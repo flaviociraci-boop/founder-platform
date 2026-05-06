@@ -22,8 +22,31 @@ export default function ChatWindow({ partner, currentUserId, onBack }: Props) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
+  const [containerH, setContainerH] = useState("100%");
   const bottomRef = useRef<HTMLDivElement>(null);
   const supabase = useMemo(() => createClient(), []);
+
+  // iOS keyboard: track visual viewport height so input stays above keyboard
+  useEffect(() => {
+    const vp = window.visualViewport;
+    if (!vp) return;
+
+    const update = () => {
+      setContainerH(`${vp.height}px`);
+      // Scroll latest message into view after layout settles
+      requestAnimationFrame(() => {
+        bottomRef.current?.scrollIntoView({ behavior: "instant" });
+      });
+    };
+
+    update();
+    vp.addEventListener("resize", update);
+    vp.addEventListener("scroll", update);
+    return () => {
+      vp.removeEventListener("resize", update);
+      vp.removeEventListener("scroll", update);
+    };
+  }, []);
 
   // Load initial messages
   useEffect(() => {
@@ -53,7 +76,6 @@ export default function ChatWindow({ partner, currentUserId, onBack }: Props) {
             (msg.sender_id === partner.id && msg.receiver_id === currentUserId);
           if (inConversation) {
             setMessages((prev) => {
-              // Avoid duplicate if we optimistically added it
               if (prev.some((m) => m.id === msg.id)) return prev;
               return [...prev, msg];
             });
@@ -65,7 +87,7 @@ export default function ChatWindow({ partner, currentUserId, onBack }: Props) {
     return () => { supabase.removeChannel(channel); };
   }, [currentUserId, partner.id, supabase]);
 
-  // Auto-scroll to bottom
+  // Smooth scroll to bottom on new messages
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
@@ -87,9 +109,12 @@ export default function ChatWindow({ partner, currentUserId, onBack }: Props) {
     <div style={{
       display: "flex",
       flexDirection: "column",
-      height: "100%",
+      // visualViewport height keeps this container exactly as tall as the
+      // visible screen (shrinks when keyboard opens on iOS Safari)
+      height: containerH,
       background: "#0a0a0f",
       fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif",
+      overscrollBehavior: "none",
     }}>
       {/* Header */}
       <div style={{
@@ -150,17 +175,20 @@ export default function ChatWindow({ partner, currentUserId, onBack }: Props) {
         }} />
       </div>
 
-      {/* Messages */}
+      {/* Messages — fills remaining height, scrollable */}
       <div
         className="hide-scrollbar"
         style={{
           flex: 1,
           overflowY: "auto",
+          overscrollBehavior: "contain",
           padding: "20px 16px",
           display: "flex",
           flexDirection: "column",
           gap: 6,
-        }}
+          // Force GPU layer so iOS doesn't repaint during keyboard animation
+          WebkitOverflowScrolling: "touch",
+        } as React.CSSProperties}
       >
         {messages.length === 0 && (
           <div style={{
@@ -233,9 +261,9 @@ export default function ChatWindow({ partner, currentUserId, onBack }: Props) {
         <div ref={bottomRef} />
       </div>
 
-      {/* Input */}
+      {/* Input — flexShrink:0 keeps it pinned at the bottom of containerH */}
       <div style={{
-        padding: "12px 16px 32px",
+        padding: "12px 16px 16px",
         background: "rgba(10,10,15,0.97)",
         backdropFilter: "blur(20px)",
         borderTop: "1px solid rgba(255,255,255,0.07)",
