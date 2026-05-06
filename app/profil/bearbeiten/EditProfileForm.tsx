@@ -49,38 +49,77 @@ export default function EditProfileForm() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { router.push("/login"); return; }
 
-      // Use select("*") so PostgREST never errors on missing columns
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data, error } = await supabase
+      let row: any = null;
+
+      // 1. Try by auth_id (normal case)
+      const { data: byAuth, error: authErr } = await supabase
         .from("profiles")
         .select("*")
         .eq("auth_id", user.id)
         .maybeSingle();
 
-      if (error) {
-        setFetchError(`Fehler beim Laden: ${error.message}`);
+      if (authErr) {
+        setFetchError(`Fehler beim Laden: ${authErr.message}`);
         setLoading(false);
         return;
       }
 
-      if (data) {
-        setForm({
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          id: (data as any).id,
-          name: (data as any).name ?? "",
-          username: (data as any).username ?? "",
-          age: (data as any).age?.toString() ?? "",
-          location: (data as any).location ?? "",
-          bio: (data as any).bio ?? "",
-          seeking: (data as any).seeking ?? "",
-          category: (data as any).category ?? "",
-          tags: (data as any).tags ?? [],
-          avatar: (data as any).avatar ?? "",
-          color: (data as any).color ?? "#6366f1",
-        });
+      if (byAuth) {
+        row = byAuth;
       } else {
-        setFetchError("Profil nicht gefunden. Bitte neu einloggen.");
+        // 2. Profile not linked — auto-create a new one
+        const name =
+          (user.user_metadata?.full_name as string | undefined) ??
+          user.email?.split("@")[0] ??
+          "Nutzer";
+        const initials = name
+          .split(" ")
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          .map((n: any) => n[0] ?? "")
+          .join("")
+          .toUpperCase()
+          .slice(0, 2);
+
+        const { data: created, error: createErr } = await supabase
+          .from("profiles")
+          .insert({
+            auth_id: user.id,
+            name,
+            avatar: initials,
+            color: "#6366f1",
+            followers: 0,
+            following: 0,
+            tags: [],
+          })
+          .select("*")
+          .single();
+
+        if (createErr) {
+          setFetchError(
+            `Kein Profil gefunden und Erstellung fehlgeschlagen: ${createErr.message}. ` +
+            `Bitte führe in Supabase SQL Editor aus: ` +
+            `UPDATE profiles SET auth_id = '${user.id}' WHERE id = <deine-profil-id>;`
+          );
+          setLoading(false);
+          return;
+        }
+        row = created;
       }
+
+      setForm({
+        id: row.id,
+        name: row.name ?? "",
+        username: row.username ?? "",
+        age: row.age?.toString() ?? "",
+        location: row.location ?? "",
+        bio: row.bio ?? "",
+        seeking: row.seeking ?? "",
+        category: row.category ?? "",
+        tags: row.tags ?? [],
+        avatar: row.avatar ?? "",
+        color: row.color ?? "#6366f1",
+      });
       setLoading(false);
     };
     load();
