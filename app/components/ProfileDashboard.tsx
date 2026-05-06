@@ -381,14 +381,14 @@ export default function ProfileDashboard({ currentUserId, onLogout, onOpenChat }
           <div>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
               <h3 style={{ ...sLabel, margin: 0 }}>Firmen & Brands</h3>
-              <button onClick={() => router.push("/profil/firmen")} style={{
+              <button onClick={() => router.push(`/profil/firmen?pid=${currentUserId}`)} style={{
                 background: "none", border: "none", color: "#6366f1",
                 fontSize: 12, fontWeight: 600, cursor: "pointer", padding: 0,
               }}>Verwalten →</button>
             </div>
 
             {companies.length === 0 ? (
-              <button onClick={() => router.push("/profil/firmen")} style={{
+              <button onClick={() => router.push(`/profil/firmen?pid=${currentUserId}`)} style={{
                 width: "100%", padding: "16px", borderRadius: 14,
                 background: "rgba(255,255,255,0.03)", border: "1px dashed rgba(255,255,255,0.12)",
                 color: "rgba(255,255,255,0.3)", fontSize: 14, cursor: "pointer", textAlign: "center",
@@ -428,7 +428,7 @@ export default function ProfileDashboard({ currentUserId, onLogout, onOpenChat }
                     </div>
                   </div>
                 ))}
-                <button onClick={() => router.push("/profil/firmen")} style={{
+                <button onClick={() => router.push(`/profil/firmen?pid=${currentUserId}`)} style={{
                   padding: "10px 0", borderRadius: 12,
                   background: "rgba(255,255,255,0.03)", border: "1px dashed rgba(255,255,255,0.1)",
                   color: "rgba(255,255,255,0.3)", fontSize: 13, cursor: "pointer", textAlign: "center",

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 
 type Company = {
@@ -34,11 +34,13 @@ const lbl: React.CSSProperties = {
 
 export default function FirmenPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const supabase = useMemo(() => createClient(), []);
 
   const [profileId, setProfileId] = useState<number | null>(null);
   const [companies, setCompanies] = useState<Company[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
   const [editingId, setEditingId] = useState<number | "new" | null>(null);
   const [form, setForm] = useState<FormState>(EMPTY);
   const [saving, setSaving] = useState(false);
@@ -49,21 +51,39 @@ export default function FirmenPage() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { router.push("/login"); return; }
 
-      const { data: profile } = await supabase
-        .from("profiles").select("id").eq("auth_id", user.id).maybeSingle();
-      if (!profile) { setLoading(false); return; }
+      // Prefer the pid URL param (passed by ProfileDashboard) — avoids auth_id mismatch
+      const pidParam = searchParams.get("pid");
+      let resolvedProfileId: number | null = pidParam ? Number(pidParam) : null;
 
-      setProfileId(profile.id);
-      const { data } = await supabase
-        .from("companies").select("*").eq("profile_id", profile.id).order("created_at");
-      setCompanies((data ?? []).map((c) => ({
-        id: c.id, name: c.name, role: c.role ?? "",
-        type: c.type ?? "", year: c.year ?? "", active: c.active ?? true,
-      })));
+      if (!resolvedProfileId) {
+        // Fallback: look up via auth_id
+        const { data: profile } = await supabase
+          .from("profiles").select("id").eq("auth_id", user.id).maybeSingle();
+        resolvedProfileId = profile?.id ?? null;
+      }
+
+      if (!resolvedProfileId) {
+        setLoadError("Profil konnte nicht gefunden werden. Bitte gehe zurück und versuche es erneut.");
+        setLoading(false);
+        return;
+      }
+
+      setProfileId(resolvedProfileId);
+      const { data, error: fetchErr } = await supabase
+        .from("companies").select("*").eq("profile_id", resolvedProfileId).order("created_at");
+
+      if (fetchErr) {
+        setLoadError(`Firmen konnten nicht geladen werden: ${fetchErr.message}`);
+      } else {
+        setCompanies((data ?? []).map((c) => ({
+          id: c.id, name: c.name, role: c.role ?? "",
+          type: c.type ?? "", year: c.year ?? "", active: c.active ?? true,
+        })));
+      }
       setLoading(false);
     };
     load();
-  }, [supabase, router]);
+  }, [supabase, router, searchParams]);
 
   const startEdit = (company: Company) => {
     setEditingId(company.id);
@@ -114,6 +134,13 @@ export default function FirmenPage() {
   if (loading) return (
     <div style={{ background: "#0a0a0f", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", color: "rgba(255,255,255,0.3)", fontFamily: "'DM Sans', sans-serif" }}>
       Lade…
+    </div>
+  );
+
+  if (loadError) return (
+    <div style={{ background: "#0a0a0f", minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 16, padding: 24, fontFamily: "'DM Sans', sans-serif" }}>
+      <p style={{ color: "#f87171", textAlign: "center", fontSize: 14 }}>{loadError}</p>
+      <button onClick={() => router.back()} style={{ padding: "12px 24px", borderRadius: 12, background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.1)", color: "#fff", cursor: "pointer" }}>← Zurück</button>
     </div>
   );
 
