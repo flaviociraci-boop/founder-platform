@@ -195,10 +195,10 @@ export default function MatchScreen({ users, currentUserId, onOpenChat }: Props)
         {users.filter((u) => {
           const q = query.trim().toLowerCase();
           return !q ||
-            u.name.toLowerCase().includes(q) ||
-            u.role.toLowerCase().includes(q) ||
-            u.location.toLowerCase().includes(q) ||
-            u.tags.some((t) => t.toLowerCase().includes(q));
+            (u.name ?? "").toLowerCase().includes(q) ||
+            (u.role ?? "").toLowerCase().includes(q) ||
+            (u.location ?? "").toLowerCase().includes(q) ||
+            (u.tags ?? []).some((t) => (t ?? "").toLowerCase().includes(q));
         }).map((user) => {
           const state = matchStates[user.id];
           return (

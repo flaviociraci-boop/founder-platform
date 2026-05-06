@@ -26,10 +26,10 @@ export default function ProjectBoard({ initialProjects, currentUserId, currentUs
     .filter((p) => filterCat === "all" || p.category === filterCat)
     .filter((p) =>
       !q ||
-      p.title.toLowerCase().includes(q) ||
-      p.desc.toLowerCase().includes(q) ||
-      p.category.toLowerCase().includes(q) ||
-      p.tags.some((t) => t.toLowerCase().includes(q))
+      (p.title ?? "").toLowerCase().includes(q) ||
+      (p.desc ?? "").toLowerCase().includes(q) ||
+      (p.category ?? "").toLowerCase().includes(q) ||
+      (p.tags ?? []).some((t) => (t ?? "").toLowerCase().includes(q))
     );
 
   const applyToProject = async (id: number) => {

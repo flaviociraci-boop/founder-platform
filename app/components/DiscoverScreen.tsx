@@ -28,10 +28,10 @@ export default function DiscoverScreen({
     .filter((u) => activeCategory === "all" || u.category === activeCategory)
     .filter((u) =>
       !q ||
-      u.name.toLowerCase().includes(q) ||
-      u.role.toLowerCase().includes(q) ||
-      u.location.toLowerCase().includes(q) ||
-      u.tags.some((t) => t.toLowerCase().includes(q))
+      (u.name ?? "").toLowerCase().includes(q) ||
+      (u.role ?? "").toLowerCase().includes(q) ||
+      (u.location ?? "").toLowerCase().includes(q) ||
+      (u.tags ?? []).some((t) => (t ?? "").toLowerCase().includes(q))
     );
 
   return (

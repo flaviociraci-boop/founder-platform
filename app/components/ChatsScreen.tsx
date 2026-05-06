@@ -191,7 +191,7 @@ export default function ChatsScreen({ currentUserId, onOpenChat }: Props) {
       {!loading && chats.length > 0 && (
         <div style={{ padding: "0 20px" }}>
           {chats.filter((c) =>
-            !query.trim() || c.name.toLowerCase().includes(query.trim().toLowerCase())
+            !query.trim() || (c.name ?? "").toLowerCase().includes(query.trim().toLowerCase())
           ).map((chat) => (
             <button
               key={chat.id}
