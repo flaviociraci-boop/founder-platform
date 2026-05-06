@@ -31,7 +31,6 @@ type Connection = {
   color: string;
 };
 
-type Modal = null | "password" | "username" | "notifications" | "visibility";
 type ActiveTab = "Profil" | "Netzwerk" | "Einstellungen";
 
 // ─── Settings sections ───────────────────────────────────────────────────────
@@ -44,7 +43,7 @@ type SettingsItem = {
   pro?: boolean;
   danger?: boolean;
   warning?: boolean;
-  modalKey?: Modal;
+  route?: string;
 };
 
 const SETTINGS: { title: string; icon: string; items: SettingsItem[] }[] = [
@@ -52,7 +51,7 @@ const SETTINGS: { title: string; icon: string; items: SettingsItem[] }[] = [
     title: "Sicherheit",
     icon: "◈",
     items: [
-      { label: "Passwort ändern", desc: "Neues Passwort festlegen", action: "Ändern", modalKey: "password" },
+      { label: "Passwort ändern", desc: "Neues Passwort festlegen", action: "Ändern", route: "/einstellungen/passwort" },
       { label: "Zwei-Faktor-Auth", desc: "Nicht aktiviert", action: "Aktivieren", warning: true },
       { label: "Aktive Sessions", desc: "Eingeloggte Geräte", action: "Verwalten" },
     ],
@@ -71,7 +70,7 @@ const SETTINGS: { title: string; icon: string; items: SettingsItem[] }[] = [
     title: "Datenschutz",
     icon: "◇",
     items: [
-      { label: "Profil Sichtbarkeit", desc: "Öffentlich für alle", action: "Ändern", modalKey: "visibility" },
+      { label: "Profil Sichtbarkeit", desc: "Öffentlich für alle", action: "Ändern", route: "/einstellungen/sichtbarkeit" },
       { label: "Daten exportieren", desc: "Alle deine Daten herunterladen", action: "Exportieren" },
       { label: "Account löschen", desc: "Konto permanent löschen", action: "Löschen", danger: true },
     ],
@@ -80,7 +79,7 @@ const SETTINGS: { title: string; icon: string; items: SettingsItem[] }[] = [
     title: "Benachrichtigungen",
     icon: "◆",
     items: [
-      { label: "Push & E-Mail Einstellungen", desc: "Matches, Nachrichten, Bewerbungen", action: "Verwalten", modalKey: "notifications" },
+      { label: "Push & E-Mail Einstellungen", desc: "Matches, Nachrichten, Bewerbungen", action: "Verwalten", route: "/einstellungen/benachrichtigungen" },
     ],
   },
   {
@@ -113,12 +112,6 @@ export default function ProfileDashboard({ currentUserId, onLogout, onOpenChat }
   const [connections, setConnections] = useState<Connection[]>([]);
   const [loading, setLoading] = useState(true);
   const [loggingOut, setLoggingOut] = useState(false);
-  const [modal, setModal] = useState<Modal>(null);
-  const [toggles, setToggles] = useState<Record<string, boolean>>({
-    "Match-Benachrichtigungen": true,
-    "Neue Nachrichten": true,
-    "Projekt-Bewerbungen": false,
-  });
 
   useEffect(() => {
     if (!currentUserId) { setLoading(false); return; }
@@ -427,7 +420,7 @@ export default function ProfileDashboard({ currentUserId, onLogout, onOpenChat }
       {activeTab === "Einstellungen" && (
         <div style={{ padding: 20 }}>
 
-          {/* Account section (dynamic username) */}
+          {/* Account section */}
           <AccordionSection
             title="Account" icon="◉"
             open={expandedSection === "__account"}
@@ -435,7 +428,7 @@ export default function ProfileDashboard({ currentUserId, onLogout, onOpenChat }
           >
             <AccordionRow
               label="Benutzername" desc={displayUsername} action="Ändern"
-              onClick={() => setModal("username")}
+              onClick={() => router.push("/einstellungen/benutzername")}
             />
             <AccordionRow
               label="Kategorie" desc={profile?.role || "Nicht angegeben"} action="Bearbeiten"
@@ -456,7 +449,7 @@ export default function ProfileDashboard({ currentUserId, onLogout, onOpenChat }
                   key={item.label}
                   label={item.label} desc={item.desc} action={item.action}
                   highlight={item.highlight} pro={item.pro} danger={item.danger} warning={item.warning}
-                  onClick={item.modalKey ? () => setModal(item.modalKey!) : undefined}
+                  onClick={item.route ? () => router.push(item.route!) : undefined}
                   divider={i > 0}
                 />
               ))}
@@ -475,40 +468,6 @@ export default function ProfileDashboard({ currentUserId, onLogout, onOpenChat }
             }}
           >{loggingOut ? "Abmelden…" : "Abmelden"}</button>
         </div>
-      )}
-
-      {/* ── Modals ── */}
-      {modal === "password" && (
-        <PasswordModal onClose={() => setModal(null)} />
-      )}
-      {modal === "username" && (
-        <UsernameModal
-          onClose={() => setModal(null)}
-          currentUserId={currentUserId}
-          current={profile?.username ?? ""}
-          onSaved={(u) => {
-            setProfile((p) => p ? { ...p, username: u } : p);
-            setModal(null);
-          }}
-        />
-      )}
-      {modal === "notifications" && (
-        <NotificationsModal
-          onClose={() => setModal(null)}
-          toggles={toggles}
-          setToggles={setToggles}
-        />
-      )}
-      {modal === "visibility" && (
-        <VisibilityModal
-          onClose={() => setModal(null)}
-          currentUserId={currentUserId}
-          current={profile?.is_public ?? true}
-          onSaved={(v) => {
-            setProfile((p) => p ? { ...p, is_public: v } : p);
-            setModal(null);
-          }}
-        />
       )}
     </div>
   );
@@ -590,356 +549,6 @@ function AccordionRow({
         }}
       >{action}</button>
     </div>
-  );
-}
-
-// ─── Modal components ─────────────────────────────────────────────────────────
-
-function BottomSheet({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
-  return (
-    <div style={{
-      position: "fixed", inset: 0, zIndex: 800,
-      background: "rgba(0,0,0,0.82)", backdropFilter: "blur(10px)",
-      display: "flex", alignItems: "flex-end", justifyContent: "center",
-    }}
-      onClick={(e) => e.target === e.currentTarget && onClose()}
-    >
-      <div style={{
-        background: "#13131a",
-        border: "1px solid rgba(255,255,255,0.1)",
-        borderRadius: "24px 24px 0 0",
-        padding: "24px 20px 44px",
-        width: "100%", maxWidth: 430,
-        fontFamily: "'DM Sans', sans-serif",
-      }}>
-        <div style={{
-          width: 36, height: 4, borderRadius: 2,
-          background: "rgba(255,255,255,0.15)",
-          margin: "0 auto 20px",
-        }} />
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
-          <h3 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: "#fff" }}>{title}</h3>
-          <button onClick={onClose} style={{
-            background: "rgba(255,255,255,0.08)", border: "none",
-            color: "#fff", width: 32, height: 32, borderRadius: 10, cursor: "pointer", fontSize: 16,
-          }}>✕</button>
-        </div>
-        {children}
-      </div>
-    </div>
-  );
-}
-
-// Centered, keyboard-aware modal (for modals with text inputs)
-function CenteredModal({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
-  const [containerH, setContainerH] = useState("100dvh");
-
-  useEffect(() => {
-    const vp = window.visualViewport;
-    if (!vp) return;
-    const update = () => setContainerH(`${vp.height}px`);
-    update();
-    vp.addEventListener("resize", update);
-    vp.addEventListener("scroll", update);
-    return () => {
-      vp.removeEventListener("resize", update);
-      vp.removeEventListener("scroll", update);
-    };
-  }, []);
-
-  return (
-    <div
-      style={{
-        position: "fixed", top: 0, left: "50%",
-        transform: "translateX(-50%)",
-        width: "100%", maxWidth: 430,
-        height: containerH,
-        zIndex: 800,
-        background: "rgba(0,0,0,0.85)", backdropFilter: "blur(10px)",
-        display: "flex", alignItems: "center", justifyContent: "center",
-        padding: "20px", boxSizing: "border-box",
-      }}
-      onClick={(e) => e.target === e.currentTarget && onClose()}
-    >
-      <div style={{
-        background: "#13131a",
-        border: "1px solid rgba(255,255,255,0.1)",
-        borderRadius: 24,
-        padding: "24px 20px",
-        width: "100%",
-        maxHeight: "90%",
-        overflowY: "auto",
-        fontFamily: "'DM Sans', sans-serif",
-      }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
-          <h3 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: "#fff" }}>{title}</h3>
-          <button onClick={onClose} style={{
-            background: "rgba(255,255,255,0.08)", border: "none",
-            color: "#fff", width: 32, height: 32, borderRadius: 10, cursor: "pointer", fontSize: 16,
-          }}>✕</button>
-        </div>
-        {children}
-      </div>
-    </div>
-  );
-}
-
-const mInput: React.CSSProperties = {
-  width: "100%", background: "rgba(255,255,255,0.07)",
-  border: "1px solid rgba(255,255,255,0.1)", borderRadius: 14,
-  padding: "13px 16px", color: "#fff", fontSize: 15, outline: "none",
-  boxSizing: "border-box", fontFamily: "'DM Sans', sans-serif",
-};
-const mLabel: React.CSSProperties = {
-  fontSize: 12, color: "rgba(255,255,255,0.38)", textTransform: "uppercase",
-  letterSpacing: 1, display: "block", marginBottom: 8, fontWeight: 600,
-};
-const mBtn: React.CSSProperties = {
-  width: "100%", padding: "14px 0", borderRadius: 14,
-  background: "linear-gradient(135deg, #6366f1, #8b5cf6)", border: "none",
-  color: "#fff", fontWeight: 700, fontSize: 16, cursor: "pointer",
-  boxShadow: "0 4px 16px rgba(99,102,241,0.3)", marginTop: 8,
-};
-
-// ── Password ──
-function PasswordModal({ onClose }: { onClose: () => void }) {
-  const supabase = useMemo(() => createClient(), []);
-  const [currentPw, setCurrentPw] = useState("");
-  const [newPw, setNewPw] = useState("");
-  const [confirmPw, setConfirmPw] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [done, setDone] = useState(false);
-
-  const save = async () => {
-    if (!currentPw) { setError("Bitte aktuelles Passwort eingeben."); return; }
-    if (newPw.length < 6) { setError("Neues Passwort muss mindestens 6 Zeichen haben."); return; }
-    if (newPw !== confirmPw) { setError("Passwörter stimmen nicht überein."); return; }
-    setLoading(true);
-    setError("");
-
-    // Verify current password via re-auth
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user?.email) {
-      const { error: authErr } = await supabase.auth.signInWithPassword({
-        email: user.email, password: currentPw,
-      });
-      if (authErr) {
-        setError("Aktuelles Passwort ist falsch.");
-        setLoading(false);
-        return;
-      }
-    }
-
-    const { error: updateErr } = await supabase.auth.updateUser({ password: newPw });
-    setLoading(false);
-    if (updateErr) { setError(updateErr.message); }
-    else { setDone(true); setTimeout(onClose, 1500); }
-  };
-
-  return (
-    <BottomSheet title="Passwort ändern" onClose={onClose}>
-      {done ? (
-        <div style={{ textAlign: "center", padding: "16px 0" }}>
-          <div style={{ fontSize: 40, marginBottom: 12 }}>✅</div>
-          <p style={{ color: "#10b981", fontWeight: 700 }}>Passwort geändert!</p>
-        </div>
-      ) : (
-        <>
-          <div style={{ marginBottom: 16 }}>
-            <label style={mLabel}>Aktuelles Passwort</label>
-            <input type="password" value={currentPw} onChange={(e) => setCurrentPw(e.target.value)} style={mInput} placeholder="••••••••" />
-          </div>
-          <div style={{ marginBottom: 16 }}>
-            <label style={mLabel}>Neues Passwort</label>
-            <input type="password" value={newPw} onChange={(e) => setNewPw(e.target.value)} style={mInput} placeholder="••••••••" />
-          </div>
-          <div style={{ marginBottom: 16 }}>
-            <label style={mLabel}>Passwort bestätigen</label>
-            <input type="password" value={confirmPw} onChange={(e) => setConfirmPw(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && save()}
-              style={mInput} placeholder="••••••••" />
-          </div>
-          {error && <p style={{ color: "#f87171", fontSize: 13, marginBottom: 8 }}>{error}</p>}
-          <button onClick={save} disabled={loading} style={{ ...mBtn, opacity: loading ? 0.7 : 1 }}>
-            {loading ? "Prüfe…" : "Passwort ändern"}
-          </button>
-        </>
-      )}
-    </BottomSheet>
-  );
-}
-
-// ── Username ──
-function UsernameModal({ onClose, currentUserId, current, onSaved }: {
-  onClose: () => void; currentUserId: number | null; current: string; onSaved: (u: string) => void;
-}) {
-  const supabase = useMemo(() => createClient(), []);
-  const [value, setValue] = useState(current);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-
-  const save = async () => {
-    if (!currentUserId) return;
-    const clean = value.toLowerCase().replace(/[^a-z0-9_]/g, "").trim();
-    if (!clean) { setError("Benutzername darf nicht leer sein."); return; }
-    setLoading(true);
-    setError("");
-    const { error: err } = await supabase
-      .from("profiles")
-      .update({ username: clean })
-      .eq("id", currentUserId);
-    setLoading(false);
-    if (err) {
-      setError(err.code === "23505" ? "Dieser Name ist bereits vergeben." : err.message);
-    } else {
-      onSaved(clean);
-    }
-  };
-
-  return (
-    <CenteredModal title="Benutzername ändern" onClose={onClose}>
-      <div style={{ marginBottom: 20 }}>
-        <label style={mLabel}>Benutzername</label>
-        <div style={{ position: "relative" }}>
-          <span style={{
-            position: "absolute", left: 16, top: "50%", transform: "translateY(-50%)",
-            color: "rgba(255,255,255,0.35)", fontSize: 15, pointerEvents: "none",
-          }}>@</span>
-          <input
-            value={value}
-            onChange={(e) => setValue(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ""))}
-            onKeyDown={(e) => e.key === "Enter" && save()}
-            placeholder="benutzername"
-            style={{ ...mInput, paddingLeft: 32 }}
-            autoFocus
-          />
-        </div>
-        <p style={{ margin: "8px 0 0", fontSize: 12, color: "rgba(255,255,255,0.28)" }}>
-          Nur Kleinbuchstaben, Zahlen und _
-        </p>
-      </div>
-      {error && <p style={{ color: "#f87171", fontSize: 13, marginBottom: 8 }}>{error}</p>}
-      <button onClick={save} disabled={loading} style={{ ...mBtn, opacity: loading ? 0.7 : 1 }}>
-        {loading ? "Speichere…" : "Speichern"}
-      </button>
-    </CenteredModal>
-  );
-}
-
-// ── Notifications ──
-function NotificationsModal({ onClose, toggles, setToggles }: {
-  onClose: () => void;
-  toggles: Record<string, boolean>;
-  setToggles: React.Dispatch<React.SetStateAction<Record<string, boolean>>>;
-}) {
-  const items = [
-    { key: "Match-Benachrichtigungen", label: "Match-Benachrichtigungen", desc: "Wenn jemand zurück-connected" },
-    { key: "Neue Nachrichten", label: "Neue Nachrichten", desc: "Chat-Nachrichten per Push & E-Mail" },
-    { key: "Projekt-Bewerbungen", label: "Projekt-Bewerbungen", desc: "Bewerbungen auf deine Projekte" },
-  ];
-
-  return (
-    <BottomSheet title="Benachrichtigungen" onClose={onClose}>
-      <div style={{ display: "flex", flexDirection: "column", gap: 4, marginBottom: 24 }}>
-        {items.map((item, i) => (
-          <div key={item.key} style={{
-            display: "flex", alignItems: "center", gap: 12,
-            padding: "14px 0",
-            borderBottom: i < items.length - 1 ? "1px solid rgba(255,255,255,0.05)" : "none",
-          }}>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontWeight: 600, fontSize: 15, color: "#fff" }}>{item.label}</div>
-              <div style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", marginTop: 2 }}>{item.desc}</div>
-            </div>
-            <button
-              onClick={() => setToggles((p) => ({ ...p, [item.key]: !p[item.key] }))}
-              style={{
-                width: 48, height: 28, borderRadius: 14, flexShrink: 0,
-                background: toggles[item.key] ? "#6366f1" : "rgba(255,255,255,0.1)",
-                border: "none", cursor: "pointer", position: "relative",
-                transition: "background 0.2s",
-              }}
-            >
-              <div style={{
-                width: 22, height: 22, borderRadius: "50%", background: "#fff",
-                position: "absolute", top: 3,
-                left: toggles[item.key] ? 23 : 3,
-                transition: "left 0.2s",
-                boxShadow: "0 1px 4px rgba(0,0,0,0.4)",
-              }} />
-            </button>
-          </div>
-        ))}
-      </div>
-      <button onClick={onClose} style={mBtn}>Fertig</button>
-    </BottomSheet>
-  );
-}
-
-// ── Visibility ──
-function VisibilityModal({ onClose, currentUserId, current, onSaved }: {
-  onClose: () => void; currentUserId: number | null; current: boolean; onSaved: (v: boolean) => void;
-}) {
-  const supabase = useMemo(() => createClient(), []);
-  const [selected, setSelected] = useState<"public" | "private">(current ? "public" : "private");
-  const [loading, setLoading] = useState(false);
-
-  const options = [
-    { key: "public" as const, label: "Öffentlich", desc: "Alle Nutzer können dein Profil sehen", icon: "🌍" },
-    { key: "private" as const, label: "Privat", desc: "Nur Matches können dein Profil sehen", icon: "🔒" },
-  ];
-
-  const save = async () => {
-    if (!currentUserId) return;
-    setLoading(true);
-    const isPublic = selected === "public";
-    const { error } = await supabase
-      .from("profiles")
-      .update({ is_public: isPublic })
-      .eq("id", currentUserId);
-    setLoading(false);
-    if (!error) onSaved(isPublic);
-  };
-
-  return (
-    <BottomSheet title="Profil Sichtbarkeit" onClose={onClose}>
-      <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 24 }}>
-        {options.map((opt) => {
-          const active = selected === opt.key;
-          return (
-            <button
-              key={opt.key}
-              onClick={() => setSelected(opt.key)}
-              style={{
-                display: "flex", alignItems: "center", gap: 14,
-                padding: "16px",
-                background: active ? "rgba(99,102,241,0.12)" : "rgba(255,255,255,0.04)",
-                border: active ? "1px solid rgba(99,102,241,0.4)" : "1px solid rgba(255,255,255,0.08)",
-                borderRadius: 16, cursor: "pointer", textAlign: "left",
-                transition: "all 0.15s",
-              }}
-            >
-              <span style={{ fontSize: 24 }}>{opt.icon}</span>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontWeight: 700, fontSize: 15, color: active ? "#6366f1" : "#fff" }}>{opt.label}</div>
-                <div style={{ fontSize: 13, color: "rgba(255,255,255,0.4)", marginTop: 2 }}>{opt.desc}</div>
-              </div>
-              <div style={{
-                width: 20, height: 20, borderRadius: "50%", flexShrink: 0,
-                border: active ? "none" : "2px solid rgba(255,255,255,0.2)",
-                background: active ? "#6366f1" : "transparent",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: 11, color: "#fff",
-              }}>{active ? "✓" : ""}</div>
-            </button>
-          );
-        })}
-      </div>
-      <button onClick={save} disabled={loading} style={{ ...mBtn, opacity: loading ? 0.7 : 1 }}>
-        {loading ? "Speichere…" : "Speichern"}
-      </button>
-    </BottomSheet>
   );
 }
 
