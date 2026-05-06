@@ -19,8 +19,18 @@ export default function ProjectBoard({ initialProjects, currentUserId, currentUs
   const [projects, setProjects] = useState<Project[]>(initialProjects);
   const [applied, setApplied] = useState<Record<number, boolean>>({});
   const [filterCat, setFilterCat] = useState("all");
+  const [query, setQuery] = useState("");
 
-  const filtered = filterCat === "all" ? projects : projects.filter((p) => p.category === filterCat);
+  const q = query.trim().toLowerCase();
+  const filtered = projects
+    .filter((p) => filterCat === "all" || p.category === filterCat)
+    .filter((p) =>
+      !q ||
+      p.title.toLowerCase().includes(q) ||
+      p.desc.toLowerCase().includes(q) ||
+      p.category.toLowerCase().includes(q) ||
+      p.tags.some((t) => t.toLowerCase().includes(q))
+    );
 
   const applyToProject = async (id: number) => {
     if (!currentUserId) return;
@@ -77,6 +87,28 @@ export default function ProjectBoard({ initialProjects, currentUserId, currentUs
           >
             ✦ Neu
           </button>
+        </div>
+
+        {/* Search bar */}
+        <div style={{ position: "relative", marginTop: 16 }}>
+          <span style={{
+            position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)",
+            fontSize: 16, pointerEvents: "none", opacity: 0.4,
+          }}>🔍</span>
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Projekte suchen…"
+            style={{
+              width: "100%", boxSizing: "border-box",
+              background: "rgba(255,255,255,0.06)",
+              border: `1px solid ${query ? "rgba(99,102,241,0.5)" : "rgba(255,255,255,0.1)"}`,
+              borderRadius: 14, padding: "12px 14px 12px 40px",
+              color: "#fff", fontSize: 15, outline: "none",
+              fontFamily: "'DM Sans', sans-serif",
+              transition: "border-color 0.15s",
+            }}
+          />
         </div>
       </div>
 

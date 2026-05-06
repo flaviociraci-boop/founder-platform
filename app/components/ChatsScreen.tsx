@@ -18,6 +18,7 @@ type Props = {
 export default function ChatsScreen({ currentUserId, onOpenChat }: Props) {
   const [chats, setChats] = useState<ChatPreview[]>([]);
   const [loading, setLoading] = useState(true);
+  const [query, setQuery] = useState("");
   const supabase = useMemo(() => createClient(), []);
 
   useEffect(() => {
@@ -151,6 +152,30 @@ export default function ChatsScreen({ currentUserId, onOpenChat }: Props) {
         <p style={{ margin: "4px 0 0", fontSize: 14, color: "rgba(255,255,255,0.35)" }}>
           {loading ? "Lade…" : `${chats.length} ${chats.length === 1 ? "Match" : "Matches"}`}
         </p>
+
+        {/* Search bar */}
+        {!loading && chats.length > 0 && (
+          <div style={{ position: "relative", marginTop: 16 }}>
+            <span style={{
+              position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)",
+              fontSize: 16, pointerEvents: "none", opacity: 0.4,
+            }}>🔍</span>
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Chats durchsuchen…"
+              style={{
+                width: "100%", boxSizing: "border-box",
+                background: "rgba(255,255,255,0.06)",
+                border: `1px solid ${query ? "rgba(99,102,241,0.5)" : "rgba(255,255,255,0.1)"}`,
+                borderRadius: 14, padding: "12px 14px 12px 40px",
+                color: "#fff", fontSize: 15, outline: "none",
+                fontFamily: "'DM Sans', sans-serif",
+                transition: "border-color 0.15s",
+              }}
+            />
+          </div>
+        )}
       </div>
 
       {!loading && chats.length === 0 && (
@@ -165,7 +190,9 @@ export default function ChatsScreen({ currentUserId, onOpenChat }: Props) {
 
       {!loading && chats.length > 0 && (
         <div style={{ padding: "0 20px" }}>
-          {chats.map((chat) => (
+          {chats.filter((c) =>
+            !query.trim() || c.name.toLowerCase().includes(query.trim().toLowerCase())
+          ).map((chat) => (
             <button
               key={chat.id}
               onClick={() => onOpenChat(chat)}

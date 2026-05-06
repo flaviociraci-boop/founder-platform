@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { categories, seekingColors, User } from "@/app/lib/data";
 import { Avatar } from "@/app/components/Avatar";
 
@@ -20,7 +21,18 @@ export default function DiscoverScreen({
   activeCategory,
   setActiveCategory,
 }: Props) {
-  const filtered = activeCategory === "all" ? users : users.filter((u) => u.category === activeCategory);
+  const [query, setQuery] = useState("");
+
+  const q = query.trim().toLowerCase();
+  const filtered = users
+    .filter((u) => activeCategory === "all" || u.category === activeCategory)
+    .filter((u) =>
+      !q ||
+      u.name.toLowerCase().includes(q) ||
+      u.role.toLowerCase().includes(q) ||
+      u.location.toLowerCase().includes(q) ||
+      u.tags.some((t) => t.toLowerCase().includes(q))
+    );
 
   return (
     <div style={{ paddingBottom: 100 }}>
@@ -58,6 +70,28 @@ export default function DiscoverScreen({
           >
             🔔
           </div>
+        </div>
+
+        {/* Search bar */}
+        <div style={{ position: "relative", marginTop: 16 }}>
+          <span style={{
+            position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)",
+            fontSize: 16, pointerEvents: "none", opacity: 0.4,
+          }}>🔍</span>
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Name, Skills oder Kategorie…"
+            style={{
+              width: "100%", boxSizing: "border-box",
+              background: "rgba(255,255,255,0.06)",
+              border: `1px solid ${query ? "rgba(99,102,241,0.5)" : "rgba(255,255,255,0.1)"}`,
+              borderRadius: 14, padding: "12px 14px 12px 40px",
+              color: "#fff", fontSize: 15, outline: "none",
+              fontFamily: "'DM Sans', sans-serif",
+              transition: "border-color 0.15s",
+            }}
+          />
         </div>
       </div>
 

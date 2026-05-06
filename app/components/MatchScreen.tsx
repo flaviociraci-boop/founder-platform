@@ -16,6 +16,7 @@ type Props = {
 export default function MatchScreen({ users, currentUserId, onOpenChat }: Props) {
   const [matchStates, setMatchStates] = useState<Record<number, MatchState>>({});
   const [showMatchPopup, setShowMatchPopup] = useState<User | null>(null);
+  const [query, setQuery] = useState("");
 
   const sendConnect = async (userId: number) => {
     if (!currentUserId) return;
@@ -147,6 +148,28 @@ export default function MatchScreen({ users, currentUserId, onOpenChat }: Props)
         <p style={{ margin: "4px 0 0", fontSize: 14, color: "rgba(255,255,255,0.35)" }}>
           Zeige Interesse — bei Gegenseitigkeit öffnet sich der Chat
         </p>
+
+        {/* Search bar */}
+        <div style={{ position: "relative", marginTop: 16 }}>
+          <span style={{
+            position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)",
+            fontSize: 16, pointerEvents: "none", opacity: 0.4,
+          }}>🔍</span>
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Name, Skills oder Kategorie…"
+            style={{
+              width: "100%", boxSizing: "border-box",
+              background: "rgba(255,255,255,0.06)",
+              border: `1px solid ${query ? "rgba(99,102,241,0.5)" : "rgba(255,255,255,0.1)"}`,
+              borderRadius: 14, padding: "12px 14px 12px 40px",
+              color: "#fff", fontSize: 15, outline: "none",
+              fontFamily: "'DM Sans', sans-serif",
+              transition: "border-color 0.15s",
+            }}
+          />
+        </div>
       </div>
 
       <div
@@ -169,7 +192,14 @@ export default function MatchScreen({ users, currentUserId, onOpenChat }: Props)
       </div>
 
       <div style={{ padding: "0 20px", display: "flex", flexDirection: "column", gap: 12 }}>
-        {users.map((user) => {
+        {users.filter((u) => {
+          const q = query.trim().toLowerCase();
+          return !q ||
+            u.name.toLowerCase().includes(q) ||
+            u.role.toLowerCase().includes(q) ||
+            u.location.toLowerCase().includes(q) ||
+            u.tags.some((t) => t.toLowerCase().includes(q));
+        }).map((user) => {
           const state = matchStates[user.id];
           return (
             <div
