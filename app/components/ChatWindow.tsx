@@ -4,6 +4,33 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { User } from "@/app/lib/data";
 import { createClient } from "@/utils/supabase/client";
 
+function playSwoosh() {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const Ctx = window.AudioContext ?? (window as any).webkitAudioContext;
+    if (!Ctx) return;
+    const ctx = new Ctx() as AudioContext;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    const t = ctx.currentTime;
+    osc.type = "sine";
+    // Descending sweep 900 Hz → 220 Hz over 160 ms — the iMessage "swoosh"
+    osc.frequency.setValueAtTime(900, t);
+    osc.frequency.exponentialRampToValueAtTime(220, t + 0.16);
+    // Soft envelope: fast attack, smooth decay
+    gain.gain.setValueAtTime(0.001, t);
+    gain.gain.linearRampToValueAtTime(0.13, t + 0.025);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.16);
+    osc.start(t);
+    osc.stop(t + 0.16);
+    osc.onended = () => ctx.close();
+  } catch {
+    // AudioContext not available — fail silently
+  }
+}
+
 type Message = {
   id: number;
   sender_id: number;
@@ -87,6 +114,7 @@ export default function ChatWindow({ partner, currentUserId, onBack }: Props) {
   const send = async () => {
     const content = text.trim();
     if (!content || sending) return;
+    playSwoosh();
     setText("");
     setSending(true);
     await supabase.from("messages").insert({
