@@ -98,7 +98,7 @@ export default function ProfileScreen({ user, onBack, followed, toggleFollow, cu
           {[
             { label: "Follower", value: user.followers.toLocaleString("de") },
             { label: "Following", value: user.following.toLocaleString("de") },
-            { label: "Ventures", value: user.companies.length },
+            { label: "Firmen", value: user.companies.length },
           ].map((s) => (
             <div key={s.label}>
               <div style={{ fontSize: 20, fontWeight: 700 }}>{s.value}</div>
@@ -189,7 +189,7 @@ export default function ProfileScreen({ user, onBack, followed, toggleFollow, cu
             letterSpacing: 1,
           }}
         >
-          Ventures & Brands
+          Firmen & Brands
         </h3>
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           {user.companies.map((company, i) => (

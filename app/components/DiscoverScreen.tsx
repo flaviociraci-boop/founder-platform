@@ -261,7 +261,7 @@ export default function DiscoverScreen({
                   <span style={{ color: "rgba(255,255,255,0.7)", fontWeight: 600 }}>
                     {user.companies.length}
                   </span>{" "}
-                  {user.companies.length === 1 ? "Venture" : "Ventures"}
+                  {user.companies.length === 1 ? "Firma" : "Firmen"}
                 </span>
               </div>
             </div>
