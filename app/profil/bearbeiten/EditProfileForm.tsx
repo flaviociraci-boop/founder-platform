@@ -49,39 +49,38 @@ export default function EditProfileForm() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { router.push("/login"); return; }
 
-      // Try with username column; fall back if migration hasn't run yet
-      let profile: Form | null = null;
-      const { data: full, error: fullErr } = await supabase
+      // Use select("*") so PostgREST never errors on missing columns
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data, error } = await supabase
         .from("profiles")
-        .select("id, name, username, age, location, bio, seeking, category, tags, avatar, color")
+        .select("*")
         .eq("auth_id", user.id)
         .maybeSingle();
 
-      if (!fullErr && full) {
-        profile = {
-          id: full.id, name: full.name ?? "", username: full.username ?? "",
-          age: full.age?.toString() ?? "", location: full.location ?? "",
-          bio: full.bio ?? "", seeking: full.seeking ?? "", category: full.category ?? "",
-          tags: full.tags ?? [], avatar: full.avatar ?? "", color: full.color ?? "#6366f1",
-        };
-      } else {
-        const { data: partial } = await supabase
-          .from("profiles")
-          .select("id, name, age, location, bio, seeking, category, tags, avatar, color")
-          .eq("auth_id", user.id)
-          .maybeSingle();
-        if (partial) {
-          profile = {
-            id: partial.id, name: partial.name ?? "", username: "",
-            age: partial.age?.toString() ?? "", location: partial.location ?? "",
-            bio: partial.bio ?? "", seeking: partial.seeking ?? "", category: partial.category ?? "",
-            tags: partial.tags ?? [], avatar: partial.avatar ?? "", color: partial.color ?? "#6366f1",
-          };
-        }
+      if (error) {
+        setFetchError(`Fehler beim Laden: ${error.message}`);
+        setLoading(false);
+        return;
       }
 
-      if (profile) { setForm(profile); }
-      else { setFetchError("Profil nicht gefunden. Bitte neu einloggen."); }
+      if (data) {
+        setForm({
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          id: (data as any).id,
+          name: (data as any).name ?? "",
+          username: (data as any).username ?? "",
+          age: (data as any).age?.toString() ?? "",
+          location: (data as any).location ?? "",
+          bio: (data as any).bio ?? "",
+          seeking: (data as any).seeking ?? "",
+          category: (data as any).category ?? "",
+          tags: (data as any).tags ?? [],
+          avatar: (data as any).avatar ?? "",
+          color: (data as any).color ?? "#6366f1",
+        });
+      } else {
+        setFetchError("Profil nicht gefunden. Bitte neu einloggen.");
+      }
       setLoading(false);
     };
     load();
