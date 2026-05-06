@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 
@@ -33,6 +33,18 @@ const lbl: React.CSSProperties = {
 };
 
 export default function FirmenPage() {
+  return (
+    <Suspense fallback={
+      <div style={{ background: "#0a0a0f", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", color: "rgba(255,255,255,0.3)", fontFamily: "'DM Sans', sans-serif" }}>
+        Lade…
+      </div>
+    }>
+      <FirmenPageInner />
+    </Suspense>
+  );
+}
+
+function FirmenPageInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const supabase = useMemo(() => createClient(), []);
