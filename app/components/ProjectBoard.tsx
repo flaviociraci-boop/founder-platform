@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { categories, modelColors, Project } from "@/app/lib/data";
 import { createClient } from "@/utils/supabase/client";
 import { timeAgo } from "@/app/lib/data";
@@ -14,16 +15,10 @@ type Props = {
 };
 
 export default function ProjectBoard({ initialProjects, currentUserId, currentUserName, currentUserAvatar, currentUserColor }: Props) {
+  const router = useRouter();
   const [projects, setProjects] = useState<Project[]>(initialProjects);
   const [applied, setApplied] = useState<Record<number, boolean>>({});
   const [filterCat, setFilterCat] = useState("all");
-  const [showNewProject, setShowNewProject] = useState(false);
-  const [newProject, setNewProject] = useState({
-    title: "",
-    desc: "",
-    model: "Equity",
-    category: "ecommerce",
-  });
 
   const filtered = filterCat === "all" ? projects : projects.filter((p) => p.category === filterCat);
 
@@ -41,249 +36,8 @@ export default function ProjectBoard({ initialProjects, currentUserId, currentUs
     ]);
   };
 
-  const postProject = async () => {
-    if (!newProject.title.trim() || !currentUserId) return;
-
-    const supabase = createClient();
-    const { data, error } = await supabase
-      .from("projects")
-      .insert({
-        user_id: currentUserId,
-        title: newProject.title,
-        description: newProject.desc,
-        category: newProject.category,
-        location: "Remote",
-        model: newProject.model,
-        tags: [],
-        applicants: 0,
-        color: currentUserColor ?? "#6366f1",
-        avatar: currentUserAvatar ?? "◉",
-        user_name: currentUserName ?? "Anonym",
-      })
-      .select()
-      .single();
-
-    if (!error && data) {
-      const newP: Project = {
-        id: data.id,
-        userId: data.user_id,
-        title: data.title,
-        desc: data.description,
-        category: data.category,
-        location: data.location,
-        model: data.model,
-        tags: data.tags ?? [],
-        applicants: 0,
-        color: data.color,
-        avatar: data.avatar,
-        userName: data.user_name,
-        timeAgo: timeAgo(data.created_at),
-      };
-      setProjects((prev) => [newP, ...prev]);
-    }
-
-    setNewProject({ title: "", desc: "", model: "Equity", category: "ecommerce" });
-    setShowNewProject(false);
-  };
-
   return (
     <div style={{ paddingBottom: 100 }}>
-      {showNewProject && (
-        <div
-          style={{
-            position: "fixed",
-            inset: 0,
-            zIndex: 200,
-            background: "rgba(0,0,0,0.85)",
-            backdropFilter: "blur(10px)",
-            display: "flex",
-            alignItems: "flex-end",
-            justifyContent: "center",
-          }}
-        >
-          <div
-            style={{
-              background: "#13131a",
-              border: "1px solid rgba(255,255,255,0.1)",
-              borderRadius: "24px 24px 0 0",
-              padding: 24,
-              width: "100%",
-              maxWidth: 430,
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                marginBottom: 20,
-              }}
-            >
-              <h3 style={{ margin: 0, fontSize: 18, fontWeight: 700 }}>Projekt ausschreiben</h3>
-              <button
-                onClick={() => setShowNewProject(false)}
-                style={{
-                  background: "rgba(255,255,255,0.08)",
-                  border: "none",
-                  color: "#fff",
-                  width: 32,
-                  height: 32,
-                  borderRadius: 10,
-                  cursor: "pointer",
-                  fontSize: 16,
-                }}
-              >
-                ✕
-              </button>
-            </div>
-
-            {(
-              [
-                { label: "Titel", key: "title" as const, placeholder: "z.B. Marketing-Partner gesucht", type: "input" },
-                { label: "Beschreibung", key: "desc" as const, placeholder: "Was suchst du genau?", type: "textarea" },
-              ] as const
-            ).map((field) => (
-              <div key={field.key} style={{ marginBottom: 14 }}>
-                <label
-                  style={{
-                    fontSize: 12,
-                    color: "rgba(255,255,255,0.4)",
-                    textTransform: "uppercase",
-                    letterSpacing: 1,
-                    display: "block",
-                    marginBottom: 6,
-                  }}
-                >
-                  {field.label}
-                </label>
-                {field.type === "input" ? (
-                  <input
-                    value={newProject[field.key]}
-                    onChange={(e) => setNewProject((p) => ({ ...p, [field.key]: e.target.value }))}
-                    placeholder={field.placeholder}
-                    style={{
-                      width: "100%",
-                      background: "rgba(255,255,255,0.05)",
-                      border: "1px solid rgba(255,255,255,0.1)",
-                      borderRadius: 12,
-                      padding: "12px 14px",
-                      color: "#fff",
-                      fontSize: 14,
-                      outline: "none",
-                      boxSizing: "border-box",
-                    }}
-                  />
-                ) : (
-                  <textarea
-                    value={newProject[field.key]}
-                    onChange={(e) => setNewProject((p) => ({ ...p, [field.key]: e.target.value }))}
-                    placeholder={field.placeholder}
-                    rows={3}
-                    style={{
-                      width: "100%",
-                      background: "rgba(255,255,255,0.05)",
-                      border: "1px solid rgba(255,255,255,0.1)",
-                      borderRadius: 12,
-                      padding: "12px 14px",
-                      color: "#fff",
-                      fontSize: 14,
-                      outline: "none",
-                      resize: "none",
-                      boxSizing: "border-box",
-                    }}
-                  />
-                )}
-              </div>
-            ))}
-
-            <div style={{ display: "flex", gap: 10, marginBottom: 14 }}>
-              <div style={{ flex: 1 }}>
-                <label
-                  style={{
-                    fontSize: 12,
-                    color: "rgba(255,255,255,0.4)",
-                    textTransform: "uppercase",
-                    letterSpacing: 1,
-                    display: "block",
-                    marginBottom: 6,
-                  }}
-                >
-                  Kooperationsmodell
-                </label>
-                <select
-                  value={newProject.model}
-                  onChange={(e) => setNewProject((p) => ({ ...p, model: e.target.value }))}
-                  style={{
-                    width: "100%",
-                    background: "#1a1a24",
-                    border: "1px solid rgba(255,255,255,0.1)",
-                    borderRadius: 12,
-                    padding: "12px 14px",
-                    color: "#fff",
-                    fontSize: 14,
-                    outline: "none",
-                  }}
-                >
-                  {Object.keys(modelColors).map((m) => (
-                    <option key={m} value={m}>{m}</option>
-                  ))}
-                </select>
-              </div>
-              <div style={{ flex: 1 }}>
-                <label
-                  style={{
-                    fontSize: 12,
-                    color: "rgba(255,255,255,0.4)",
-                    textTransform: "uppercase",
-                    letterSpacing: 1,
-                    display: "block",
-                    marginBottom: 6,
-                  }}
-                >
-                  Kategorie
-                </label>
-                <select
-                  value={newProject.category}
-                  onChange={(e) => setNewProject((p) => ({ ...p, category: e.target.value }))}
-                  style={{
-                    width: "100%",
-                    background: "#1a1a24",
-                    border: "1px solid rgba(255,255,255,0.1)",
-                    borderRadius: 12,
-                    padding: "12px 14px",
-                    color: "#fff",
-                    fontSize: 14,
-                    outline: "none",
-                  }}
-                >
-                  {categories
-                    .filter((c) => c.id !== "all")
-                    .map((c) => (
-                      <option key={c.id} value={c.id}>{c.label}</option>
-                    ))}
-                </select>
-              </div>
-            </div>
-
-            <button
-              onClick={postProject}
-              style={{
-                width: "100%",
-                padding: "14px 0",
-                borderRadius: 14,
-                background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
-                border: "none",
-                color: "#fff",
-                fontWeight: 700,
-                fontSize: 16,
-                cursor: "pointer",
-              }}
-            >
-              Projekt posten ✦
-            </button>
-          </div>
-        </div>
-      )}
 
       <div style={{ padding: "28px 20px 16px" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
@@ -306,7 +60,7 @@ export default function ProjectBoard({ initialProjects, currentUserId, currentUs
             </p>
           </div>
           <button
-            onClick={() => setShowNewProject(true)}
+            onClick={() => router.push("/projekte/neu")}
             style={{
               padding: "10px 16px",
               borderRadius: 14,
