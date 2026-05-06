@@ -87,7 +87,7 @@ export default function ChatWindow({ partner, currentUserId, onBack }: Props) {
     <div style={{
       display: "flex",
       flexDirection: "column",
-      height: "100vh",
+      height: "100%",
       background: "#0a0a0f",
       fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif",
     }}>
