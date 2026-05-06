@@ -630,6 +630,60 @@ function BottomSheet({ title, onClose, children }: { title: string; onClose: () 
   );
 }
 
+// Centered, keyboard-aware modal (for modals with text inputs)
+function CenteredModal({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
+  const [containerH, setContainerH] = useState("100dvh");
+
+  useEffect(() => {
+    const vp = window.visualViewport;
+    if (!vp) return;
+    const update = () => setContainerH(`${vp.height}px`);
+    update();
+    vp.addEventListener("resize", update);
+    vp.addEventListener("scroll", update);
+    return () => {
+      vp.removeEventListener("resize", update);
+      vp.removeEventListener("scroll", update);
+    };
+  }, []);
+
+  return (
+    <div
+      style={{
+        position: "fixed", top: 0, left: "50%",
+        transform: "translateX(-50%)",
+        width: "100%", maxWidth: 430,
+        height: containerH,
+        zIndex: 800,
+        background: "rgba(0,0,0,0.85)", backdropFilter: "blur(10px)",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        padding: "20px", boxSizing: "border-box",
+      }}
+      onClick={(e) => e.target === e.currentTarget && onClose()}
+    >
+      <div style={{
+        background: "#13131a",
+        border: "1px solid rgba(255,255,255,0.1)",
+        borderRadius: 24,
+        padding: "24px 20px",
+        width: "100%",
+        maxHeight: "90%",
+        overflowY: "auto",
+        fontFamily: "'DM Sans', sans-serif",
+      }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
+          <h3 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: "#fff" }}>{title}</h3>
+          <button onClick={onClose} style={{
+            background: "rgba(255,255,255,0.08)", border: "none",
+            color: "#fff", width: 32, height: 32, borderRadius: 10, cursor: "pointer", fontSize: 16,
+          }}>✕</button>
+        </div>
+        {children}
+      </div>
+    </div>
+  );
+}
+
 const mInput: React.CSSProperties = {
   width: "100%", background: "rgba(255,255,255,0.07)",
   border: "1px solid rgba(255,255,255,0.1)", borderRadius: 14,
@@ -744,7 +798,7 @@ function UsernameModal({ onClose, currentUserId, current, onSaved }: {
   };
 
   return (
-    <BottomSheet title="Benutzername ändern" onClose={onClose}>
+    <CenteredModal title="Benutzername ändern" onClose={onClose}>
       <div style={{ marginBottom: 20 }}>
         <label style={mLabel}>Benutzername</label>
         <div style={{ position: "relative" }}>
@@ -769,7 +823,7 @@ function UsernameModal({ onClose, currentUserId, current, onSaved }: {
       <button onClick={save} disabled={loading} style={{ ...mBtn, opacity: loading ? 0.7 : 1 }}>
         {loading ? "Speichere…" : "Speichern"}
       </button>
-    </BottomSheet>
+    </CenteredModal>
   );
 }
 
