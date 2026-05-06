@@ -99,6 +99,8 @@ export default function AppShell({
             onBack={() => setSelectedUser(null)}
             followed={followed}
             toggleFollow={toggleFollow}
+            currentUserId={currentUserId}
+            onOpenChat={openChat}
           />
         ) : tab === "discover" ? (
           <DiscoverScreen

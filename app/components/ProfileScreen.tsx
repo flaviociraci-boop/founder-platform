@@ -1,16 +1,50 @@
 "use client";
 
+import { useEffect, useMemo, useState } from "react";
 import { User, seekingColors } from "@/app/lib/data";
 import { Avatar } from "@/app/components/Avatar";
+import { createClient } from "@/utils/supabase/client";
 
 type Props = {
   user: User;
   onBack: () => void;
   followed: Record<number, boolean>;
   toggleFollow: (id: number) => void;
+  currentUserId: number | null;
+  onOpenChat: (user: User) => void;
 };
 
-export default function ProfileScreen({ user, onBack, followed, toggleFollow }: Props) {
+export default function ProfileScreen({ user, onBack, followed, toggleFollow, currentUserId, onOpenChat }: Props) {
+  const supabase = useMemo(() => createClient(), []);
+  const [isMatched, setIsMatched] = useState<boolean | null>(null); // null = loading
+  const [showHint, setShowHint] = useState(false);
+
+  useEffect(() => {
+    if (!currentUserId) { setIsMatched(false); return; }
+    const check = async () => {
+      const { data: sent } = await supabase
+        .from("connections").select("id")
+        .eq("user_id", currentUserId).eq("target_id", user.id)
+        .maybeSingle();
+      if (!sent) { setIsMatched(false); return; }
+      const { data: back } = await supabase
+        .from("connections").select("id")
+        .eq("user_id", user.id).eq("target_id", currentUserId)
+        .maybeSingle();
+      setIsMatched(!!back);
+    };
+    check();
+  }, [currentUserId, user.id, supabase]);
+
+  const handleNachricht = () => {
+    if (isMatched) {
+      onOpenChat(user);
+    } else {
+      setShowHint(true);
+      setTimeout(() => setShowHint(false), 4000);
+    }
+  };
+
   return (
     <div style={{ paddingBottom: 100 }}>
       <div
@@ -93,21 +127,41 @@ export default function ProfileScreen({ user, onBack, followed, toggleFollow }: 
             {followed[user.id] ? "✓ Gefolgt" : "Folgen"}
           </button>
           <button
+            onClick={handleNachricht}
             style={{
               flex: 1,
               padding: "12px 0",
-              background: "rgba(255,255,255,0.06)",
-              border: "1px solid rgba(255,255,255,0.1)",
+              background: isMatched
+                ? "linear-gradient(135deg, #6366f1, #8b5cf6)"
+                : "rgba(255,255,255,0.06)",
+              border: isMatched ? "none" : "1px solid rgba(255,255,255,0.1)",
               color: "#fff",
               borderRadius: 14,
               fontWeight: 600,
               fontSize: 15,
               cursor: "pointer",
+              boxShadow: isMatched ? "0 4px 12px rgba(99,102,241,0.3)" : "none",
+              transition: "all 0.2s",
             }}
           >
-            Nachricht
+            {isMatched ? "💬 Nachricht" : "Nachricht"}
           </button>
         </div>
+
+        {showHint && (
+          <div style={{
+            marginTop: 12,
+            padding: "12px 14px",
+            borderRadius: 12,
+            background: "rgba(99,102,241,0.1)",
+            border: "1px solid rgba(99,102,241,0.25)",
+            fontSize: 13,
+            color: "rgba(255,255,255,0.65)",
+            lineHeight: 1.5,
+          }}>
+            Um mit <strong style={{ color: "#fff" }}>{user.name}</strong> zu chatten müsst ihr erst connected sein. Geh zu <strong style={{ color: "#6366f1" }}>Connect</strong> und schicke eine Anfrage.
+          </div>
+        )}
       </div>
 
       <div style={{ padding: "20px 20px 0" }}>
