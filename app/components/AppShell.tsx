@@ -175,10 +175,12 @@ export default function AppShell({
       {/* Chat window — full-screen overlay */}
       {chatWith && currentUserId && (
         <div style={{
-          position: "fixed", top: 0, bottom: 0,
+          position: "fixed", top: 0,
+          height: "100dvh",          /* shrinks with keyboard on iOS 16+ */
           left: "50%", transform: "translateX(-50%)",
           width: "100%", maxWidth: 430,
           zIndex: 500, background: "#0a0a0f",
+          overflow: "hidden",
         }}>
           <ChatWindow
             partner={chatWith}

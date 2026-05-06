@@ -22,30 +22,15 @@ export default function ChatWindow({ partner, currentUserId, onBack }: Props) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
-  const [containerH, setContainerH] = useState("100%");
   const bottomRef = useRef<HTMLDivElement>(null);
   const supabase = useMemo(() => createClient(), []);
 
-  // iOS keyboard: track visual viewport height so input stays above keyboard
+  // Lock document scroll while chat is open so iOS never shifts the
+  // layout viewport (keeps vp.offsetTop = 0, eliminating the keyboard gap).
   useEffect(() => {
-    const vp = window.visualViewport;
-    if (!vp) return;
-
-    const update = () => {
-      setContainerH(`${vp.height}px`);
-      // Scroll latest message into view after layout settles
-      requestAnimationFrame(() => {
-        bottomRef.current?.scrollIntoView({ behavior: "instant" });
-      });
-    };
-
-    update();
-    vp.addEventListener("resize", update);
-    vp.addEventListener("scroll", update);
-    return () => {
-      vp.removeEventListener("resize", update);
-      vp.removeEventListener("scroll", update);
-    };
+    const prev = document.documentElement.style.overflow;
+    document.documentElement.style.overflow = "hidden";
+    return () => { document.documentElement.style.overflow = prev; };
   }, []);
 
   // Load initial messages
@@ -87,10 +72,17 @@ export default function ChatWindow({ partner, currentUserId, onBack }: Props) {
     return () => { supabase.removeChannel(channel); };
   }, [currentUserId, partner.id, supabase]);
 
-  // Smooth scroll to bottom on new messages
+  // Scroll to bottom when new messages arrive
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  const scrollToBottom = () => {
+    // Wait for iOS keyboard animation (~350 ms) then snap to latest message
+    setTimeout(() => {
+      bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, 350);
+  };
 
   const send = async () => {
     const content = text.trim();
@@ -106,16 +98,20 @@ export default function ChatWindow({ partner, currentUserId, onBack }: Props) {
   };
 
   return (
+    /*
+     * height: 100% fills the overlay div which is sized to 100dvh.
+     * 100dvh (dynamic viewport height) automatically shrinks when the
+     * iOS keyboard opens, so this flex column squeezes — header stays
+     * at the top, input stays at the bottom, messages fill the middle.
+     */
     <div style={{
       display: "flex",
       flexDirection: "column",
-      // visualViewport height keeps this container exactly as tall as the
-      // visible screen (shrinks when keyboard opens on iOS Safari)
-      height: containerH,
+      height: "100%",
       background: "#0a0a0f",
       fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif",
-      overscrollBehavior: "none",
     }}>
+
       {/* Header */}
       <div style={{
         display: "flex",
@@ -142,9 +138,7 @@ export default function ChatWindow({ partner, currentUserId, onBack }: Props) {
             justifyContent: "center",
             flexShrink: 0,
           }}
-        >
-          ←
-        </button>
+        >←</button>
 
         <div style={{
           width: 42, height: 42,
@@ -167,15 +161,13 @@ export default function ChatWindow({ partner, currentUserId, onBack }: Props) {
         </div>
 
         <div style={{
-          width: 8, height: 8,
-          borderRadius: "50%",
-          background: "#10b981",
-          boxShadow: "0 0 6px #10b981",
+          width: 8, height: 8, borderRadius: "50%",
+          background: "#10b981", boxShadow: "0 0 6px #10b981",
           flexShrink: 0,
         }} />
       </div>
 
-      {/* Messages — fills remaining height, scrollable */}
+      {/* Messages — flex:1 fills the remaining space between header and input */}
       <div
         className="hide-scrollbar"
         style={{
@@ -186,9 +178,7 @@ export default function ChatWindow({ partner, currentUserId, onBack }: Props) {
           display: "flex",
           flexDirection: "column",
           gap: 6,
-          // Force GPU layer so iOS doesn't repaint during keyboard animation
-          WebkitOverflowScrolling: "touch",
-        } as React.CSSProperties}
+        }}
       >
         {messages.length === 0 && (
           <div style={{
@@ -201,14 +191,10 @@ export default function ChatWindow({ partner, currentUserId, onBack }: Props) {
             padding: "60px 0",
           }}>
             <div style={{
-              width: 64, height: 64,
-              borderRadius: 20,
+              width: 64, height: 64, borderRadius: 20,
               background: `linear-gradient(135deg, ${partner.color}, ${partner.color}88)`,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: 24,
-              fontWeight: 700,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: 24, fontWeight: 700,
               boxShadow: `0 8px 24px ${partner.color}33`,
             }}>
               {partner.avatar}
@@ -240,16 +226,12 @@ export default function ChatWindow({ partner, currentUserId, onBack }: Props) {
               <div style={{
                 maxWidth: "72%",
                 padding: "10px 14px",
-                borderRadius: isMine
-                  ? "18px 18px 4px 18px"
-                  : "18px 18px 18px 4px",
+                borderRadius: isMine ? "18px 18px 4px 18px" : "18px 18px 18px 4px",
                 background: isMine
                   ? "linear-gradient(135deg, #6366f1, #8b5cf6)"
                   : "rgba(255,255,255,0.07)",
                 border: isMine ? "none" : "1px solid rgba(255,255,255,0.08)",
-                fontSize: 14,
-                lineHeight: 1.5,
-                color: "#fff",
+                fontSize: 14, lineHeight: 1.5, color: "#fff",
                 wordBreak: "break-word",
                 boxShadow: isMine ? "0 4px 12px rgba(99,102,241,0.25)" : "none",
               }}>
@@ -261,7 +243,7 @@ export default function ChatWindow({ partner, currentUserId, onBack }: Props) {
         <div ref={bottomRef} />
       </div>
 
-      {/* Input — flexShrink:0 keeps it pinned at the bottom of containerH */}
+      {/* Input bar — flexShrink:0 keeps it at the bottom of the flex column */}
       <div style={{
         padding: "12px 16px 16px",
         background: "rgba(10,10,15,0.97)",
@@ -279,6 +261,7 @@ export default function ChatWindow({ partner, currentUserId, onBack }: Props) {
             e.target.style.height = "auto";
             e.target.style.height = Math.min(e.target.scrollHeight, 120) + "px";
           }}
+          onFocus={scrollToBottom}
           onKeyDown={(e) => {
             if (e.key === "Enter" && !e.shiftKey) {
               e.preventDefault();
@@ -294,7 +277,8 @@ export default function ChatWindow({ partner, currentUserId, onBack }: Props) {
             borderRadius: 16,
             padding: "12px 16px",
             color: "#fff",
-            fontSize: 14,
+            /* 16px prevents iOS Safari from auto-zooming on input focus */
+            fontSize: 16,
             outline: "none",
             resize: "none",
             fontFamily: "'DM Sans', sans-serif",
@@ -308,10 +292,8 @@ export default function ChatWindow({ partner, currentUserId, onBack }: Props) {
           onClick={send}
           disabled={!text.trim() || sending}
           style={{
-            width: 46,
-            height: 46,
-            borderRadius: 14,
-            flexShrink: 0,
+            width: 46, height: 46,
+            borderRadius: 14, flexShrink: 0,
             background: text.trim()
               ? "linear-gradient(135deg, #6366f1, #8b5cf6)"
               : "rgba(255,255,255,0.05)",
@@ -319,15 +301,11 @@ export default function ChatWindow({ partner, currentUserId, onBack }: Props) {
             color: text.trim() ? "#fff" : "rgba(255,255,255,0.2)",
             cursor: text.trim() && !sending ? "pointer" : "default",
             fontSize: 20,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
+            display: "flex", alignItems: "center", justifyContent: "center",
             transition: "all 0.15s",
             boxShadow: text.trim() ? "0 4px 12px rgba(99,102,241,0.35)" : "none",
           }}
-        >
-          ↑
-        </button>
+        >↑</button>
       </div>
     </div>
   );
