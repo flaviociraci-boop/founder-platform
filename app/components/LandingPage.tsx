@@ -18,11 +18,13 @@ const steps = [
 ];
 
 const proFeatures = [
-  "Unbegrenzte Connect-Anfragen",
+  "Unbegrenzt Connecten",
   "Direkte Chats mit allen Matches",
-  "Unbegrenzt Projekte posten",
-  "Premium-Profil mit Verifizierungs-Badge",
-  "Erweiterte Suchfilter",
+  "Unbegrenzt Co-Working Projekte posten",
+  "Verified Founder Badge ✓",
+  "Exklusiver Zugang zu erfolgreichen Unternehmern",
+  "Exklusiver Zugang zu Founder-Projekten",
+  "Starte Projekte mit Foundern aus deiner Region",
   "Priority Support",
 ];
 
@@ -40,6 +42,7 @@ export default function LandingPage() {
 
   const goRegister = () => router.push("/register");
   const goLogin = () => router.push("/login");
+  const scrollToSignup = () => document.getElementById("email-signup")?.scrollIntoView({ behavior: "smooth" });
 
   return (
     <div style={{
@@ -149,7 +152,7 @@ export default function LandingPage() {
       </section>
 
       {/* Email signup — between USP and Features */}
-      <section style={{ padding: "0 24px 40px", display: "flex", justifyContent: "center", position: "relative", zIndex: 1 }}>
+      <section id="email-signup" style={{ padding: "0 24px 40px", display: "flex", justifyContent: "center", position: "relative", zIndex: 1 }}>
         <EmailSignupForm />
       </section>
 
@@ -241,15 +244,14 @@ export default function LandingPage() {
             background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
             padding: "5px 14px", borderRadius: 20,
             fontSize: 11, fontWeight: 700, whiteSpace: "nowrap",
-          }}>3 TAGE KOSTENLOS</div>
+          }}>FOUNDING MEMBERS</div>
 
           <div style={{ textAlign: "center", marginBottom: 20 }}>
-            <div style={{ fontSize: 14, color: "rgba(255,255,255,0.6)", marginBottom: 6 }}>Pro Plan</div>
-            <div style={{ display: "flex", alignItems: "baseline", justifyContent: "center", gap: 4 }}>
-              <span style={{ fontSize: 38, fontWeight: 800 }}>$34.95</span>
-              <span style={{ fontSize: 14, color: "rgba(255,255,255,0.5)" }}>/Monat</span>
+            <div style={{ fontSize: 14, color: "rgba(255,255,255,0.6)", marginBottom: 10 }}>Pro Plan</div>
+            <div style={{ fontSize: 36, fontWeight: 800, letterSpacing: -0.5 }}>Coming Soon</div>
+            <div style={{ fontSize: 13, color: "rgba(255,255,255,0.55)", marginTop: 10, lineHeight: 1.5 }}>
+              Early Access Preis wird bald verkündet —<br />Founding Member sichern sich Vorzugskonditionen
             </div>
-            <div style={{ fontSize: 12, color: "rgba(255,255,255,0.4)", marginTop: 4 }}>nach dem 3-Tage Trial</div>
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 22 }}>
@@ -266,15 +268,15 @@ export default function LandingPage() {
             ))}
           </div>
 
-          <button onClick={goRegister} style={{
+          <button onClick={scrollToSignup} style={{
             width: "100%", padding: "16px 0",
             background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
             border: "none", color: "#fff", borderRadius: 12,
             fontSize: 14, fontWeight: 700, cursor: "pointer",
             boxShadow: "0 8px 20px rgba(99,102,241,0.35)",
-          }}>3 Tage kostenlos testen</button>
+          }}>Auf die Waitlist setzen</button>
           <p style={{ textAlign: "center", marginTop: 10, fontSize: 11, color: "rgba(255,255,255,0.4)" }}>
-            Jederzeit kündbar · Keine versteckten Kosten
+            100% kostenlos · Kein Spam · Jederzeit abbestellbar
           </p>
         </div>
       </section>
