@@ -31,7 +31,7 @@ const proFeatures = [
 const faqs = [
   { q: "Wer kann sich registrieren?", a: "Founder Platform ist exklusiv für Menschen die wirklich etwas aufgebaut haben — Gründer, Selbstständige, Unternehmer mit echten Firmen oder Projekten. Wir sind kein Networking-Spielplatz für Anfänger ohne Erfahrung." },
   { q: "Wann launcht ihr das Projekt?", a: "Wir arbeiten gerade mit voller Kraft am Projekt. Unser Ziel ist es vom ersten Tag an einen echten Mehrwert zu bieten — deshalb nehmen wir uns die Zeit alles richtig zu machen. Trag dich auf die Waitlist ein und sei der Erste der erfährt wann es losgeht." },
-  { q: "Was unterscheidet euch von LinkedIn?", a: "LinkedIn ist eine Karriere-Plattform für jeden. Founder Platform ist nur für ernsthafte Unternehmer im DACH-Raum die nach Co-Foundern, Mitgründern oder echten Geschäftspartnern suchen — kein Recruiter-Spam, keine Promi-Posts." },
+  { q: "Was unterscheidet euch von ähnlichen Plattformen?", a: "Bei uns triffst du echte Founder — Menschen die wirklich etwas aufgebaut haben. Du siehst auf den ersten Blick welche Firmen und Projekte jemand bereits realisiert hat. Hier sind nur Unternehmer die Gas geben und Lust haben gemeinsam zu wachsen. Wir sind keine offene Plattform für jeden — sondern ein exklusives Netzwerk in dem du echte Connections knüpfst, gemeinsam Projekte startest, Co-Working betreibst und die richtigen Leute für dein nächstes Vorhaben findest." },
   { q: "Kann ich jederzeit kündigen?", a: "Ja, jederzeit mit einem Klick — direkt in deinen Einstellungen. Keine Mindestlaufzeit, keine versteckten Kosten." },
   { q: "Werden meine Daten sicher gespeichert?", a: "Absolut. Wir nutzen Supabase mit europäischen Servern und sind DSGVO-konform. Deine Daten gehören dir." },
 ];
