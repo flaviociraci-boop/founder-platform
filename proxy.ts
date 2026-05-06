@@ -2,6 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 const AUTH_PATHS = ["/login", "/register", "/auth"];
+const PUBLIC_PATHS = ["/"];
 
 export async function proxy(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
@@ -28,9 +29,10 @@ export async function proxy(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
   const { pathname } = request.nextUrl;
   const isAuthPath = AUTH_PATHS.some((p) => pathname.startsWith(p));
+  const isPublicPath = PUBLIC_PATHS.includes(pathname);
 
-  // Redirect unauthenticated users to login
-  if (!user && !isAuthPath) {
+  // Redirect unauthenticated users to login (but not from landing page or auth pages)
+  if (!user && !isAuthPath && !isPublicPath) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
