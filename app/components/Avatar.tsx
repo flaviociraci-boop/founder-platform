@@ -42,7 +42,7 @@ export function Avatar({
         <img
           src={src}
           alt="Profilbild"
-          style={{ width: "100%", height: "100%", objectFit: "cover" }}
+          style={{ width: "100%", height: "100%", objectFit: "contain", objectPosition: "center" }}
         />
       ) : (
         <span style={{ fontSize: Math.round(size * 0.35), fontWeight: 700, color: "#fff" }}>

@@ -73,6 +73,7 @@ export default function EditProfileForm() {
   const [saved, setSaved] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState("");
+  const [removing, setRemoving] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -197,6 +198,27 @@ export default function EditProfileForm() {
     }
   };
 
+  // ── Remove avatar ──────────────────────────────────────────────────────────
+  const removeAvatar = async () => {
+    if (!form) return;
+    setRemoving(true);
+    setUploadError("");
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        await supabase.storage.from("avatars").remove([`${user.id}/avatar.jpg`]);
+      }
+      const initials = form.name.trim()
+        .split(" ").map((w) => w[0] ?? "").join("").toUpperCase().slice(0, 2) || "?";
+      await supabase.from("profiles").update({ avatar: initials }).eq("id", form.id);
+      set("avatar", initials);
+    } catch (err: unknown) {
+      setUploadError(err instanceof Error ? err.message : "Entfernen fehlgeschlagen.");
+    } finally {
+      setRemoving(false);
+    }
+  };
+
   // ── Save text fields ───────────────────────────────────────────────────────
   const save = async () => {
     if (!form) return;
@@ -308,18 +330,35 @@ export default function EditProfileForm() {
             </div>
           </button>
 
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            disabled={uploading}
-            style={{
-              background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)",
-              borderRadius: 10, padding: "7px 16px",
-              color: uploading ? "rgba(255,255,255,0.3)" : "rgba(255,255,255,0.6)",
-              fontSize: 13, cursor: uploading ? "default" : "pointer",
-            }}
-          >
-            {uploading ? "Wird hochgeladen…" : "Profilbild ändern"}
-          </button>
+          <div style={{ display: "flex", gap: 8, justifyContent: "center", flexWrap: "wrap" }}>
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading || removing}
+              style={{
+                background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)",
+                borderRadius: 10, padding: "7px 16px",
+                color: (uploading || removing) ? "rgba(255,255,255,0.3)" : "rgba(255,255,255,0.6)",
+                fontSize: 13, cursor: (uploading || removing) ? "default" : "pointer",
+              }}
+            >
+              {uploading ? "Wird hochgeladen…" : "Profilbild ändern"}
+            </button>
+
+            {(form.avatar.startsWith("http") || form.avatar.startsWith("blob:")) && (
+              <button
+                onClick={removeAvatar}
+                disabled={uploading || removing}
+                style={{
+                  background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)",
+                  borderRadius: 10, padding: "7px 16px",
+                  color: removing ? "rgba(239,68,68,0.4)" : "rgba(239,68,68,0.7)",
+                  fontSize: 13, cursor: (uploading || removing) ? "default" : "pointer",
+                }}
+              >
+                {removing ? "Wird entfernt…" : "Bild entfernen"}
+              </button>
+            )}
+          </div>
 
           {uploadError && (
             <p style={{ color: "#f87171", fontSize: 13, marginTop: 8 }}>{uploadError}</p>
