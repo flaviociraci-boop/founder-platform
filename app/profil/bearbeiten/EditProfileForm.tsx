@@ -65,6 +65,7 @@ export default function EditProfileForm() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [form, setForm] = useState<Form | null>(null);
+  const [authId, setAuthId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState("");
   const [tagInput, setTagInput] = useState("");
@@ -78,6 +79,7 @@ export default function EditProfileForm() {
     const load = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { router.push("/login"); return; }
+      setAuthId(user.id);
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       let row: any = null;
@@ -142,7 +144,7 @@ export default function EditProfileForm() {
   // ── Avatar upload ──────────────────────────────────────────────────────────
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file || !form) return;
+    if (!file || !form || !authId) return;
     e.target.value = "";             // reset so same file can be re-selected
 
     if (!file.type.startsWith("image/")) {
@@ -159,7 +161,11 @@ export default function EditProfileForm() {
 
     try {
       const blob = await resizeImage(file);
-      const path = `${form.id}/avatar.jpg`;
+      const path = `${authId}/avatar.jpg`;
+
+      console.log("[avatar upload] authId:", authId);
+      console.log("[avatar upload] path:", path);
+      console.log("[avatar upload] blob size:", blob.size);
 
       const { error: upErr } = await supabase.storage
         .from("avatars")
