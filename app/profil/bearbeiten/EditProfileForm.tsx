@@ -33,20 +33,21 @@ const lbl: React.CSSProperties = {
   letterSpacing: 1, display: "block", marginBottom: 8, fontWeight: 600,
 };
 
-/** Crop + resize to a square JPEG blob (max 480px, 88% quality). */
+/** Resize to max 480px on the longest side, preserving aspect ratio. No crop. */
 async function resizeImage(file: File): Promise<Blob> {
   return new Promise((resolve, reject) => {
     const img = new Image();
     const url = URL.createObjectURL(file);
     img.onload = () => {
-      const size = Math.min(img.width, img.height, 480);
+      const MAX = 480;
+      const scale = Math.min(1, MAX / Math.max(img.width, img.height));
+      const w = Math.round(img.width * scale);
+      const h = Math.round(img.height * scale);
       const canvas = document.createElement("canvas");
-      canvas.width = size;
-      canvas.height = size;
+      canvas.width = w;
+      canvas.height = h;
       const ctx = canvas.getContext("2d")!;
-      const ox = (img.width - size) / 2;
-      const oy = (img.height - size) / 2;
-      ctx.drawImage(img, ox, oy, size, size, 0, 0, size, size);
+      ctx.drawImage(img, 0, 0, w, h);
       URL.revokeObjectURL(url);
       canvas.toBlob(
         (blob) => (blob ? resolve(blob) : reject(new Error("toBlob failed"))),

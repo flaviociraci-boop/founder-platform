@@ -27,7 +27,7 @@ export function Avatar({
         width: size,
         height: size,
         borderRadius: r,
-        background: `linear-gradient(135deg, ${color}, ${color}88)`,
+        background: isPhoto ? "#0a0a0f" : `linear-gradient(135deg, ${color}, ${color}88)`,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
