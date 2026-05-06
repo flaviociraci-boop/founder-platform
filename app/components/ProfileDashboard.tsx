@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { User } from "@/app/lib/data";
 import { createClient } from "@/utils/supabase/client";
+import { Avatar } from "@/app/components/Avatar";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -222,15 +223,12 @@ export default function ProfileDashboard({ currentUserId, onLogout, onOpenChat }
       }}>
         <div style={{ display: "flex", alignItems: "flex-start", gap: 16, marginBottom: 20 }}>
           <div style={{ position: "relative" }}>
-            <div style={{
-              width: 72, height: 72, borderRadius: 20,
-              background: profile ? `linear-gradient(135deg, ${profile.color}, ${profile.color}88)` : "linear-gradient(135deg, #6366f1, #8b5cf6)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: 24, fontWeight: 700,
-              boxShadow: `0 8px 24px ${profile?.color ?? "#6366f1"}44`,
-            }}>
-              {profile?.avatar ?? "◉"}
-            </div>
+            <Avatar
+              src={profile?.avatar ?? "◉"}
+              color={profile?.color ?? "#6366f1"}
+              size={72} radius={20}
+              style={{ boxShadow: `0 8px 24px ${profile?.color ?? "#6366f1"}44` }}
+            />
             <div style={{
               position: "absolute", bottom: -4, right: -4,
               width: 22, height: 22, borderRadius: 8,
@@ -383,13 +381,7 @@ export default function ProfileDashboard({ currentUserId, onLogout, onOpenChat }
                   borderRadius: 16, padding: "14px 16px",
                   display: "flex", alignItems: "center", gap: 12,
                 }}>
-                  <div style={{
-                    width: 46, height: 46, borderRadius: 13, flexShrink: 0,
-                    background: `linear-gradient(135deg, ${conn.color}, ${conn.color}88)`,
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    fontWeight: 700, fontSize: 15,
-                    boxShadow: `0 4px 12px ${conn.color}33`,
-                  }}>{conn.avatar}</div>
+                  <Avatar src={conn.avatar} color={conn.color} size={46} radius={13} />
                   <div style={{ flex: 1, overflow: "hidden" }}>
                     <div style={{ fontWeight: 700, fontSize: 15 }}>{conn.name}</div>
                     <div style={{ fontSize: 12, color: "rgba(255,255,255,0.38)", marginTop: 1 }}>

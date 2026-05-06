@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { seekingColors, User } from "@/app/lib/data";
 import { createClient } from "@/utils/supabase/client";
+import { Avatar } from "@/app/components/Avatar";
 
 type MatchState = "sent" | "matched";
 
@@ -198,23 +199,7 @@ export default function MatchScreen({ users, currentUserId, onOpenChat }: Props)
               )}
 
               <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-                <div
-                  style={{
-                    width: 52,
-                    height: 52,
-                    borderRadius: 15,
-                    flexShrink: 0,
-                    background: `linear-gradient(135deg, ${user.color}, ${user.color}88)`,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontWeight: 700,
-                    fontSize: 17,
-                    boxShadow: `0 4px 16px ${user.color}33`,
-                  }}
-                >
-                  {user.avatar}
-                </div>
+                <Avatar src={user.avatar} color={user.color} size={52} radius={15} />
 
                 <div style={{ flex: 1 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>

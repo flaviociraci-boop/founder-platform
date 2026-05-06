@@ -1,6 +1,7 @@
 "use client";
 
 import { categories, seekingColors, User } from "@/app/lib/data";
+import { Avatar } from "@/app/components/Avatar";
 
 type Props = {
   users: User[];
@@ -119,23 +120,7 @@ export default function DiscoverScreen({
               />
 
               <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
-                <div
-                  style={{
-                    width: 50,
-                    height: 50,
-                    borderRadius: 14,
-                    flexShrink: 0,
-                    background: `linear-gradient(135deg, ${user.color}, ${user.color}88)`,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontWeight: 700,
-                    fontSize: 16,
-                    boxShadow: `0 4px 16px ${user.color}33`,
-                  }}
-                >
-                  {user.avatar}
-                </div>
+                <Avatar src={user.avatar} color={user.color} size={50} radius={14} />
 
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>

@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { User } from "@/app/lib/data";
 import { createClient } from "@/utils/supabase/client";
+import { Avatar } from "@/app/components/Avatar";
 
 function playSwoosh() {
   try {
@@ -168,20 +169,8 @@ export default function ChatWindow({ partner, currentUserId, onBack }: Props) {
           }}
         >←</button>
 
-        <div style={{
-          width: 42, height: 42,
-          borderRadius: 13,
-          flexShrink: 0,
-          background: `linear-gradient(135deg, ${partner.color}, ${partner.color}88)`,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          fontWeight: 700,
-          fontSize: 15,
-          boxShadow: `0 4px 12px ${partner.color}44`,
-        }}>
-          {partner.avatar}
-        </div>
+        <Avatar src={partner.avatar} color={partner.color} size={42} radius={13}
+          style={{ boxShadow: `0 4px 12px ${partner.color}44` }} />
 
         <div style={{ flex: 1, overflow: "hidden" }}>
           <div style={{ fontWeight: 700, fontSize: 15, color: "#fff" }}>{partner.name}</div>
@@ -218,15 +207,8 @@ export default function ChatWindow({ partner, currentUserId, onBack }: Props) {
             gap: 12,
             padding: "60px 0",
           }}>
-            <div style={{
-              width: 64, height: 64, borderRadius: 20,
-              background: `linear-gradient(135deg, ${partner.color}, ${partner.color}88)`,
-              display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: 24, fontWeight: 700,
-              boxShadow: `0 8px 24px ${partner.color}33`,
-            }}>
-              {partner.avatar}
-            </div>
+            <Avatar src={partner.avatar} color={partner.color} size={64} radius={20}
+              style={{ boxShadow: `0 8px 24px ${partner.color}33` }} />
             <div style={{ textAlign: "center" }}>
               <div style={{ fontWeight: 700, fontSize: 16, color: "#fff", marginBottom: 6 }}>
                 Ihr habt ein Match! 🤝

@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { categories, seekingColors } from "@/app/lib/data";
 import { createClient } from "@/utils/supabase/client";
+import { Avatar } from "@/app/components/Avatar";
 
 type Form = {
   id: number;
@@ -32,9 +33,36 @@ const lbl: React.CSSProperties = {
   letterSpacing: 1, display: "block", marginBottom: 8, fontWeight: 600,
 };
 
+/** Crop + resize to a square JPEG blob (max 480px, 88% quality). */
+async function resizeImage(file: File): Promise<Blob> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      const size = Math.min(img.width, img.height, 480);
+      const canvas = document.createElement("canvas");
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext("2d")!;
+      const ox = (img.width - size) / 2;
+      const oy = (img.height - size) / 2;
+      ctx.drawImage(img, ox, oy, size, size, 0, 0, size, size);
+      URL.revokeObjectURL(url);
+      canvas.toBlob(
+        (blob) => (blob ? resolve(blob) : reject(new Error("toBlob failed"))),
+        "image/jpeg",
+        0.88
+      );
+    };
+    img.onerror = reject;
+    img.src = url;
+  });
+}
+
 export default function EditProfileForm() {
   const router = useRouter();
   const supabase = useMemo(() => createClient(), []);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [form, setForm] = useState<Form | null>(null);
   const [loading, setLoading] = useState(true);
@@ -43,6 +71,8 @@ export default function EditProfileForm() {
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState("");
   const [saved, setSaved] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState("");
 
   useEffect(() => {
     const load = async () => {
@@ -52,7 +82,6 @@ export default function EditProfileForm() {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       let row: any = null;
 
-      // 1. Try by auth_id (normal case)
       const { data: byAuth, error: authErr } = await supabase
         .from("profiles")
         .select("*")
@@ -68,39 +97,20 @@ export default function EditProfileForm() {
       if (byAuth) {
         row = byAuth;
       } else {
-        // 2. Profile not linked — auto-create a new one
         const name =
           (user.user_metadata?.full_name as string | undefined) ??
-          user.email?.split("@")[0] ??
-          "Nutzer";
-        const initials = name
-          .split(" ")
+          user.email?.split("@")[0] ?? "Nutzer";
+        const initials = name.split(" ")
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          .map((n: any) => n[0] ?? "")
-          .join("")
-          .toUpperCase()
-          .slice(0, 2);
+          .map((n: any) => n[0] ?? "").join("").toUpperCase().slice(0, 2);
 
         const { data: created, error: createErr } = await supabase
           .from("profiles")
-          .insert({
-            auth_id: user.id,
-            name,
-            avatar: initials,
-            color: "#6366f1",
-            followers: 0,
-            following: 0,
-            tags: [],
-          })
-          .select("*")
-          .single();
+          .insert({ auth_id: user.id, name, avatar: initials, color: "#6366f1", followers: 0, following: 0, tags: [] })
+          .select("*").single();
 
         if (createErr) {
-          setFetchError(
-            `Kein Profil gefunden und Erstellung fehlgeschlagen: ${createErr.message}. ` +
-            `Bitte führe in Supabase SQL Editor aus: ` +
-            `UPDATE profiles SET auth_id = '${user.id}' WHERE id = <deine-profil-id>;`
-          );
+          setFetchError(`Kein Profil gefunden: ${createErr.message}`);
           setLoading(false);
           return;
         }
@@ -108,17 +118,10 @@ export default function EditProfileForm() {
       }
 
       setForm({
-        id: row.id,
-        name: row.name ?? "",
-        username: row.username ?? "",
-        age: row.age?.toString() ?? "",
-        location: row.location ?? "",
-        bio: row.bio ?? "",
-        seeking: row.seeking ?? "",
-        category: row.category ?? "",
-        tags: row.tags ?? [],
-        avatar: row.avatar ?? "",
-        color: row.color ?? "#6366f1",
+        id: row.id, name: row.name ?? "", username: row.username ?? "",
+        age: row.age?.toString() ?? "", location: row.location ?? "",
+        bio: row.bio ?? "", seeking: row.seeking ?? "", category: row.category ?? "",
+        tags: row.tags ?? [], avatar: row.avatar ?? "", color: row.color ?? "#6366f1",
       });
       setLoading(false);
     };
@@ -131,12 +134,62 @@ export default function EditProfileForm() {
   const addTag = () => {
     if (!form) return;
     const tag = tagInput.trim();
-    if (tag && !form.tags.includes(tag) && form.tags.length < 12) {
+    if (tag && !form.tags.includes(tag) && form.tags.length < 12)
       set("tags", [...form.tags, tag]);
-    }
     setTagInput("");
   };
 
+  // ── Avatar upload ──────────────────────────────────────────────────────────
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !form) return;
+    e.target.value = "";             // reset so same file can be re-selected
+
+    if (!file.type.startsWith("image/")) {
+      setUploadError("Nur Bilder erlaubt.");
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      setUploadError("Bild ist zu groß (max. 10 MB).");
+      return;
+    }
+
+    setUploading(true);
+    setUploadError("");
+
+    try {
+      const blob = await resizeImage(file);
+      const path = `${form.id}/avatar.jpg`;
+
+      const { error: upErr } = await supabase.storage
+        .from("avatars")
+        .upload(path, blob, { contentType: "image/jpeg", upsert: true });
+
+      if (upErr) throw upErr;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from("avatars")
+        .getPublicUrl(path);
+
+      // Add cache-bust so the browser reloads the new image
+      const url = `${publicUrl}?t=${Date.now()}`;
+
+      const { error: dbErr } = await supabase
+        .from("profiles")
+        .update({ avatar: url })
+        .eq("id", form.id);
+
+      if (dbErr) throw dbErr;
+
+      set("avatar", url);
+    } catch (err: unknown) {
+      setUploadError(err instanceof Error ? err.message : "Upload fehlgeschlagen.");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  // ── Save text fields ───────────────────────────────────────────────────────
   const save = async () => {
     if (!form) return;
     if (!form.name.trim()) { setSaveError("Name ist erforderlich."); return; }
@@ -210,15 +263,59 @@ export default function EditProfileForm() {
       </div>
 
       <div style={{ padding: "28px 20px 80px" }}>
-        {/* Avatar */}
+        {/* ── Avatar upload ── */}
         <div style={{ textAlign: "center", marginBottom: 32 }}>
-          <div style={{
-            width: 80, height: 80, borderRadius: 24, margin: "0 auto 12px",
-            background: `linear-gradient(135deg, ${form.color}, ${form.color}88)`,
-            display: "flex", alignItems: "center", justifyContent: "center",
-            fontSize: 26, fontWeight: 700, boxShadow: `0 8px 24px ${form.color}44`,
-          }}>{form.avatar}</div>
-          <button style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 10, padding: "7px 16px", color: "rgba(255,255,255,0.55)", fontSize: 13, cursor: "pointer" }}>Foto ändern</button>
+          {/* Hidden file input */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            style={{ display: "none" }}
+            onChange={handleFileChange}
+          />
+
+          {/* Clickable avatar */}
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            disabled={uploading}
+            style={{ background: "none", border: "none", cursor: uploading ? "default" : "pointer", padding: 0, margin: "0 auto 12px", display: "block", position: "relative" }}
+          >
+            <Avatar src={form.avatar} color={form.color} size={88} radius={26}
+              style={{ boxShadow: `0 8px 24px ${form.color}44`, margin: "0 auto" }} />
+
+            {/* Camera overlay */}
+            <div style={{
+              position: "absolute", inset: 0, borderRadius: 26,
+              background: uploading ? "rgba(0,0,0,0.55)" : "rgba(0,0,0,0)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              transition: "background 0.2s",
+            }}
+              onMouseEnter={(e) => { if (!uploading) (e.currentTarget as HTMLDivElement).style.background = "rgba(0,0,0,0.4)"; }}
+              onMouseLeave={(e) => { if (!uploading) (e.currentTarget as HTMLDivElement).style.background = "rgba(0,0,0,0)"; }}
+            >
+              {uploading
+                ? <span style={{ fontSize: 22, animation: "spin 1s linear infinite" }}>⟳</span>
+                : <span style={{ fontSize: 20, opacity: 0 }} className="camera-icon">📷</span>
+              }
+            </div>
+          </button>
+
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            disabled={uploading}
+            style={{
+              background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)",
+              borderRadius: 10, padding: "7px 16px",
+              color: uploading ? "rgba(255,255,255,0.3)" : "rgba(255,255,255,0.6)",
+              fontSize: 13, cursor: uploading ? "default" : "pointer",
+            }}
+          >
+            {uploading ? "Wird hochgeladen…" : "Profilbild ändern"}
+          </button>
+
+          {uploadError && (
+            <p style={{ color: "#f87171", fontSize: 13, marginTop: 8 }}>{uploadError}</p>
+          )}
         </div>
 
         {/* Name */}

@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { User } from "@/app/lib/data";
 import { createClient } from "@/utils/supabase/client";
+import { Avatar } from "@/app/components/Avatar";
 
 type ChatPreview = User & {
   lastMessage: string | null;
@@ -181,21 +182,8 @@ export default function ChatsScreen({ currentUserId, onOpenChat }: Props) {
                 width: "100%",
               }}
             >
-              <div style={{
-                width: 52,
-                height: 52,
-                borderRadius: 16,
-                flexShrink: 0,
-                background: `linear-gradient(135deg, ${chat.color}, ${chat.color}88)`,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontWeight: 700,
-                fontSize: 17,
-                boxShadow: `0 4px 16px ${chat.color}33`,
-              }}>
-                {chat.avatar}
-              </div>
+              <Avatar src={chat.avatar} color={chat.color} size={52} radius={16}
+                style={{ boxShadow: `0 4px 16px ${chat.color}33` }} />
 
               <div style={{ flex: 1, overflow: "hidden" }}>
                 <div style={{

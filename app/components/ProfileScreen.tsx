@@ -1,6 +1,7 @@
 "use client";
 
 import { User, seekingColors } from "@/app/lib/data";
+import { Avatar } from "@/app/components/Avatar";
 
 type Props = {
   user: User;
@@ -36,23 +37,9 @@ export default function ProfileScreen({ user, onBack, followed, toggleFollow }: 
         </button>
 
         <div style={{ display: "flex", alignItems: "flex-start", gap: 16 }}>
-          <div
-            style={{
-              width: 72,
-              height: 72,
-              borderRadius: 20,
-              background: `linear-gradient(135deg, ${user.color}, ${user.color}88)`,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: 22,
-              fontWeight: 700,
-              flexShrink: 0,
-              boxShadow: `0 8px 24px ${user.color}44`,
-            }}
-          >
-            {user.avatar}
-          </div>
+          <Avatar src={user.avatar} color={user.color} size={72} radius={20}
+            style={{ boxShadow: `0 8px 24px ${user.color}44` }} />
+
           <div style={{ flex: 1 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700 }}>{user.name}</h2>
