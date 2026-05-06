@@ -27,7 +27,7 @@ export function Avatar({
         width: size,
         height: size,
         borderRadius: r,
-        background: isPhoto ? "#0a0a0f" : `linear-gradient(135deg, ${color}, ${color}88)`,
+        background: `linear-gradient(135deg, ${color}, ${color}88)`,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -42,7 +42,7 @@ export function Avatar({
         <img
           src={src}
           alt="Profilbild"
-          style={{ width: "100%", height: "100%", objectFit: "contain", objectPosition: "center" }}
+          style={{ width: "100%", height: "100%", objectFit: "cover" }}
         />
       ) : (
         <span style={{ fontSize: Math.round(size * 0.35), fontWeight: 700, color: "#fff" }}>
