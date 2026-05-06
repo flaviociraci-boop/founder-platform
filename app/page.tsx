@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { createClient } from "@/utils/supabase/server";
 import AppShell from "@/app/components/AppShell";
+import LandingPage from "@/app/components/LandingPage";
 import { User, Project, timeAgo } from "@/app/lib/data";
 
 export default async function Page() {
@@ -9,6 +10,9 @@ export default async function Page() {
 
   const { data: { user } } = await supabase.auth.getUser();
 
+  // Not logged in → show landing page
+  if (!user) return <LandingPage />;
+
   const [{ data: profiles, error: profilesError }, { data: rawProjects }, { data: currentProfile }] =
     await Promise.all([
       supabase.from("profiles").select("*, companies(*)").order("id"),
@@ -16,9 +20,7 @@ export default async function Page() {
         .from("projects")
         .select("*")
         .order("created_at", { ascending: false }),
-      user
-        ? supabase.from("profiles").select("id, name, avatar, color").eq("auth_id", user.id).maybeSingle()
-        : Promise.resolve({ data: null }),
+      supabase.from("profiles").select("id, name, avatar, color").eq("auth_id", user.id).maybeSingle(),
     ]);
 
   if (profilesError) {
