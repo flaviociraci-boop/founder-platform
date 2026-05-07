@@ -11,6 +11,8 @@ type Props = {
   toggleFollow: (id: number) => void;
   activeCategory: string;
   setActiveCategory: (cat: string) => void;
+  unreadCount: number;
+  onOpenNotifications: () => void;
 };
 
 export default function DiscoverScreen({
@@ -20,6 +22,8 @@ export default function DiscoverScreen({
   toggleFollow,
   activeCategory,
   setActiveCategory,
+  unreadCount,
+  onOpenNotifications,
 }: Props) {
   const [query, setQuery] = useState("");
 
@@ -56,20 +60,37 @@ export default function DiscoverScreen({
               {filtered.length} Unternehmer gefunden
             </p>
           </div>
-          <div
+          <button
+            onClick={onOpenNotifications}
             style={{
               width: 40,
               height: 40,
               borderRadius: 12,
               background: "rgba(255,255,255,0.08)",
+              border: "none",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               fontSize: 18,
+              cursor: "pointer",
+              position: "relative",
+              flexShrink: 0,
             }}
           >
             🔔
-          </div>
+            {unreadCount > 0 && (
+              <span style={{
+                position: "absolute", top: -4, right: -4,
+                minWidth: 16, height: 16, borderRadius: 8,
+                background: "#ef4444",
+                fontSize: 9, fontWeight: 700, color: "#fff",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                padding: "0 3px", boxSizing: "border-box",
+              }}>
+                {unreadCount > 9 ? "9+" : unreadCount}
+              </span>
+            )}
+          </button>
         </div>
 
         {/* Search bar */}

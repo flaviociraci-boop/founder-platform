@@ -4,7 +4,12 @@ import AppShell from "@/app/components/AppShell";
 import LandingPage from "@/app/components/LandingPage";
 import { User, Project, timeAgo } from "@/app/lib/data";
 
-export default async function Page() {
+export default async function Page({
+  searchParams,
+}: {
+  searchParams: Promise<{ tab?: string }>;
+}) {
+  const params = await searchParams;
   const cookieStore = await cookies();
   const supabase = createClient(cookieStore);
 
@@ -77,6 +82,7 @@ export default async function Page() {
       currentUserName={currentProfile?.name ?? null}
       currentUserAvatar={currentProfile?.avatar ?? null}
       currentUserColor={currentProfile?.color ?? null}
+      initialTab={params.tab}
     />
   );
 }

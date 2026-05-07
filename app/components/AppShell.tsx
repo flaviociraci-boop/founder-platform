@@ -29,7 +29,10 @@ type Props = {
   currentUserName: string | null;
   currentUserAvatar: string | null;
   currentUserColor: string | null;
+  initialTab?: string;
 };
+
+const VALID_TABS: Tab[] = ["discover", "match", "chats", "projects", "profile"];
 
 export default function AppShell({
   initialUsers,
@@ -38,20 +41,24 @@ export default function AppShell({
   currentUserName,
   currentUserAvatar,
   currentUserColor,
+  initialTab,
 }: Props) {
   const router = useRouter();
-  const [tab, setTab] = useState<Tab>("discover");
+  const [tab, setTab] = useState<Tab>(
+    VALID_TABS.includes(initialTab as Tab) ? (initialTab as Tab) : "discover"
+  );
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [chatWith, setChatWith] = useState<User | null>(null);
   const [followed, setFollowed] = useState<Record<number, boolean>>({});
   const [activeCategory, setActiveCategory] = useState("all");
   const [pendingCount, setPendingCount] = useState(0);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
     if (!currentUserId) return;
     const supabase = createClient();
 
-    const loadCount = async () => {
+    const loadPending = async () => {
       const { count } = await supabase
         .from("connections")
         .select("*", { count: "exact", head: true })
@@ -60,18 +67,45 @@ export default function AppShell({
       setPendingCount(count ?? 0);
     };
 
-    loadCount();
+    loadPending();
 
-    const channel = supabase
+    const pendingChannel = supabase
       .channel("pending-badge")
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "connections", filter: `target_id=eq.${currentUserId}` },
-        () => loadCount()
+        () => loadPending()
       )
       .subscribe();
 
-    return () => { supabase.removeChannel(channel); };
+    return () => { supabase.removeChannel(pendingChannel); };
+  }, [currentUserId]);
+
+  useEffect(() => {
+    if (!currentUserId) return;
+    const supabase = createClient();
+
+    const loadUnread = async () => {
+      const { count } = await supabase
+        .from("notifications")
+        .select("*", { count: "exact", head: true })
+        .eq("recipient_id", currentUserId)
+        .eq("is_read", false);
+      setUnreadCount(count ?? 0);
+    };
+
+    loadUnread();
+
+    const notifChannel = supabase
+      .channel("notif-badge")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "notifications", filter: `recipient_id=eq.${currentUserId}` },
+        () => loadUnread()
+      )
+      .subscribe();
+
+    return () => { supabase.removeChannel(notifChannel); };
   }, [currentUserId]);
   const openChat = (user: User) => {
     setChatWith(user);
@@ -138,6 +172,8 @@ export default function AppShell({
             toggleFollow={toggleFollow}
             activeCategory={activeCategory}
             setActiveCategory={setActiveCategory}
+            unreadCount={unreadCount}
+            onOpenNotifications={() => router.push("/mitteilungen")}
           />
         ) : tab === "match" ? (
           <MatchScreen
