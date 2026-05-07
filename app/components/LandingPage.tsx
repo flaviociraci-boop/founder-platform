@@ -49,326 +49,341 @@ export default function LandingPage() {
     <div style={{
       fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif",
       background: "#0a0a0f", minHeight: "100vh", color: "#fff",
-      maxWidth: 430, margin: "0 auto", overflow: "hidden",
     }}>
       {/* Background glow */}
       <div style={{ position: "fixed", top: -150, right: -150, width: 400, height: 400, background: "radial-gradient(circle, rgba(99,102,241,0.2) 0%, transparent 70%)", pointerEvents: "none", zIndex: 0 }} />
       <div style={{ position: "fixed", bottom: -150, left: -150, width: 400, height: 400, background: "radial-gradient(circle, rgba(139,92,246,0.15) 0%, transparent 70%)", pointerEvents: "none", zIndex: 0 }} />
 
-      {/* Nav */}
+      {/* Nav — full width, inner content centered on desktop */}
       <nav style={{
         position: "sticky", top: 0, zIndex: 100,
         backdropFilter: "blur(20px)", background: "rgba(10,10,15,0.7)",
-        padding: "14px 20px", display: "flex",
-        alignItems: "center", justifyContent: "space-between",
         borderBottom: "1px solid rgba(255,255,255,0.06)",
       }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <Image src="/logo-icon.png" alt="Connectyfind Logo" width={64} height={64} className="w-8 h-8 rounded-lg" priority quality={100} />
-          <span style={{ fontWeight: 700, fontSize: 15 }}>Connectyfind</span>
+        <div
+          className="max-w-5xl mx-auto flex items-center justify-between lg:px-8"
+          style={{ padding: "14px 20px" }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <Image src="/logo-icon.png" alt="Connectyfind Logo" width={64} height={64} className="w-8 h-8 rounded-lg" priority quality={100} />
+            <span style={{ fontWeight: 700, fontSize: 15 }}>Connectyfind</span>
+          </div>
+          <button onClick={goLogin} style={{
+            background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)",
+            color: "#fff", padding: "7px 14px", borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: "pointer",
+          }}>Login</button>
         </div>
-        <button onClick={goLogin} style={{
-          background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)",
-          color: "#fff", padding: "7px 14px", borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: "pointer",
-        }}>Login</button>
       </nav>
 
-      {/* Hero */}
-      <section style={{ padding: "60px 24px 40px", position: "relative", zIndex: 1, textAlign: "center" }}>
-        <div style={{
-          display: "inline-block", padding: "6px 14px", marginBottom: 24,
-          background: "rgba(99,102,241,0.1)", border: "1px solid rgba(99,102,241,0.3)",
-          borderRadius: 20, fontSize: 12, fontWeight: 600, color: "#6366f1",
-        }}>✦ Nur für ernsthafte Founder</div>
+      {/* Content — 430px on mobile, max-w-5xl centered on desktop */}
+      <div className="max-w-[430px] mx-auto lg:max-w-5xl">
 
-        <h1 style={{
-          fontSize: 36, fontWeight: 800, margin: "0 0 16px",
-          lineHeight: 1.15, letterSpacing: -0.5,
-        }}>
-          Wo Unternehmer<br />
-          <span style={{ background: "linear-gradient(135deg, #6366f1, #8b5cf6)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-            matchen, chatten und<br />gemeinsam wachsen
-          </span>
-        </h1>
-
-        <p style={{ fontSize: 15, color: "rgba(255,255,255,0.6)", lineHeight: 1.6, margin: "0 0 28px", maxWidth: 340, marginLeft: "auto", marginRight: "auto" }}>
-          Die exklusive Plattform für Gründer im DACH-Raum. Verbinde dich mit Menschen die wirklich etwas aufgebaut haben.
-        </p>
-
-        <button onClick={goRegister} style={{
-          width: "100%", maxWidth: 320, padding: "16px 32px",
-          background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
-          border: "none", color: "#fff", borderRadius: 14,
-          fontSize: 15, fontWeight: 700, cursor: "pointer",
-          boxShadow: "0 8px 24px rgba(99,102,241,0.4)",
-        }}>Jetzt 3 Tage kostenlos starten</button>
-
-        <p style={{ marginTop: 12, fontSize: 12, color: "rgba(255,255,255,0.4)" }}>Kreditkarte erforderlich · Jederzeit kündbar</p>
-
-        {/* Stats */}
-        <div style={{
-          marginTop: 40, padding: "20px 16px",
-          background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)",
-          borderRadius: 16, display: "flex", justifyContent: "space-around",
-        }}>
-          <div>
-            <div style={{ fontSize: 22, fontWeight: 700, color: "#6366f1" }}>500+</div>
-            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", marginTop: 2 }}>Verifizierte Founder</div>
-          </div>
-          <div style={{ width: 1, background: "rgba(255,255,255,0.07)" }} />
-          <div>
-            <div style={{ fontSize: 22, fontWeight: 700, color: "#8b5cf6" }}>250+</div>
-            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", marginTop: 2 }}>Aktive Projekte</div>
-          </div>
-          <div style={{ width: 1, background: "rgba(255,255,255,0.07)" }} />
-          <div>
-            <div style={{ fontSize: 22, fontWeight: 700, color: "#ec4899" }}>1.2k+</div>
-            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", marginTop: 2 }}>Matches</div>
-          </div>
-        </div>
-      </section>
-
-      {/* USP */}
-      <section style={{ padding: "40px 24px", position: "relative", zIndex: 1 }}>
-        <div style={{
-          background: "linear-gradient(135deg, rgba(99,102,241,0.08), rgba(139,92,246,0.05))",
-          border: "1px solid rgba(99,102,241,0.2)",
-          borderRadius: 20, padding: "24px 20px",
-        }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: "#6366f1", letterSpacing: 2, marginBottom: 8 }}>
-            UNSER VERSPRECHEN
-          </div>
-          <h2 style={{ fontSize: 22, fontWeight: 700, margin: "0 0 14px", lineHeight: 1.3 }}>
-            Hier kommen nur echte Founder rein.
-          </h2>
-          <p style={{ fontSize: 14, color: "rgba(255,255,255,0.7)", lineHeight: 1.6, margin: 0 }}>
-            Andere Communities sind voll mit Anfängern ohne Erfahrung. Bei uns? Nur Menschen die etwas aufgebaut haben — mit echten Firmen, echten Projekten, echten Resultaten. Du siehst sofort wer ernst meint.
-          </p>
-        </div>
-      </section>
-
-      {/* Email signup — between USP and Features */}
-      <section id="email-signup" style={{ padding: "0 24px 40px", display: "flex", justifyContent: "center", position: "relative", zIndex: 1 }}>
-        <EmailSignupForm />
-      </section>
-
-      {/* Features */}
-      <section style={{ padding: "20px 24px 40px", position: "relative", zIndex: 1 }}>
-        <div style={{ textAlign: "center", marginBottom: 28 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: "#6366f1", letterSpacing: 2, marginBottom: 8 }}>FEATURES</div>
-          <h2 style={{ fontSize: 24, fontWeight: 700, margin: 0, lineHeight: 1.3 }}>
-            Alles was du brauchst<br />um zu wachsen
-          </h2>
-        </div>
-
-        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-          {features.map(f => (
-            <div key={f.title} style={{
-              background: "rgba(255,255,255,0.04)",
-              border: "1px solid rgba(255,255,255,0.07)",
-              borderRadius: 16, padding: "18px",
-              display: "flex", gap: 14, alignItems: "flex-start",
-            }}>
-              <div style={{
-                width: 44, height: 44, borderRadius: 12, flexShrink: 0,
-                background: `linear-gradient(135deg, ${f.color}, ${f.color}88)`,
-                display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: 20, fontWeight: 700,
-                boxShadow: `0 4px 16px ${f.color}40`,
-              }}>{f.icon}</div>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 4 }}>{f.title}</div>
-                <div style={{ fontSize: 13, color: "rgba(255,255,255,0.6)", lineHeight: 1.55 }}>{f.desc}</div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* How it works */}
-      <section style={{ padding: "40px 24px", position: "relative", zIndex: 1 }}>
-        <div style={{ textAlign: "center", marginBottom: 28 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: "#6366f1", letterSpacing: 2, marginBottom: 8 }}>SO FUNKTIONIERTS</div>
-          <h2 style={{ fontSize: 24, fontWeight: 700, margin: 0, lineHeight: 1.3 }}>
-            In 3 Schritten<br />zum Erfolg
-          </h2>
-        </div>
-
-        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-          {steps.map((s) => (
-            <div key={s.num} style={{
-              background: "rgba(255,255,255,0.04)",
-              border: "1px solid rgba(255,255,255,0.07)",
-              borderRadius: 16, padding: "20px",
-              position: "relative", overflow: "hidden",
-            }}>
-              <div style={{
-                position: "absolute", top: -10, right: -10,
-                fontSize: 80, fontWeight: 800,
-                background: "linear-gradient(135deg, rgba(99,102,241,0.15), rgba(139,92,246,0.05))",
-                WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
-                lineHeight: 1, pointerEvents: "none",
-              }}>{s.num}</div>
-              <div style={{ position: "relative" }}>
-                <div style={{
-                  display: "inline-block", padding: "4px 10px", marginBottom: 10,
-                  background: "rgba(99,102,241,0.15)", border: "1px solid rgba(99,102,241,0.3)",
-                  borderRadius: 20, fontSize: 11, fontWeight: 700, color: "#6366f1",
-                }}>Schritt {s.num}</div>
-                <div style={{ fontSize: 17, fontWeight: 700, marginBottom: 6 }}>{s.title}</div>
-                <div style={{ fontSize: 13, color: "rgba(255,255,255,0.6)", lineHeight: 1.55 }}>{s.desc}</div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Pricing */}
-      <section style={{ padding: "40px 24px", position: "relative", zIndex: 1 }}>
-        <div style={{ textAlign: "center", marginBottom: 28 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: "#6366f1", letterSpacing: 2, marginBottom: 8 }}>PREISE</div>
-          <h2 style={{ fontSize: 24, fontWeight: 700, margin: 0, lineHeight: 1.3 }}>Einfach & transparent</h2>
-        </div>
-
-        <div style={{
-          background: "linear-gradient(160deg, rgba(99,102,241,0.15), rgba(139,92,246,0.08))",
-          border: "2px solid rgba(99,102,241,0.4)",
-          borderRadius: 24, padding: "28px 22px", position: "relative",
-        }}>
+        {/* Hero */}
+        <section style={{ padding: "60px 24px 40px", position: "relative", zIndex: 1, textAlign: "center" }}>
           <div style={{
-            position: "absolute", top: -12, left: "50%", transform: "translateX(-50%)",
-            background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
-            padding: "5px 14px", borderRadius: 20,
-            fontSize: 11, fontWeight: 700, whiteSpace: "nowrap",
-          }}>FOUNDING MEMBERS</div>
+            display: "inline-block", padding: "6px 14px", marginBottom: 24,
+            background: "rgba(99,102,241,0.1)", border: "1px solid rgba(99,102,241,0.3)",
+            borderRadius: 20, fontSize: 12, fontWeight: 600, color: "#6366f1",
+          }}>✦ Nur für ernsthafte Founder</div>
 
-          <div style={{ textAlign: "center", marginBottom: 20 }}>
-            <div style={{ fontSize: 14, color: "rgba(255,255,255,0.6)", marginBottom: 10 }}>Pro Plan</div>
-            <div style={{ fontSize: 36, fontWeight: 800, letterSpacing: -0.5 }}>Coming Soon</div>
-            <div style={{ fontSize: 13, color: "rgba(255,255,255,0.55)", marginTop: 10, lineHeight: 1.5 }}>
-              Early Access Preis wird bald verkündet —<br />Founding Member sichern sich Vorzugskonditionen
+          <h1
+            className="text-4xl lg:text-6xl"
+            style={{ fontWeight: 800, margin: "0 0 16px", lineHeight: 1.15, letterSpacing: -0.5 }}
+          >
+            Wo Unternehmer<br />
+            <span style={{ background: "linear-gradient(135deg, #6366f1, #8b5cf6)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+              matchen, chatten und<br />gemeinsam wachsen
+            </span>
+          </h1>
+
+          <p style={{ fontSize: 15, color: "rgba(255,255,255,0.6)", lineHeight: 1.6, margin: "0 0 28px", maxWidth: 340, marginLeft: "auto", marginRight: "auto" }}>
+            Die exklusive Plattform für Gründer im DACH-Raum. Verbinde dich mit Menschen die wirklich etwas aufgebaut haben.
+          </p>
+
+          <button onClick={goRegister} style={{
+            width: "100%", maxWidth: 320, padding: "16px 32px",
+            background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
+            border: "none", color: "#fff", borderRadius: 14,
+            fontSize: 15, fontWeight: 700, cursor: "pointer",
+            boxShadow: "0 8px 24px rgba(99,102,241,0.4)",
+          }}>Jetzt 3 Tage kostenlos starten</button>
+
+          <p style={{ marginTop: 12, fontSize: 12, color: "rgba(255,255,255,0.4)" }}>Kreditkarte erforderlich · Jederzeit kündbar</p>
+
+          {/* Stats */}
+          <div style={{
+            marginTop: 40, padding: "20px 16px",
+            background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)",
+            borderRadius: 16, display: "flex", justifyContent: "space-around",
+          }}>
+            <div>
+              <div style={{ fontSize: 22, fontWeight: 700, color: "#6366f1" }}>500+</div>
+              <div style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", marginTop: 2 }}>Verifizierte Founder</div>
+            </div>
+            <div style={{ width: 1, background: "rgba(255,255,255,0.07)" }} />
+            <div>
+              <div style={{ fontSize: 22, fontWeight: 700, color: "#8b5cf6" }}>250+</div>
+              <div style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", marginTop: 2 }}>Aktive Projekte</div>
+            </div>
+            <div style={{ width: 1, background: "rgba(255,255,255,0.07)" }} />
+            <div>
+              <div style={{ fontSize: 22, fontWeight: 700, color: "#ec4899" }}>1.2k+</div>
+              <div style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", marginTop: 2 }}>Matches</div>
             </div>
           </div>
+        </section>
 
-          <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 22 }}>
-            {proFeatures.map(f => (
-              <div key={f} style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 13 }}>
+        {/* USP */}
+        <section style={{ padding: "40px 24px", position: "relative", zIndex: 1 }}>
+          <div style={{
+            background: "linear-gradient(135deg, rgba(99,102,241,0.08), rgba(139,92,246,0.05))",
+            border: "1px solid rgba(99,102,241,0.2)",
+            borderRadius: 20, padding: "24px 20px",
+          }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: "#6366f1", letterSpacing: 2, marginBottom: 8 }}>
+              UNSER VERSPRECHEN
+            </div>
+            <h2 style={{ fontSize: 22, fontWeight: 700, margin: "0 0 14px", lineHeight: 1.3 }}>
+              Hier kommen nur echte Founder rein.
+            </h2>
+            <p style={{ fontSize: 14, color: "rgba(255,255,255,0.7)", lineHeight: 1.6, margin: 0 }}>
+              Andere Communities sind voll mit Anfängern ohne Erfahrung. Bei uns? Nur Menschen die etwas aufgebaut haben — mit echten Firmen, echten Projekten, echten Resultaten. Du siehst sofort wer ernst meint.
+            </p>
+          </div>
+        </section>
+
+        {/* Email signup — between USP and Features */}
+        <section id="email-signup" style={{ padding: "0 24px 40px", display: "flex", justifyContent: "center", position: "relative", zIndex: 1 }}>
+          <EmailSignupForm />
+        </section>
+
+        {/* Features */}
+        <section style={{ padding: "20px 24px 40px", position: "relative", zIndex: 1 }}>
+          <div style={{ textAlign: "center", marginBottom: 28 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: "#6366f1", letterSpacing: 2, marginBottom: 8 }}>FEATURES</div>
+            <h2 style={{ fontSize: 24, fontWeight: 700, margin: 0, lineHeight: 1.3 }}>
+              Alles was du brauchst<br />um zu wachsen
+            </h2>
+          </div>
+
+          <div className="grid gap-3 lg:grid-cols-2 lg:gap-5">
+            {features.map(f => (
+              <div key={f.title} style={{
+                background: "rgba(255,255,255,0.04)",
+                border: "1px solid rgba(255,255,255,0.07)",
+                borderRadius: 16, padding: "18px",
+                display: "flex", gap: 14, alignItems: "flex-start",
+              }}>
                 <div style={{
-                  width: 18, height: 18, borderRadius: 6, flexShrink: 0,
-                  background: "rgba(99,102,241,0.2)", border: "1px solid rgba(99,102,241,0.4)",
+                  width: 44, height: 44, borderRadius: 12, flexShrink: 0,
+                  background: `linear-gradient(135deg, ${f.color}, ${f.color}88)`,
                   display: "flex", alignItems: "center", justifyContent: "center",
-                  fontSize: 10, color: "#6366f1",
-                }}>✓</div>
-                <span style={{ color: "rgba(255,255,255,0.85)" }}>{f}</span>
+                  fontSize: 20, fontWeight: 700,
+                  boxShadow: `0 4px 16px ${f.color}40`,
+                }}>{f.icon}</div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 4 }}>{f.title}</div>
+                  <div style={{ fontSize: 13, color: "rgba(255,255,255,0.6)", lineHeight: 1.55 }}>{f.desc}</div>
+                </div>
               </div>
             ))}
           </div>
+        </section>
 
-          <button onClick={scrollToSignup} style={{
-            width: "100%", padding: "16px 0",
-            background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
-            border: "none", color: "#fff", borderRadius: 12,
-            fontSize: 14, fontWeight: 700, cursor: "pointer",
-            boxShadow: "0 8px 20px rgba(99,102,241,0.35)",
-          }}>Auf die Waitlist setzen</button>
-          <p style={{ textAlign: "center", marginTop: 10, fontSize: 11, color: "rgba(255,255,255,0.4)" }}>
-            100% kostenlos · Kein Spam · Jederzeit abbestellbar
-          </p>
-        </div>
-      </section>
+        {/* How it works */}
+        <section style={{ padding: "40px 24px", position: "relative", zIndex: 1 }}>
+          <div style={{ textAlign: "center", marginBottom: 28 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: "#6366f1", letterSpacing: 2, marginBottom: 8 }}>SO FUNKTIONIERTS</div>
+            <h2 style={{ fontSize: 24, fontWeight: 700, margin: 0, lineHeight: 1.3 }}>
+              In 3 Schritten<br />zum Erfolg
+            </h2>
+          </div>
 
-      {/* FAQ */}
-      <section style={{ padding: "40px 24px", position: "relative", zIndex: 1 }}>
-        <div style={{ textAlign: "center", marginBottom: 28 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: "#6366f1", letterSpacing: 2, marginBottom: 8 }}>FAQ</div>
-          <h2 style={{ fontSize: 24, fontWeight: 700, margin: 0, lineHeight: 1.3 }}>Häufige Fragen</h2>
-        </div>
-
-        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-          {faqs.map((faq, i) => (
-            <div key={i} style={{
-              background: "rgba(255,255,255,0.04)",
-              border: "1px solid rgba(255,255,255,0.07)",
-              borderRadius: 14, overflow: "hidden",
-            }}>
-              <button onClick={() => setOpenFaq(openFaq === i ? -1 : i)} style={{
-                width: "100%", padding: "16px 18px",
-                background: "none", border: "none", color: "#fff",
-                cursor: "pointer", display: "flex", alignItems: "center", gap: 10,
-                textAlign: "left",
+          <div className="grid gap-3 lg:grid-cols-3 lg:gap-5">
+            {steps.map((s) => (
+              <div key={s.num} style={{
+                background: "rgba(255,255,255,0.04)",
+                border: "1px solid rgba(255,255,255,0.07)",
+                borderRadius: 16, padding: "20px",
+                position: "relative", overflow: "hidden",
               }}>
-                <span style={{ flex: 1, fontSize: 14, fontWeight: 600 }}>{faq.q}</span>
-                <span style={{
-                  fontSize: 14, color: "#6366f1", flexShrink: 0,
-                  transform: openFaq === i ? "rotate(45deg)" : "none",
-                  transition: "transform 0.2s",
-                  display: "inline-block",
-                }}>+</span>
-              </button>
-              {openFaq === i && (
                 <div style={{
-                  padding: "0 18px 16px",
-                  fontSize: 13, color: "rgba(255,255,255,0.65)", lineHeight: 1.6,
-                }}>{faq.a}</div>
-              )}
+                  position: "absolute", top: -10, right: -10,
+                  fontSize: 80, fontWeight: 800,
+                  background: "linear-gradient(135deg, rgba(99,102,241,0.15), rgba(139,92,246,0.05))",
+                  WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
+                  lineHeight: 1, pointerEvents: "none",
+                }}>{s.num}</div>
+                <div style={{ position: "relative" }}>
+                  <div style={{
+                    display: "inline-block", padding: "4px 10px", marginBottom: 10,
+                    background: "rgba(99,102,241,0.15)", border: "1px solid rgba(99,102,241,0.3)",
+                    borderRadius: 20, fontSize: 11, fontWeight: 700, color: "#6366f1",
+                  }}>Schritt {s.num}</div>
+                  <div style={{ fontSize: 17, fontWeight: 700, marginBottom: 6 }}>{s.title}</div>
+                  <div style={{ fontSize: 13, color: "rgba(255,255,255,0.6)", lineHeight: 1.55 }}>{s.desc}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Pricing */}
+        <section style={{ padding: "40px 24px", position: "relative", zIndex: 1 }}>
+          <div style={{ textAlign: "center", marginBottom: 28 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: "#6366f1", letterSpacing: 2, marginBottom: 8 }}>PREISE</div>
+            <h2 style={{ fontSize: 24, fontWeight: 700, margin: 0, lineHeight: 1.3 }}>Einfach & transparent</h2>
+          </div>
+
+          <div className="max-w-lg mx-auto">
+            <div style={{
+              background: "linear-gradient(160deg, rgba(99,102,241,0.15), rgba(139,92,246,0.08))",
+              border: "2px solid rgba(99,102,241,0.4)",
+              borderRadius: 24, padding: "28px 22px", position: "relative",
+            }}>
+              <div style={{
+                position: "absolute", top: -12, left: "50%", transform: "translateX(-50%)",
+                background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
+                padding: "5px 14px", borderRadius: 20,
+                fontSize: 11, fontWeight: 700, whiteSpace: "nowrap",
+              }}>FOUNDING MEMBERS</div>
+
+              <div style={{ textAlign: "center", marginBottom: 20 }}>
+                <div style={{ fontSize: 14, color: "rgba(255,255,255,0.6)", marginBottom: 10 }}>Pro Plan</div>
+                <div style={{ fontSize: 36, fontWeight: 800, letterSpacing: -0.5 }}>Coming Soon</div>
+                <div style={{ fontSize: 13, color: "rgba(255,255,255,0.55)", marginTop: 10, lineHeight: 1.5 }}>
+                  Early Access Preis wird bald verkündet —<br />Founding Member sichern sich Vorzugskonditionen
+                </div>
+              </div>
+
+              <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 22 }}>
+                {proFeatures.map(f => (
+                  <div key={f} style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 13 }}>
+                    <div style={{
+                      width: 18, height: 18, borderRadius: 6, flexShrink: 0,
+                      background: "rgba(99,102,241,0.2)", border: "1px solid rgba(99,102,241,0.4)",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      fontSize: 10, color: "#6366f1",
+                    }}>✓</div>
+                    <span style={{ color: "rgba(255,255,255,0.85)" }}>{f}</span>
+                  </div>
+                ))}
+              </div>
+
+              <button onClick={scrollToSignup} style={{
+                width: "100%", padding: "16px 0",
+                background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
+                border: "none", color: "#fff", borderRadius: 12,
+                fontSize: 14, fontWeight: 700, cursor: "pointer",
+                boxShadow: "0 8px 20px rgba(99,102,241,0.35)",
+              }}>Auf die Waitlist setzen</button>
+              <p style={{ textAlign: "center", marginTop: 10, fontSize: 11, color: "rgba(255,255,255,0.4)" }}>
+                100% kostenlos · Kein Spam · Jederzeit abbestellbar
+              </p>
             </div>
-          ))}
-        </div>
-      </section>
+          </div>
+        </section>
 
-      {/* CTA */}
-      <section style={{ padding: "40px 24px", position: "relative", zIndex: 1 }}>
-        <div style={{
-          background: "linear-gradient(160deg, rgba(99,102,241,0.2), rgba(139,92,246,0.1))",
-          border: "1px solid rgba(99,102,241,0.3)",
-          borderRadius: 24, padding: "32px 24px", textAlign: "center",
+        {/* FAQ */}
+        <section style={{ padding: "40px 24px", position: "relative", zIndex: 1 }}>
+          <div style={{ textAlign: "center", marginBottom: 28 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: "#6366f1", letterSpacing: 2, marginBottom: 8 }}>FAQ</div>
+            <h2 style={{ fontSize: 24, fontWeight: 700, margin: 0, lineHeight: 1.3 }}>Häufige Fragen</h2>
+          </div>
+
+          <div className="max-w-2xl mx-auto" style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {faqs.map((faq, i) => (
+              <div key={i} style={{
+                background: "rgba(255,255,255,0.04)",
+                border: "1px solid rgba(255,255,255,0.07)",
+                borderRadius: 14, overflow: "hidden",
+              }}>
+                <button onClick={() => setOpenFaq(openFaq === i ? -1 : i)} style={{
+                  width: "100%", padding: "16px 18px",
+                  background: "none", border: "none", color: "#fff",
+                  cursor: "pointer", display: "flex", alignItems: "center", gap: 10,
+                  textAlign: "left",
+                }}>
+                  <span style={{ flex: 1, fontSize: 14, fontWeight: 600 }}>{faq.q}</span>
+                  <span style={{
+                    fontSize: 14, color: "#6366f1", flexShrink: 0,
+                    transform: openFaq === i ? "rotate(45deg)" : "none",
+                    transition: "transform 0.2s",
+                    display: "inline-block",
+                  }}>+</span>
+                </button>
+                {openFaq === i && (
+                  <div style={{
+                    padding: "0 18px 16px",
+                    fontSize: 13, color: "rgba(255,255,255,0.65)", lineHeight: 1.6,
+                  }}>{faq.a}</div>
+                )}
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* CTA */}
+        <section style={{ padding: "40px 24px", position: "relative", zIndex: 1 }}>
+          <div className="max-w-2xl mx-auto" style={{
+            background: "linear-gradient(160deg, rgba(99,102,241,0.2), rgba(139,92,246,0.1))",
+            border: "1px solid rgba(99,102,241,0.3)",
+            borderRadius: 24, padding: "32px 24px", textAlign: "center",
+          }}>
+            <div style={{ fontSize: 28, marginBottom: 8 }}>🚀</div>
+            <h2 style={{ fontSize: 22, fontWeight: 700, margin: "0 0 12px", lineHeight: 1.3 }}>
+              Bereit dein Netzwerk<br />zu transformieren?
+            </h2>
+            <p style={{ fontSize: 14, color: "rgba(255,255,255,0.6)", lineHeight: 1.6, margin: "0 0 22px" }}>
+              Schliesse dich Hunderten von Foundern an die bereits gematcht haben.
+            </p>
+            <button onClick={goRegister} style={{
+              width: "100%", padding: "16px 32px",
+              background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
+              border: "none", color: "#fff", borderRadius: 14,
+              fontSize: 14, fontWeight: 700, cursor: "pointer",
+              boxShadow: "0 8px 20px rgba(99,102,241,0.4)",
+            }}>Jetzt 3 Tage kostenlos starten</button>
+          </div>
+        </section>
+
+        {/* Email signup — before footer */}
+        <section style={{ padding: "0 24px 48px", display: "flex", justifyContent: "center", position: "relative", zIndex: 1 }}>
+          <EmailSignupForm />
+        </section>
+
+        {/* Footer */}
+        <footer style={{
+          padding: "32px 24px",
+          borderTop: "1px solid rgba(255,255,255,0.07)",
+          position: "relative", zIndex: 1,
         }}>
-          <div style={{ fontSize: 28, marginBottom: 8 }}>🚀</div>
-          <h2 style={{ fontSize: 22, fontWeight: 700, margin: "0 0 12px", lineHeight: 1.3 }}>
-            Bereit dein Netzwerk<br />zu transformieren?
-          </h2>
-          <p style={{ fontSize: 14, color: "rgba(255,255,255,0.6)", lineHeight: 1.6, margin: "0 0 22px" }}>
-            Schliesse dich Hunderten von Foundern an die bereits gematcht haben.
+          <div className="flex items-center justify-between" style={{ marginBottom: 16 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <Image src="/logo-icon.png" alt="Connectyfind Logo" width={64} height={64} className="w-8 h-8 rounded-lg" quality={100} />
+              <span style={{ fontWeight: 700, fontSize: 14 }}>Connectyfind</span>
+            </div>
+            <div className="hidden lg:block" style={{ fontSize: 11, color: "rgba(255,255,255,0.3)" }}>
+              © 2026 Connectyfind. Alle Rechte vorbehalten.
+            </div>
+          </div>
+
+          <p style={{ fontSize: 12, color: "rgba(255,255,255,0.4)", lineHeight: 1.6, margin: "0 0 20px" }}>
+            Die exklusive Plattform für ernsthafte Gründer im DACH-Raum.
           </p>
-          <button onClick={goRegister} style={{
-            width: "100%", padding: "16px 32px",
-            background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
-            border: "none", color: "#fff", borderRadius: 14,
-            fontSize: 14, fontWeight: 700, cursor: "pointer",
-            boxShadow: "0 8px 20px rgba(99,102,241,0.4)",
-          }}>Jetzt 3 Tage kostenlos starten</button>
-        </div>
-      </section>
 
-      {/* Email signup — before footer */}
-      <section style={{ padding: "0 24px 48px", display: "flex", justifyContent: "center", position: "relative", zIndex: 1 }}>
-        <EmailSignupForm />
-      </section>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "10px 20px", fontSize: 12, marginBottom: 20 }}>
+            {["AGB", "Datenschutz", "Impressum", "Kontakt"].map((link) => (
+              <span key={link} style={{ color: "rgba(255,255,255,0.5)", cursor: "pointer" }}>{link}</span>
+            ))}
+          </div>
 
-      {/* Footer */}
-      <footer style={{
-        padding: "32px 24px",
-        borderTop: "1px solid rgba(255,255,255,0.07)",
-        position: "relative", zIndex: 1,
-      }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
-          <Image src="/logo-icon.png" alt="Connectyfind Logo" width={64} height={64} className="w-8 h-8 rounded-lg" quality={100} />
-          <span style={{ fontWeight: 700, fontSize: 14 }}>Connectyfind</span>
-        </div>
-        <p style={{ fontSize: 12, color: "rgba(255,255,255,0.4)", lineHeight: 1.6, margin: "0 0 20px" }}>
-          Die exklusive Plattform für ernsthafte Gründer im DACH-Raum.
-        </p>
+          <div className="lg:hidden" style={{ fontSize: 11, color: "rgba(255,255,255,0.3)" }}>
+            © 2026 Connectyfind. Alle Rechte vorbehalten.
+          </div>
+        </footer>
 
-        <div style={{ display: "flex", flexWrap: "wrap", gap: "10px 20px", fontSize: 12, marginBottom: 20 }}>
-          {["AGB", "Datenschutz", "Impressum", "Kontakt"].map((link) => (
-            <span key={link} style={{ color: "rgba(255,255,255,0.5)", cursor: "pointer" }}>{link}</span>
-          ))}
-        </div>
-
-        <div style={{ fontSize: 11, color: "rgba(255,255,255,0.3)" }}>
-          © 2026 Connectyfind. Alle Rechte vorbehalten.
-        </div>
-      </footer>
+      </div>
     </div>
   );
 }
