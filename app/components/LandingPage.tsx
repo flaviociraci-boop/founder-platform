@@ -64,7 +64,9 @@ export default function LandingPage() {
         borderBottom: "1px solid rgba(255,255,255,0.06)",
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <Image src="/logo-icon.jpeg" alt="Connectyfind Logo" width={32} height={32} priority style={{ borderRadius: 8 }} />
+          <div className="relative w-8 h-8 rounded-lg overflow-hidden">
+            <Image src="/logo-icon.png" alt="Connectyfind Logo" width={32} height={32} priority className="object-cover scale-[1.4]" />
+          </div>
           <span style={{ fontWeight: 700, fontSize: 15 }}>Connectyfind</span>
         </div>
         <button onClick={goLogin} style={{
@@ -352,7 +354,9 @@ export default function LandingPage() {
         position: "relative", zIndex: 1,
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
-          <Image src="/logo-icon.jpeg" alt="Connectyfind Logo" width={32} height={32} style={{ borderRadius: 8 }} />
+          <div className="relative w-8 h-8 rounded-lg overflow-hidden">
+            <Image src="/logo-icon.png" alt="Connectyfind Logo" width={32} height={32} className="object-cover scale-[1.4]" />
+          </div>
           <span style={{ fontWeight: 700, fontSize: 14 }}>Connectyfind</span>
         </div>
         <p style={{ fontSize: 12, color: "rgba(255,255,255,0.4)", lineHeight: 1.6, margin: "0 0 20px" }}>

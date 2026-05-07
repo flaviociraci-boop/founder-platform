@@ -36,8 +36,8 @@ export default function WillkommenPage() {
         position: "relative", zIndex: 1,
       }}>
         {/* Icon */}
-        <div style={{ margin: "0 auto 28px", width: 96, height: 96 }}>
-          <Image src="/logo-icon.jpeg" alt="Connectyfind Logo" width={96} height={96} priority style={{ borderRadius: 24, boxShadow: "0 12px 40px rgba(99,102,241,0.4)" }} />
+        <div className="relative w-24 h-24 rounded-2xl overflow-hidden" style={{ margin: "0 auto 28px", boxShadow: "0 12px 40px rgba(99,102,241,0.4)" }}>
+          <Image src="/logo-icon.png" alt="Connectyfind Logo" width={96} height={96} priority className="object-cover scale-[1.4]" />
         </div>
 
         {/* Badge */}
