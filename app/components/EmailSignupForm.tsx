@@ -1,12 +1,25 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+
+function useMediaQuery(query: string) {
+  const [matches, setMatches] = useState(false);
+  useEffect(() => {
+    const media = window.matchMedia(query);
+    setMatches(media.matches);
+    const listener = (e: MediaQueryListEvent) => setMatches(e.matches);
+    media.addEventListener("change", listener);
+    return () => media.removeEventListener("change", listener);
+  }, [query]);
+  return matches;
+}
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 type State = "idle" | "loading" | "success" | "already" | "error";
 
 export default function EmailSignupForm() {
+  const isDesktop = useMediaQuery("(min-width: 1024px)");
   const [email, setEmail] = useState("");
   const [agreed, setAgreed] = useState(false);
   const [state, setState] = useState<State>("idle");
@@ -44,10 +57,11 @@ export default function EmailSignupForm() {
 
   return (
     <div style={{
-      maxWidth: 420, width: "100%",
+      maxWidth: isDesktop ? 700 : 420, width: "100%",
       background: "linear-gradient(160deg, rgba(99,102,241,0.12), rgba(139,92,246,0.06))",
       border: "1px solid rgba(99,102,241,0.25)",
-      borderRadius: 24, padding: "32px 24px",
+      borderRadius: 24, padding: isDesktop ? "40px 48px" : "32px 24px",
+      margin: isDesktop ? "0 auto" : undefined,
       position: "relative", overflow: "hidden",
     }}>
       {/* Glow */}

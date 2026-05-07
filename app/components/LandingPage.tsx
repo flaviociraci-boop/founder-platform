@@ -260,7 +260,7 @@ export default function LandingPage() {
         <div style={{
           background: "linear-gradient(160deg, rgba(99,102,241,0.15), rgba(139,92,246,0.08))",
           border: "2px solid rgba(99,102,241,0.4)",
-          borderRadius: 24, padding: isDesktop ? "48px" : "28px 22px", position: "relative",
+          borderRadius: 24, padding: isDesktop ? "40px" : "28px 22px", position: "relative",
           maxWidth: isDesktop ? 600 : undefined,
           margin: isDesktop ? "0 auto" : undefined,
         }}>
@@ -362,7 +362,10 @@ export default function LandingPage() {
             Schliesse dich Hunderten von Foundern an die bereits gematcht haben.
           </p>
           <button onClick={goRegister} style={{
-            width: "100%", padding: "16px 32px",
+            width: isDesktop ? "auto" : "100%", padding: "16px 32px",
+            maxWidth: isDesktop ? 320 : undefined,
+            margin: isDesktop ? "0 auto" : undefined,
+            display: isDesktop ? "block" : undefined,
             background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
             border: "none", color: "#fff", borderRadius: 14,
             fontSize: 14, fontWeight: 700, cursor: "pointer",
