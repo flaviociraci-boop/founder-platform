@@ -62,7 +62,9 @@ export default function LandingPage() {
     <div style={{
       fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif",
       background: "#0a0a0f", minHeight: "100vh", color: "#fff",
-      maxWidth: 430, margin: "0 auto", overflow: "hidden",
+      maxWidth: isDesktop ? "none" : 430,
+    margin: "0 auto",
+    overflow: "hidden",
     }}>
       {/* Background glow */}
       <div style={{ position: "fixed", top: -150, right: -150, width: 400, height: 400, background: "radial-gradient(circle, rgba(99,102,241,0.2) 0%, transparent 70%)", pointerEvents: "none", zIndex: 0 }} />
