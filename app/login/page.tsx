@@ -174,8 +174,10 @@ export default function LoginPage() {
               </button>
 
               <p style={{ textAlign: "center", marginTop: 20, fontSize: 14, color: "rgba(255,255,255,0.4)" }}>
-                Noch kein Account?{" "}
-                <a href="/register" style={{ color: "#6366f1", fontWeight: 600, textDecoration: "none" }}>Registrieren</a>
+                Noch kein Zugang?{" "}
+                <a href="/#waitlist" style={{ color: "#6366f1", fontWeight: 600, textDecoration: "none" }}>
+                  Trag dich auf die Waitlist ein →
+                </a>
               </p>
             </div>
           )}
