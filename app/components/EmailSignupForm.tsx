@@ -75,7 +75,7 @@ export default function EmailSignupForm() {
           </h2>
 
           <p style={{ fontSize: 13, color: "rgba(255,255,255,0.6)", lineHeight: 1.55, margin: "0 0 22px" }}>
-            Trage dich ein und erhalte als Erster Zugang zur exklusiven Founder Platform sobald wir live gehen.
+            Trage dich ein und erhalte als Erster Zugang zur exklusiven Connectyfind sobald wir live gehen.
           </p>
 
           <div style={{ marginBottom: 12 }}>

@@ -58,7 +58,7 @@ export default function WillkommenPage() {
           <span style={{
             background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
             WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
-          }}>Founder Platform!</span>
+          }}>Connectyfind!</span>
         </h1>
 
         <p style={{
