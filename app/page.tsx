@@ -24,6 +24,7 @@ export default async function Page({
       supabase
         .from("projects")
         .select("*")
+        .or("status.eq.active,status.is.null")
         .order("created_at", { ascending: false }),
       supabase.from("profiles").select("id, name, avatar, color").eq("auth_id", user.id).maybeSingle(),
     ]);

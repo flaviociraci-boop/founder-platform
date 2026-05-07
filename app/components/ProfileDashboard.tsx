@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { User } from "@/app/lib/data";
+import { User, categories } from "@/app/lib/data";
 import { createClient } from "@/utils/supabase/client";
 import { Avatar } from "@/app/components/Avatar";
 
@@ -39,6 +39,16 @@ type Connection = {
   location: string;
   avatar: string;
   color: string;
+};
+
+type OwnProject = {
+  id: number;
+  title: string;
+  category: string;
+  model: string;
+  location: string;
+  status: string;
+  applicants: number;
 };
 
 type ActiveTab = "Profil" | "Netzwerk" | "Einstellungen";
@@ -121,6 +131,7 @@ export default function ProfileDashboard({ currentUserId, onLogout, onOpenChat }
   const [stats, setStats] = useState({ connections: 0, projects: 0, matches: 0 });
   const [connections, setConnections] = useState<Connection[]>([]);
   const [companies, setCompanies] = useState<Company[]>([]);
+  const [myProjects, setMyProjects] = useState<OwnProject[]>([]);
   const [loading, setLoading] = useState(true);
   const [loggingOut, setLoggingOut] = useState(false);
 
@@ -158,10 +169,20 @@ export default function ProfileDashboard({ currentUserId, onLogout, onOpenChat }
         type: c.type ?? "", year: c.year ?? "", active: c.active ?? true,
       })));
 
-      const { count: projectCount } = await supabase
+      const { data: projectsData, count: projectCount } = await supabase
         .from("projects")
-        .select("*", { count: "exact", head: true })
-        .eq("user_id", currentUserId);
+        .select("id, title, category, model, location, status, applicants", { count: "exact" })
+        .eq("user_id", currentUserId)
+        .order("created_at", { ascending: false });
+      setMyProjects((projectsData ?? []).map((p) => ({
+        id: p.id,
+        title: p.title ?? "",
+        category: p.category ?? "",
+        model: p.model ?? "",
+        location: p.location ?? "Remote",
+        status: p.status ?? "active",
+        applicants: p.applicants ?? 0,
+      })));
 
       const { data: sent } = await supabase
         .from("connections")
@@ -436,6 +457,67 @@ export default function ProfileDashboard({ currentUserId, onLogout, onOpenChat }
               </div>
             )}
           </div>
+
+          {/* Meine Projekte */}
+          <div style={{ marginTop: 20 }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+              <h3 style={{ ...sLabel, margin: 0 }}>Meine Projekte</h3>
+              <button onClick={() => router.push("/profil/projekte")} style={{
+                background: "none", border: "none", color: "#6366f1",
+                fontSize: 12, fontWeight: 600, cursor: "pointer", padding: 0,
+              }}>Verwalten →</button>
+            </div>
+
+            {myProjects.length === 0 ? (
+              <button onClick={() => router.push("/projekte/neu")} style={{
+                width: "100%", padding: "16px", borderRadius: 14,
+                background: "rgba(255,255,255,0.03)", border: "1px dashed rgba(255,255,255,0.12)",
+                color: "rgba(255,255,255,0.3)", fontSize: 14, cursor: "pointer", textAlign: "center",
+              }}>+ Neues Projekt erstellen</button>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {myProjects.map((proj) => {
+                  const cat = categories.find((c) => c.id === proj.category);
+                  return (
+                    <button
+                      key={proj.id}
+                      onClick={() => router.push("/profil/projekte")}
+                      style={{
+                        background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)",
+                        borderRadius: 14, padding: "13px 16px",
+                        display: "flex", alignItems: "center", gap: 12,
+                        cursor: "pointer", width: "100%", textAlign: "left",
+                      }}
+                    >
+                      <div style={{
+                        width: 40, height: 40, borderRadius: 11, flexShrink: 0,
+                        background: `linear-gradient(135deg, ${cat?.color ?? "#6366f1"}33, ${cat?.color ?? "#6366f1"}11)`,
+                        border: `1px solid ${cat?.color ?? "#6366f1"}33`,
+                        display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18,
+                      }}>{cat?.icon ?? "✦"}</div>
+                      <div style={{ flex: 1, overflow: "hidden" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 7, flexWrap: "wrap" }}>
+                          <span style={{ fontWeight: 700, fontSize: 14 }}>{proj.title}</span>
+                          <ProjectStatusBadge status={proj.status} />
+                        </div>
+                        <div style={{ fontSize: 12, color: "rgba(255,255,255,0.38)", marginTop: 2 }}>
+                          {[cat?.label, proj.model, proj.location].filter(Boolean).join(" · ")}
+                        </div>
+                        <div style={{ fontSize: 11, color: "rgba(255,255,255,0.25)", marginTop: 1 }}>
+                          {proj.applicants} Bewerbung{proj.applicants !== 1 ? "en" : ""}
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+                <button onClick={() => router.push("/projekte/neu")} style={{
+                  padding: "10px 0", borderRadius: 12,
+                  background: "rgba(255,255,255,0.03)", border: "1px dashed rgba(255,255,255,0.1)",
+                  color: "rgba(255,255,255,0.3)", fontSize: 13, cursor: "pointer", textAlign: "center",
+                }}>+ Neues Projekt erstellen</button>
+              </div>
+            )}
+          </div>
         </div>
       )}
 
@@ -618,6 +700,23 @@ function AccordionRow({
         }}
       >{action}</button>
     </div>
+  );
+}
+
+// ─── Project status badge ─────────────────────────────────────────────────────
+
+function ProjectStatusBadge({ status }: { status: string }) {
+  const map: Record<string, { label: string; color: string; bg: string; border: string }> = {
+    active:  { label: "● AKTIV",       color: "#10b981", bg: "rgba(16,185,129,0.12)",  border: "rgba(16,185,129,0.28)" },
+    paused:  { label: "⏸ PAUSIERT",   color: "#f59e0b", bg: "rgba(245,158,11,0.12)",  border: "rgba(245,158,11,0.28)" },
+    closed:  { label: "■ GESCHLOSSEN", color: "rgba(255,255,255,0.3)", bg: "rgba(255,255,255,0.05)", border: "rgba(255,255,255,0.1)" },
+  };
+  const s = map[status] ?? map.active;
+  return (
+    <span style={{
+      fontSize: 10, padding: "2px 7px", borderRadius: 20, fontWeight: 600,
+      background: s.bg, border: `1px solid ${s.border}`, color: s.color,
+    }}>{s.label}</span>
   );
 }
 
