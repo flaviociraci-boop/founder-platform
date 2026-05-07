@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 export default function WillkommenPage() {
   const router = useRouter();
@@ -35,13 +36,9 @@ export default function WillkommenPage() {
         position: "relative", zIndex: 1,
       }}>
         {/* Icon */}
-        <div style={{
-          width: 80, height: 80, borderRadius: 24, margin: "0 auto 28px",
-          background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
-          display: "flex", alignItems: "center", justifyContent: "center",
-          fontSize: 36,
-          boxShadow: "0 12px 40px rgba(99,102,241,0.4)",
-        }}>✦</div>
+        <div style={{ margin: "0 auto 28px", width: 96, height: 96 }}>
+          <Image src="/logo-icon.jpeg" alt="Connectyfind Logo" width={96} height={96} priority style={{ borderRadius: 24, boxShadow: "0 12px 40px rgba(99,102,241,0.4)" }} />
+        </div>
 
         {/* Badge */}
         <div style={{

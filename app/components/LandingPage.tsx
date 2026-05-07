@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import EmailSignupForm from "@/app/components/EmailSignupForm";
 
 const features = [
@@ -63,12 +64,7 @@ export default function LandingPage() {
         borderBottom: "1px solid rgba(255,255,255,0.06)",
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <div style={{
-            width: 30, height: 30, borderRadius: 8,
-            background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            fontSize: 14, fontWeight: 700,
-          }}>F</div>
+          <Image src="/logo-icon.jpeg" alt="Connectyfind Logo" width={32} height={32} priority style={{ borderRadius: 8 }} />
           <span style={{ fontWeight: 700, fontSize: 15 }}>Connectyfind</span>
         </div>
         <button onClick={goLogin} style={{
@@ -356,12 +352,7 @@ export default function LandingPage() {
         position: "relative", zIndex: 1,
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
-          <div style={{
-            width: 28, height: 28, borderRadius: 8,
-            background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            fontSize: 13, fontWeight: 700,
-          }}>F</div>
+          <Image src="/logo-icon.jpeg" alt="Connectyfind Logo" width={32} height={32} style={{ borderRadius: 8 }} />
           <span style={{ fontWeight: 700, fontSize: 14 }}>Connectyfind</span>
         </div>
         <p style={{ fontSize: 12, color: "rgba(255,255,255,0.4)", lineHeight: 1.6, margin: "0 0 20px" }}>
