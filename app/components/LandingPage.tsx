@@ -154,7 +154,7 @@ export default function LandingPage() {
       </section>
 
       {/* USP */}
-      <section style={{ padding: isDesktop ? "60px 32px" : "40px 24px", position: "relative", zIndex: 1 }}>
+      <section style={{ padding: isDesktop ? "60px 32px" : "40px 24px", position: "relative", zIndex: 1, maxWidth: isDesktop ? 1100 : undefined, margin: isDesktop ? "0 auto" : undefined }}>
         <div style={{
           background: "linear-gradient(135deg, rgba(99,102,241,0.08), rgba(139,92,246,0.05))",
           border: "1px solid rgba(99,102,241,0.2)",
@@ -175,12 +175,12 @@ export default function LandingPage() {
       </section>
 
       {/* Email signup — between USP and Features */}
-      <section id="email-signup" style={{ padding: "0 24px 40px", display: "flex", justifyContent: "center", position: "relative", zIndex: 1 }}>
+      <section id="email-signup" style={{ padding: "0 24px 40px", display: "flex", justifyContent: "center", position: "relative", zIndex: 1, maxWidth: isDesktop ? 1100 : undefined, margin: isDesktop ? "0 auto" : undefined }}>
         <EmailSignupForm />
       </section>
 
       {/* Features */}
-      <section style={{ padding: isDesktop ? "60px 32px" : "20px 24px 40px", position: "relative", zIndex: 1, maxWidth: isDesktop ? 1280 : undefined, margin: isDesktop ? "0 auto" : undefined }}>
+      <section style={{ padding: isDesktop ? "60px 32px" : "20px 24px 40px", position: "relative", zIndex: 1, maxWidth: isDesktop ? 1100 : undefined, margin: isDesktop ? "0 auto" : undefined }}>
         <div style={{ textAlign: "center", maxWidth: isDesktop ? 700 : undefined, margin: isDesktop ? "0 auto 48px" : "0 0 28px" }}>
           <div style={{ fontSize: 11, fontWeight: 700, color: "#6366f1", letterSpacing: 2, marginBottom: 8 }}>FEATURES</div>
           <h2 style={{ fontSize: isDesktop ? 40 : 24, fontWeight: 700, margin: 0, lineHeight: 1.3 }}>
@@ -213,7 +213,7 @@ export default function LandingPage() {
       </section>
 
       {/* How it works */}
-      <section style={{ padding: isDesktop ? "60px 32px" : "40px 24px", position: "relative", zIndex: 1, maxWidth: isDesktop ? 1280 : undefined, margin: isDesktop ? "0 auto" : undefined }}>
+      <section style={{ padding: isDesktop ? "60px 32px" : "40px 24px", position: "relative", zIndex: 1, maxWidth: isDesktop ? 1100 : undefined, margin: isDesktop ? "0 auto" : undefined }}>
         <div style={{ textAlign: "center", maxWidth: isDesktop ? 700 : undefined, margin: isDesktop ? "0 auto 48px" : "0 0 28px" }}>
           <div style={{ fontSize: 11, fontWeight: 700, color: "#6366f1", letterSpacing: 2, marginBottom: 8 }}>SO FUNKTIONIERTS</div>
           <h2 style={{ fontSize: isDesktop ? 40 : 24, fontWeight: 700, margin: 0, lineHeight: 1.3 }}>
@@ -251,7 +251,7 @@ export default function LandingPage() {
       </section>
 
       {/* Pricing */}
-      <section style={{ padding: isDesktop ? "60px 32px" : "40px 24px", position: "relative", zIndex: 1, maxWidth: isDesktop ? 1280 : undefined, margin: isDesktop ? "0 auto" : undefined }}>
+      <section style={{ padding: isDesktop ? "60px 32px" : "40px 24px", position: "relative", zIndex: 1, maxWidth: isDesktop ? 1100 : undefined, margin: isDesktop ? "0 auto" : undefined }}>
         <div style={{ textAlign: "center", margin: isDesktop ? "0 0 48px" : "0 0 28px" }}>
           <div style={{ fontSize: 11, fontWeight: 700, color: "#6366f1", letterSpacing: 2, marginBottom: 8 }}>PREISE</div>
           <h2 style={{ fontSize: isDesktop ? 40 : 24, fontWeight: 700, margin: 0, lineHeight: 1.3 }}>Einfach & transparent</h2>
@@ -307,7 +307,7 @@ export default function LandingPage() {
       </section>
 
       {/* FAQ */}
-      <section style={{ padding: isDesktop ? "60px 32px" : "40px 24px", position: "relative", zIndex: 1, maxWidth: isDesktop ? 1280 : undefined, margin: isDesktop ? "0 auto" : undefined }}>
+      <section style={{ padding: isDesktop ? "60px 32px" : "40px 24px", position: "relative", zIndex: 1, maxWidth: isDesktop ? 1100 : undefined, margin: isDesktop ? "0 auto" : undefined }}>
         <div style={{ textAlign: "center", margin: isDesktop ? "0 0 48px" : "0 0 28px" }}>
           <div style={{ fontSize: 11, fontWeight: 700, color: "#6366f1", letterSpacing: 2, marginBottom: 8 }}>FAQ</div>
           <h2 style={{ fontSize: isDesktop ? 40 : 24, fontWeight: 700, margin: 0, lineHeight: 1.3 }}>Häufige Fragen</h2>
@@ -346,7 +346,7 @@ export default function LandingPage() {
       </section>
 
       {/* CTA */}
-      <section style={{ padding: isDesktop ? "60px 32px" : "40px 24px", position: "relative", zIndex: 1 }}>
+      <section style={{ padding: isDesktop ? "60px 32px" : "40px 24px", position: "relative", zIndex: 1, maxWidth: isDesktop ? 1100 : undefined, margin: isDesktop ? "0 auto" : undefined }}>
         <div style={{
           background: "linear-gradient(160deg, rgba(99,102,241,0.2), rgba(139,92,246,0.1))",
           border: "1px solid rgba(99,102,241,0.3)",
@@ -375,7 +375,7 @@ export default function LandingPage() {
       </section>
 
       {/* Email signup — before footer */}
-      <section style={{ padding: "0 24px 48px", display: "flex", justifyContent: "center", position: "relative", zIndex: 1 }}>
+      <section style={{ padding: "0 24px 48px", display: "flex", justifyContent: "center", position: "relative", zIndex: 1, maxWidth: isDesktop ? 1100 : undefined, margin: isDesktop ? "0 auto" : undefined }}>
         <EmailSignupForm />
       </section>
 
