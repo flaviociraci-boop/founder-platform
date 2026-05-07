@@ -5,6 +5,8 @@ import { User, seekingColors } from "@/app/lib/data";
 import { Avatar } from "@/app/components/Avatar";
 import { createClient } from "@/utils/supabase/client";
 
+type ConnStatus = "none" | "pending_sent" | "pending_received" | "accepted";
+
 type Props = {
   user: User;
   onBack: () => void;
@@ -16,33 +18,72 @@ type Props = {
 
 export default function ProfileScreen({ user, onBack, followed, toggleFollow, currentUserId, onOpenChat }: Props) {
   const supabase = useMemo(() => createClient(), []);
-  const [isMatched, setIsMatched] = useState<boolean | null>(null); // null = loading
-  const [showHint, setShowHint] = useState(false);
+  const [connStatus, setConnStatus] = useState<ConnStatus>("none");
 
   useEffect(() => {
-    if (!currentUserId) { setIsMatched(false); return; }
+    if (!currentUserId) { setConnStatus("none"); return; }
     const check = async () => {
-      const { data: sent } = await supabase
-        .from("connections").select("id")
-        .eq("user_id", currentUserId).eq("target_id", user.id)
+      // Check outgoing (I sent to them)
+      const { data: out } = await supabase
+        .from("connections")
+        .select("status")
+        .eq("user_id", currentUserId)
+        .eq("target_id", user.id)
         .maybeSingle();
-      if (!sent) { setIsMatched(false); return; }
-      const { data: back } = await supabase
-        .from("connections").select("id")
-        .eq("user_id", user.id).eq("target_id", currentUserId)
+
+      if (out) {
+        if (out.status === "accepted") { setConnStatus("accepted"); return; }
+        if (out.status === "pending") { setConnStatus("pending_sent"); return; }
+        // rejected by them → fall through to check incoming
+      }
+
+      // Check incoming (they sent to me)
+      const { data: inc } = await supabase
+        .from("connections")
+        .select("status")
+        .eq("user_id", user.id)
+        .eq("target_id", currentUserId)
         .maybeSingle();
-      setIsMatched(!!back);
+
+      if (inc) {
+        if (inc.status === "accepted") { setConnStatus("accepted"); return; }
+        if (inc.status === "pending") { setConnStatus("pending_received"); return; }
+      }
+
+      setConnStatus("none");
     };
     check();
   }, [currentUserId, user.id, supabase]);
 
-  const handleNachricht = () => {
-    if (isMatched) {
-      onOpenChat(user);
-    } else {
-      setShowHint(true);
-      setTimeout(() => setShowHint(false), 4000);
-    }
+  const sendConnect = async () => {
+    if (!currentUserId) return;
+    setConnStatus("pending_sent");
+    // Remove any stale rejected row before inserting
+    await supabase.from("connections").delete()
+      .eq("user_id", currentUserId).eq("target_id", user.id);
+    await supabase.from("connections")
+      .insert({ user_id: currentUserId, target_id: user.id, status: "pending" });
+  };
+
+  const withdrawConnect = async () => {
+    if (!currentUserId) return;
+    setConnStatus("none");
+    await supabase.from("connections").delete()
+      .eq("user_id", currentUserId).eq("target_id", user.id);
+  };
+
+  const acceptRequest = async () => {
+    if (!currentUserId) return;
+    await supabase.from("connections").update({ status: "accepted" })
+      .eq("user_id", user.id).eq("target_id", currentUserId);
+    setConnStatus("accepted");
+  };
+
+  const rejectRequest = async () => {
+    if (!currentUserId) return;
+    await supabase.from("connections").update({ status: "rejected" })
+      .eq("user_id", user.id).eq("target_id", currentUserId);
+    setConnStatus("none");
   };
 
   return (
@@ -126,42 +167,77 @@ export default function ProfileScreen({ user, onBack, followed, toggleFollow, cu
           >
             {followed[user.id] ? "✓ Gefolgt" : "Folgen"}
           </button>
-          <button
-            onClick={handleNachricht}
-            style={{
-              flex: 1,
-              padding: "12px 0",
-              background: isMatched
-                ? "linear-gradient(135deg, #6366f1, #8b5cf6)"
-                : "rgba(255,255,255,0.06)",
-              border: isMatched ? "none" : "1px solid rgba(255,255,255,0.1)",
-              color: "#fff",
-              borderRadius: 14,
-              fontWeight: 600,
-              fontSize: 15,
-              cursor: "pointer",
-              boxShadow: isMatched ? "0 4px 12px rgba(99,102,241,0.3)" : "none",
-              transition: "all 0.2s",
-            }}
-          >
-            {isMatched ? "💬 Nachricht" : "Nachricht"}
-          </button>
-        </div>
 
-        {showHint && (
-          <div style={{
-            marginTop: 12,
-            padding: "12px 14px",
-            borderRadius: 12,
-            background: "rgba(99,102,241,0.1)",
-            border: "1px solid rgba(99,102,241,0.25)",
-            fontSize: 13,
-            color: "rgba(255,255,255,0.65)",
-            lineHeight: 1.5,
-          }}>
-            Um mit <strong style={{ color: "#fff" }}>{user.name}</strong> zu chatten müsst ihr erst connected sein. Geh zu <strong style={{ color: "#6366f1" }}>Connect</strong> und schicke eine Anfrage.
-          </div>
-        )}
+          {connStatus === "pending_received" ? (
+            <div style={{ flex: 1, display: "flex", gap: 8 }}>
+              <button
+                onClick={acceptRequest}
+                style={{
+                  flex: 1, padding: "12px 0",
+                  background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
+                  border: "none", color: "#fff", borderRadius: 14,
+                  fontWeight: 600, fontSize: 13, cursor: "pointer",
+                }}
+              >
+                Annehmen
+              </button>
+              <button
+                onClick={rejectRequest}
+                style={{
+                  flex: 1, padding: "12px 0",
+                  background: "rgba(255,255,255,0.06)",
+                  border: "1px solid rgba(255,255,255,0.1)",
+                  color: "rgba(255,255,255,0.5)", borderRadius: 14,
+                  fontWeight: 600, fontSize: 13, cursor: "pointer",
+                }}
+              >
+                Ablehnen
+              </button>
+            </div>
+          ) : connStatus === "accepted" ? (
+            <button
+              onClick={() => onOpenChat(user)}
+              style={{
+                flex: 1, padding: "12px 0",
+                background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
+                border: "none", color: "#fff", borderRadius: 14,
+                fontWeight: 600, fontSize: 15, cursor: "pointer",
+                boxShadow: "0 4px 12px rgba(99,102,241,0.3)",
+                transition: "all 0.2s",
+              }}
+            >
+              💬 Chat öffnen
+            </button>
+          ) : connStatus === "pending_sent" ? (
+            <button
+              onClick={withdrawConnect}
+              style={{
+                flex: 1, padding: "12px 0",
+                background: "rgba(255,255,255,0.06)",
+                border: "1px solid rgba(255,255,255,0.1)",
+                color: "rgba(255,255,255,0.4)", borderRadius: 14,
+                fontWeight: 600, fontSize: 14, cursor: "pointer",
+                transition: "all 0.2s",
+              }}
+            >
+              Anfrage gesendet
+            </button>
+          ) : (
+            <button
+              onClick={sendConnect}
+              style={{
+                flex: 1, padding: "12px 0",
+                background: "rgba(255,255,255,0.06)",
+                border: "1px solid rgba(255,255,255,0.1)",
+                color: "#fff", borderRadius: 14,
+                fontWeight: 600, fontSize: 15, cursor: "pointer",
+                transition: "all 0.2s",
+              }}
+            >
+              Connecten
+            </button>
+          )}
+        </div>
       </div>
 
       <div style={{ padding: "20px 20px 0" }}>

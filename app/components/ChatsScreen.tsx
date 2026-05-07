@@ -25,23 +25,16 @@ export default function ChatsScreen({ currentUserId, onOpenChat }: Props) {
     if (!currentUserId) { setLoading(false); return; }
 
     const load = async () => {
-      // Step 1: IDs of people current user has sent a connection to
-      const { data: sent } = await supabase
+      // All accepted connections in either direction
+      const { data: accepted } = await supabase
         .from("connections")
-        .select("target_id")
-        .eq("user_id", currentUserId);
+        .select("user_id, target_id")
+        .eq("status", "accepted")
+        .or(`user_id.eq.${currentUserId},target_id.eq.${currentUserId}`);
 
-      const sentIds = (sent ?? []).map((c) => c.target_id);
-      if (sentIds.length === 0) { setLoading(false); return; }
-
-      // Step 2: Keep only those who also sent back (= mutual match)
-      const { data: mutual } = await supabase
-        .from("connections")
-        .select("user_id")
-        .eq("target_id", currentUserId)
-        .in("user_id", sentIds);
-
-      const matchIds = (mutual ?? []).map((c) => c.user_id);
+      const matchIds = (accepted ?? []).map((c) =>
+        c.user_id === currentUserId ? c.target_id : c.user_id
+      );
       if (matchIds.length === 0) { setLoading(false); return; }
 
       // Step 3: Profiles of matched users

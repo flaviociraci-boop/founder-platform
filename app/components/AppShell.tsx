@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { User, Project } from "@/app/lib/data";
 import { createClient } from "@/utils/supabase/client";
@@ -45,6 +45,34 @@ export default function AppShell({
   const [chatWith, setChatWith] = useState<User | null>(null);
   const [followed, setFollowed] = useState<Record<number, boolean>>({});
   const [activeCategory, setActiveCategory] = useState("all");
+  const [pendingCount, setPendingCount] = useState(0);
+
+  useEffect(() => {
+    if (!currentUserId) return;
+    const supabase = createClient();
+
+    const loadCount = async () => {
+      const { count } = await supabase
+        .from("connections")
+        .select("*", { count: "exact", head: true })
+        .eq("target_id", currentUserId)
+        .eq("status", "pending");
+      setPendingCount(count ?? 0);
+    };
+
+    loadCount();
+
+    const channel = supabase
+      .channel("pending-badge")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "connections", filter: `target_id=eq.${currentUserId}` },
+        () => loadCount()
+      )
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [currentUserId]);
   const openChat = (user: User) => {
     setChatWith(user);
     setTab("chats");
@@ -168,7 +196,21 @@ export default function AppShell({
               padding: "4px 8px",
             }}
           >
-            <span style={{ fontSize: 18 }}>{item.icon}</span>
+            <div style={{ position: "relative", display: "inline-flex" }}>
+              <span style={{ fontSize: 18 }}>{item.icon}</span>
+              {item.id === "match" && pendingCount > 0 && (
+                <span style={{
+                  position: "absolute", top: -4, right: -6,
+                  minWidth: 16, height: 16, borderRadius: 8,
+                  background: "#ef4444",
+                  fontSize: 9, fontWeight: 700, color: "#fff",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  padding: "0 3px", boxSizing: "border-box",
+                }}>
+                  {pendingCount > 9 ? "9+" : pendingCount}
+                </span>
+              )}
+            </div>
             <span style={{ fontSize: 9, fontWeight: 600, letterSpacing: 0.3 }}>{item.label}</span>
           </button>
         ))}
