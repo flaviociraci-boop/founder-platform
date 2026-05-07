@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
       email,
       includeListIds: [parseInt(listId, 10)],
       templateId: parseInt(templateId, 10),
-      redirectionUrl: "https://founder-platform-five.vercel.app/willkommen",
+      redirectionUrl: "https://connectyfind.com/willkommen",
     }),
   });
 
