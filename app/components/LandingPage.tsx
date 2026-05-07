@@ -154,11 +154,13 @@ export default function LandingPage() {
       </section>
 
       {/* USP */}
-      <section style={{ padding: "40px 24px", position: "relative", zIndex: 1 }}>
+      <section style={{ padding: isDesktop ? "60px 32px" : "40px 24px", position: "relative", zIndex: 1 }}>
         <div style={{
           background: "linear-gradient(135deg, rgba(99,102,241,0.08), rgba(139,92,246,0.05))",
           border: "1px solid rgba(99,102,241,0.2)",
-          borderRadius: 20, padding: "24px 20px",
+          borderRadius: 20, padding: isDesktop ? "40px 48px" : "24px 20px",
+          maxWidth: isDesktop ? 900 : undefined,
+          margin: isDesktop ? "0 auto" : undefined,
         }}>
           <div style={{ fontSize: 11, fontWeight: 700, color: "#6366f1", letterSpacing: 2, marginBottom: 8 }}>
             UNSER VERSPRECHEN
@@ -178,15 +180,15 @@ export default function LandingPage() {
       </section>
 
       {/* Features */}
-      <section style={{ padding: "20px 24px 40px", position: "relative", zIndex: 1 }}>
-        <div style={{ textAlign: "center", marginBottom: 28 }}>
+      <section style={{ padding: isDesktop ? "60px 32px" : "20px 24px 40px", position: "relative", zIndex: 1, maxWidth: isDesktop ? 1280 : undefined, margin: isDesktop ? "0 auto" : undefined }}>
+        <div style={{ textAlign: "center", maxWidth: isDesktop ? 700 : undefined, margin: isDesktop ? "0 auto 48px" : "0 0 28px" }}>
           <div style={{ fontSize: 11, fontWeight: 700, color: "#6366f1", letterSpacing: 2, marginBottom: 8 }}>FEATURES</div>
-          <h2 style={{ fontSize: 24, fontWeight: 700, margin: 0, lineHeight: 1.3 }}>
+          <h2 style={{ fontSize: isDesktop ? 40 : 24, fontWeight: 700, margin: 0, lineHeight: 1.3 }}>
             Alles was du brauchst<br />um zu wachsen
           </h2>
         </div>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        <div style={{ display: isDesktop ? "grid" : "flex", flexDirection: isDesktop ? undefined : "column", gridTemplateColumns: isDesktop ? "1fr 1fr" : undefined, gap: isDesktop ? 20 : 12 }}>
           {features.map(f => (
             <div key={f.title} style={{
               background: "rgba(255,255,255,0.04)",
@@ -211,15 +213,15 @@ export default function LandingPage() {
       </section>
 
       {/* How it works */}
-      <section style={{ padding: "40px 24px", position: "relative", zIndex: 1 }}>
-        <div style={{ textAlign: "center", marginBottom: 28 }}>
+      <section style={{ padding: isDesktop ? "60px 32px" : "40px 24px", position: "relative", zIndex: 1, maxWidth: isDesktop ? 1280 : undefined, margin: isDesktop ? "0 auto" : undefined }}>
+        <div style={{ textAlign: "center", maxWidth: isDesktop ? 700 : undefined, margin: isDesktop ? "0 auto 48px" : "0 0 28px" }}>
           <div style={{ fontSize: 11, fontWeight: 700, color: "#6366f1", letterSpacing: 2, marginBottom: 8 }}>SO FUNKTIONIERTS</div>
-          <h2 style={{ fontSize: 24, fontWeight: 700, margin: 0, lineHeight: 1.3 }}>
+          <h2 style={{ fontSize: isDesktop ? 40 : 24, fontWeight: 700, margin: 0, lineHeight: 1.3 }}>
             In 3 Schritten<br />zum Erfolg
           </h2>
         </div>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+        <div style={{ display: isDesktop ? "grid" : "flex", flexDirection: isDesktop ? undefined : "column", gridTemplateColumns: isDesktop ? "1fr 1fr 1fr" : undefined, gap: isDesktop ? 20 : 14 }}>
           {steps.map((s) => (
             <div key={s.num} style={{
               background: "rgba(255,255,255,0.04)",
@@ -249,16 +251,18 @@ export default function LandingPage() {
       </section>
 
       {/* Pricing */}
-      <section style={{ padding: "40px 24px", position: "relative", zIndex: 1 }}>
-        <div style={{ textAlign: "center", marginBottom: 28 }}>
+      <section style={{ padding: isDesktop ? "60px 32px" : "40px 24px", position: "relative", zIndex: 1, maxWidth: isDesktop ? 1280 : undefined, margin: isDesktop ? "0 auto" : undefined }}>
+        <div style={{ textAlign: "center", margin: isDesktop ? "0 0 48px" : "0 0 28px" }}>
           <div style={{ fontSize: 11, fontWeight: 700, color: "#6366f1", letterSpacing: 2, marginBottom: 8 }}>PREISE</div>
-          <h2 style={{ fontSize: 24, fontWeight: 700, margin: 0, lineHeight: 1.3 }}>Einfach & transparent</h2>
+          <h2 style={{ fontSize: isDesktop ? 40 : 24, fontWeight: 700, margin: 0, lineHeight: 1.3 }}>Einfach & transparent</h2>
         </div>
 
         <div style={{
           background: "linear-gradient(160deg, rgba(99,102,241,0.15), rgba(139,92,246,0.08))",
           border: "2px solid rgba(99,102,241,0.4)",
-          borderRadius: 24, padding: "28px 22px", position: "relative",
+          borderRadius: 24, padding: isDesktop ? "48px" : "28px 22px", position: "relative",
+          maxWidth: isDesktop ? 600 : undefined,
+          margin: isDesktop ? "0 auto" : undefined,
         }}>
           <div style={{
             position: "absolute", top: -12, left: "50%", transform: "translateX(-50%)",
@@ -303,13 +307,13 @@ export default function LandingPage() {
       </section>
 
       {/* FAQ */}
-      <section style={{ padding: "40px 24px", position: "relative", zIndex: 1 }}>
-        <div style={{ textAlign: "center", marginBottom: 28 }}>
+      <section style={{ padding: isDesktop ? "60px 32px" : "40px 24px", position: "relative", zIndex: 1, maxWidth: isDesktop ? 1280 : undefined, margin: isDesktop ? "0 auto" : undefined }}>
+        <div style={{ textAlign: "center", margin: isDesktop ? "0 0 48px" : "0 0 28px" }}>
           <div style={{ fontSize: 11, fontWeight: 700, color: "#6366f1", letterSpacing: 2, marginBottom: 8 }}>FAQ</div>
-          <h2 style={{ fontSize: 24, fontWeight: 700, margin: 0, lineHeight: 1.3 }}>Häufige Fragen</h2>
+          <h2 style={{ fontSize: isDesktop ? 40 : 24, fontWeight: 700, margin: 0, lineHeight: 1.3 }}>Häufige Fragen</h2>
         </div>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 10, maxWidth: isDesktop ? 800 : undefined, margin: isDesktop ? "0 auto" : undefined }}>
           {faqs.map((faq, i) => (
             <div key={i} style={{
               background: "rgba(255,255,255,0.04)",
@@ -342,14 +346,16 @@ export default function LandingPage() {
       </section>
 
       {/* CTA */}
-      <section style={{ padding: "40px 24px", position: "relative", zIndex: 1 }}>
+      <section style={{ padding: isDesktop ? "60px 32px" : "40px 24px", position: "relative", zIndex: 1 }}>
         <div style={{
           background: "linear-gradient(160deg, rgba(99,102,241,0.2), rgba(139,92,246,0.1))",
           border: "1px solid rgba(99,102,241,0.3)",
-          borderRadius: 24, padding: "32px 24px", textAlign: "center",
+          borderRadius: 24, padding: isDesktop ? "48px" : "32px 24px", textAlign: "center",
+          maxWidth: isDesktop ? 800 : undefined,
+          margin: isDesktop ? "0 auto" : undefined,
         }}>
           <div style={{ fontSize: 28, marginBottom: 8 }}>🚀</div>
-          <h2 style={{ fontSize: 22, fontWeight: 700, margin: "0 0 12px", lineHeight: 1.3 }}>
+          <h2 style={{ fontSize: isDesktop ? 32 : 22, fontWeight: 700, margin: "0 0 12px", lineHeight: 1.3 }}>
             Bereit dein Netzwerk<br />zu transformieren?
           </h2>
           <p style={{ fontSize: 14, color: "rgba(255,255,255,0.6)", lineHeight: 1.6, margin: "0 0 22px" }}>
@@ -372,26 +378,32 @@ export default function LandingPage() {
 
       {/* Footer */}
       <footer style={{
-        padding: "32px 24px",
+        padding: isDesktop ? "40px 32px" : "32px 24px",
         borderTop: "1px solid rgba(255,255,255,0.07)",
         position: "relative", zIndex: 1,
+        maxWidth: isDesktop ? 1280 : undefined,
+        margin: isDesktop ? "0 auto" : undefined,
       }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
-          <Image src="/logo-icon.png" alt="Connectyfind Logo" width={64} height={64} className="w-8 h-8 rounded-lg" quality={100} />
-          <span style={{ fontWeight: 700, fontSize: 14 }}>Connectyfind</span>
-        </div>
-        <p style={{ fontSize: 12, color: "rgba(255,255,255,0.4)", lineHeight: 1.6, margin: "0 0 20px" }}>
-          Die exklusive Plattform für ernsthafte Gründer im DACH-Raum.
-        </p>
-
-        <div style={{ display: "flex", flexWrap: "wrap", gap: "10px 20px", fontSize: 12, marginBottom: 20 }}>
-          {["AGB", "Datenschutz", "Impressum", "Kontakt"].map((link) => (
-            <span key={link} style={{ color: "rgba(255,255,255,0.5)", cursor: "pointer" }}>{link}</span>
-          ))}
-        </div>
-
-        <div style={{ fontSize: 11, color: "rgba(255,255,255,0.3)" }}>
-          © 2026 Connectyfind. Alle Rechte vorbehalten.
+        <div style={{ display: isDesktop ? "flex" : "block", justifyContent: isDesktop ? "space-between" : undefined, alignItems: isDesktop ? "flex-start" : undefined }}>
+          <div>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
+              <Image src="/logo-icon.png" alt="Connectyfind Logo" width={64} height={64} className="w-8 h-8 rounded-lg" quality={100} />
+              <span style={{ fontWeight: 700, fontSize: 14 }}>Connectyfind</span>
+            </div>
+            <p style={{ fontSize: 12, color: "rgba(255,255,255,0.4)", lineHeight: 1.6, margin: "0 0 20px" }}>
+              Die exklusive Plattform für ernsthafte Gründer im DACH-Raum.
+            </p>
+          </div>
+          <div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "10px 20px", fontSize: 12, marginBottom: 20 }}>
+              {["AGB", "Datenschutz", "Impressum", "Kontakt"].map((link) => (
+                <span key={link} style={{ color: "rgba(255,255,255,0.5)", cursor: "pointer" }}>{link}</span>
+              ))}
+            </div>
+            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.3)" }}>
+              © 2026 Connectyfind. Alle Rechte vorbehalten.
+            </div>
+          </div>
         </div>
       </footer>
     </div>
