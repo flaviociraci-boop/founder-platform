@@ -75,7 +75,7 @@ export default function LandingPage() {
 
       {/* Hero */}
       <section
-        className="pt-[60px] pb-10 px-6 lg:max-w-7xl lg:mx-auto lg:px-8 lg:pt-30 lg:pb-20"
+        className="pt-[60px] pb-10 px-6 lg:max-w-7xl lg:mx-auto lg:px-8 lg:pt-32 lg:pb-20"
         style={{ position: "relative", zIndex: 1, textAlign: "center" }}
       >
         <div className="lg:max-w-[1000px] lg:mx-auto">
