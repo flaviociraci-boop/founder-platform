@@ -1,9 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import EmailSignupForm from "@/app/components/EmailSignupForm";
+
+function useMediaQuery(query: string) {
+  const [matches, setMatches] = useState(false);
+  useEffect(() => {
+    const media = window.matchMedia(query);
+    setMatches(media.matches);
+    const listener = (e: MediaQueryListEvent) => setMatches(e.matches);
+    media.addEventListener("change", listener);
+    return () => media.removeEventListener("change", listener);
+  }, [query]);
+  return matches;
+}
 
 const features = [
   { icon: "◆", title: "Connect", desc: "Sende gezielte Connect-Anfragen an Founder die zu dir und deinen Zielen passen.", color: "#6366f1" },
@@ -40,6 +52,7 @@ const faqs = [
 export default function LandingPage() {
   const router = useRouter();
   const [openFaq, setOpenFaq] = useState(0);
+  const isDesktop = useMediaQuery("(min-width: 1024px)");
 
   const goRegister = () => router.push("/register");
   const goLogin = () => router.push("/login");
@@ -74,40 +87,50 @@ export default function LandingPage() {
       </nav>
 
       {/* Hero */}
-      <section style={{ padding: "60px 24px 40px", position: "relative", zIndex: 1, textAlign: "center" }}>
-        <div style={{
-          display: "inline-block", padding: "6px 14px", marginBottom: 24,
-          background: "rgba(99,102,241,0.1)", border: "1px solid rgba(99,102,241,0.3)",
-          borderRadius: 20, fontSize: 12, fontWeight: 600, color: "#6366f1",
-        }}>✦ Nur für ernsthafte Founder</div>
+      <section style={{
+        padding: isDesktop ? "120px 32px 80px" : "60px 24px 40px",
+        position: "relative", zIndex: 1, textAlign: "center",
+        maxWidth: isDesktop ? 1280 : undefined,
+        margin: isDesktop ? "0 auto" : undefined,
+      }}>
+        <div style={{ maxWidth: isDesktop ? 900 : undefined, margin: isDesktop ? "0 auto" : undefined }}>
+          <div style={{
+            display: "inline-block", padding: "6px 14px", marginBottom: 24,
+            background: "rgba(99,102,241,0.1)", border: "1px solid rgba(99,102,241,0.3)",
+            borderRadius: 20, fontSize: 12, fontWeight: 600, color: "#6366f1",
+          }}>✦ Nur für ernsthafte Founder</div>
 
-        <h1 style={{
-          fontSize: 36, fontWeight: 800, margin: "0 0 16px",
-          lineHeight: 1.15, letterSpacing: -0.5,
-        }}>
-          Wo Unternehmer<br />
-          <span style={{ background: "linear-gradient(135deg, #6366f1, #8b5cf6)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-            matchen, chatten und<br />gemeinsam wachsen
-          </span>
-        </h1>
+          <h1 style={{
+            fontSize: isDesktop ? 60 : 36, fontWeight: 800, margin: "0 0 16px",
+            lineHeight: isDesktop ? 1.1 : 1.15, letterSpacing: -0.5,
+          }}>
+            Wo Unternehmer<br />
+            <span style={{ background: "linear-gradient(135deg, #6366f1, #8b5cf6)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+              matchen, chatten und<br />gemeinsam wachsen
+            </span>
+          </h1>
 
-        <p style={{ fontSize: 15, color: "rgba(255,255,255,0.6)", lineHeight: 1.6, margin: "0 0 28px", maxWidth: 340, marginLeft: "auto", marginRight: "auto" }}>
-          Die exklusive Plattform für Gründer im DACH-Raum. Verbinde dich mit Menschen die wirklich etwas aufgebaut haben.
-        </p>
+          <p style={{ fontSize: 15, color: "rgba(255,255,255,0.6)", lineHeight: 1.6, margin: "0 0 28px", maxWidth: 340, marginLeft: "auto", marginRight: "auto" }}>
+            Die exklusive Plattform für Gründer im DACH-Raum. Verbinde dich mit Menschen die wirklich etwas aufgebaut haben.
+          </p>
 
-        <button onClick={goRegister} style={{
-          width: "100%", maxWidth: 320, padding: "16px 32px",
-          background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
-          border: "none", color: "#fff", borderRadius: 14,
-          fontSize: 15, fontWeight: 700, cursor: "pointer",
-          boxShadow: "0 8px 24px rgba(99,102,241,0.4)",
-        }}>Jetzt 3 Tage kostenlos starten</button>
+          <button onClick={goRegister} style={{
+            width: "100%", maxWidth: 320, padding: "16px 32px",
+            background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
+            border: "none", color: "#fff", borderRadius: 14,
+            fontSize: 15, fontWeight: 700, cursor: "pointer",
+            boxShadow: "0 8px 24px rgba(99,102,241,0.4)",
+          }}>Jetzt 3 Tage kostenlos starten</button>
 
-        <p style={{ marginTop: 12, fontSize: 12, color: "rgba(255,255,255,0.4)" }}>Kreditkarte erforderlich · Jederzeit kündbar</p>
+          <p style={{ marginTop: 12, fontSize: 12, color: "rgba(255,255,255,0.4)" }}>Kreditkarte erforderlich · Jederzeit kündbar</p>
+        </div>
 
         {/* Stats */}
         <div style={{
-          marginTop: 40, padding: "20px 16px",
+          marginTop: isDesktop ? 60 : 40,
+          padding: isDesktop ? "32px 40px" : "20px 16px",
+          maxWidth: isDesktop ? 800 : undefined,
+          margin: isDesktop ? "60px auto 0" : undefined,
           background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)",
           borderRadius: 16, display: "flex", justifyContent: "space-around",
         }}>
