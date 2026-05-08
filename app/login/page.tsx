@@ -84,10 +84,6 @@ export default function LoginPage() {
     setLoading(false);
   };
 
-  const subtitle =
-    mode === "login" ? "Willkommen zurück 👋"
-    : mode === "forgot-sent" ? "Email gesendet!"
-    : "Passwort zurücksetzen";
 
   return (
     <div style={{
@@ -119,7 +115,6 @@ export default function LoginPage() {
           <h1 style={{ margin: 0, fontSize: 22, fontWeight: 800, letterSpacing: -0.5, color: "#fff" }}>
             Connectyfind
           </h1>
-          <p style={{ margin: "4px 0 0", fontSize: 14, color: "rgba(255,255,255,0.4)" }}>{subtitle}</p>
         </div>
 
         <div style={{
