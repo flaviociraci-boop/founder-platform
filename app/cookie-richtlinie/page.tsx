@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import Script from "next/script";
+import IubendaEmbed from "@/app/components/IubendaEmbed";
 
 export const metadata: Metadata = {
   title: "Cookie-Richtlinie — Connectyfind",
@@ -48,16 +48,11 @@ export default function CookieRichtliniePage() {
           padding: "28px",
           marginBottom: 32,
         }}>
-          <div className="iubenda-content">
-            {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
-            <a
-              href="https://www.iubenda.com/privacy-policy/19358914/cookie-policy"
-              className="iubenda-nostyle iubenda-noiframe iubenda-embed"
-              title="Cookie-Richtlinie"
-            >
-              Cookie-Richtlinie wird geladen…
-            </a>
-          </div>
+          <IubendaEmbed
+            url="https://www.iubenda.com/privacy-policy/19358914/cookie-policy"
+            title="Cookie-Richtlinie"
+            loadingText="Cookie-Richtlinie wird geladen…"
+          />
         </div>
 
         {/* Back link */}
@@ -69,11 +64,6 @@ export default function CookieRichtliniePage() {
         </a>
       </div>
 
-      <Script
-        id="iubenda-cookie"
-        src="https://cdn.iubenda.com/iubenda.js"
-        strategy="afterInteractive"
-      />
     </div>
   );
 }

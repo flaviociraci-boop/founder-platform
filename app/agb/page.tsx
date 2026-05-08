@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import Script from "next/script";
+import IubendaEmbed from "@/app/components/IubendaEmbed";
 
 export const metadata: Metadata = {
   title: "AGB — Connectyfind",
@@ -48,16 +48,11 @@ export default function AgbPage() {
           padding: "28px",
           marginBottom: 32,
         }}>
-          <div className="iubenda-content">
-            {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
-            <a
-              href="https://www.iubenda.com/nutzungsbedingungen/19358914"
-              className="iubenda-nostyle iubenda-noiframe iubenda-embed"
-              title="AGBs"
-            >
-              AGB werden geladen…
-            </a>
-          </div>
+          <IubendaEmbed
+            url="https://www.iubenda.com/nutzungsbedingungen/19358914"
+            title="AGBs"
+            loadingText="AGB werden geladen…"
+          />
         </div>
 
         {/* Back link */}
@@ -69,11 +64,6 @@ export default function AgbPage() {
         </a>
       </div>
 
-      <Script
-        id="iubenda-agb"
-        src="https://cdn.iubenda.com/iubenda.js"
-        strategy="afterInteractive"
-      />
     </div>
   );
 }

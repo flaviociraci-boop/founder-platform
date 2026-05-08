@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import Script from "next/script";
+import IubendaEmbed from "@/app/components/IubendaEmbed";
 
 export const metadata: Metadata = {
   title: "Datenschutzerklärung — Connectyfind",
@@ -48,16 +48,11 @@ export default function DatenschutzPage() {
           padding: "28px",
           marginBottom: 32,
         }}>
-          <div className="iubenda-content">
-            {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
-            <a
-              href="https://www.iubenda.com/privacy-policy/19358914"
-              className="iubenda-nostyle iubenda-noiframe iubenda-embed"
-              title="Datenschutzerklärung"
-            >
-              Datenschutzerklärung wird geladen…
-            </a>
-          </div>
+          <IubendaEmbed
+            url="https://www.iubenda.com/privacy-policy/19358914"
+            title="Datenschutzerklärung"
+            loadingText="Datenschutzerklärung wird geladen…"
+          />
         </div>
 
         {/* Cookie-Richtlinie link */}
@@ -85,11 +80,6 @@ export default function DatenschutzPage() {
         </a>
       </div>
 
-      <Script
-        id="iubenda-datenschutz"
-        src="https://cdn.iubenda.com/iubenda.js"
-        strategy="afterInteractive"
-      />
     </div>
   );
 }
