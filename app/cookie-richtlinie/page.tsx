@@ -15,7 +15,7 @@ export default function CookieRichtliniePage() {
       minHeight: "100vh",
       color: "#fff",
     }}>
-      <div style={{ maxWidth: 600, margin: "0 auto", padding: "48px 24px 80px" }}>
+      <div style={{ maxWidth: 680, margin: "0 auto", padding: "48px 24px 80px" }}>
 
         {/* Logo */}
         <a
@@ -36,36 +36,44 @@ export default function CookieRichtliniePage() {
         <h1 style={{ fontSize: 28, fontWeight: 800, margin: "0 0 8px", letterSpacing: -0.3 }}>
           Cookie-Richtlinie
         </h1>
-        <p style={{ fontSize: 13, color: "rgba(255,255,255,0.35)", margin: "0 0 36px" }}>
-          Bodensee-Spiele GmbH · Stand: {new Date().getFullYear()}
+        <p style={{ fontSize: 13, color: "rgba(255,255,255,0.35)", margin: "0 0 40px" }}>
+          Welche Cookies wir verwenden
         </p>
 
-        {/* iubenda inline embed */}
-        <div style={{ fontSize: 14, lineHeight: 1.8, color: "rgba(255,255,255,0.75)" }}>
-          {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
-          <a
-            href="https://www.iubenda.com/privacy-policy/19358914/cookie-policy"
-            className="iubenda-white iubenda-noiframe iubenda-embed iub-body-embed"
-            title="Cookie-Richtlinie"
-          >
-            Cookie-Richtlinie
-          </a>
+        {/* Card */}
+        <div style={{
+          background: "rgba(255,255,255,0.03)",
+          border: "1px solid rgba(255,255,255,0.07)",
+          borderRadius: 20,
+          padding: "28px",
+          marginBottom: 32,
+        }}>
+          <div className="iubenda-content">
+            {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
+            <a
+              href="https://www.iubenda.com/privacy-policy/19358914/cookie-policy"
+              className="iubenda-nostyle iubenda-noiframe iubenda-embed"
+              title="Cookie-Richtlinie"
+            >
+              Cookie-Richtlinie wird geladen…
+            </a>
+          </div>
         </div>
-
-        <Script
-          id="iubenda-cookie-loader"
-          src="https://cdn.iubenda.com/iubenda.js"
-          strategy="afterInteractive"
-        />
 
         {/* Back link */}
         <a
           href="/"
-          style={{ display: "inline-block", marginTop: 40, fontSize: 14, color: "#6366f1", textDecoration: "none", fontWeight: 600 }}
+          style={{ fontSize: 14, color: "#6366f1", textDecoration: "none", fontWeight: 600 }}
         >
           ← Zurück zur Startseite
         </a>
       </div>
+
+      <Script
+        id="iubenda-cookie"
+        src="https://cdn.iubenda.com/iubenda.js"
+        strategy="afterInteractive"
+      />
     </div>
   );
 }
