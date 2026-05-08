@@ -3,11 +3,11 @@ import Image from "next/image";
 import Script from "next/script";
 
 export const metadata: Metadata = {
-  title: "AGB — Connectyfind",
-  description: "Allgemeine Geschäftsbedingungen der Connectyfind-Plattform der Bodensee-Spiele GmbH.",
+  title: "Cookie-Richtlinie — Connectyfind",
+  description: "Cookie-Richtlinie der Connectyfind-Plattform der Bodensee-Spiele GmbH.",
 };
 
-export default function AgbPage() {
+export default function CookieRichtliniePage() {
   return (
     <div style={{
       fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif",
@@ -34,7 +34,7 @@ export default function AgbPage() {
         </a>
 
         <h1 style={{ fontSize: 28, fontWeight: 800, margin: "0 0 8px", letterSpacing: -0.3 }}>
-          Allgemeine Geschäftsbedingungen
+          Cookie-Richtlinie
         </h1>
         <p style={{ fontSize: 13, color: "rgba(255,255,255,0.35)", margin: "0 0 36px" }}>
           Bodensee-Spiele GmbH · Stand: {new Date().getFullYear()}
@@ -44,16 +44,16 @@ export default function AgbPage() {
         <div style={{ fontSize: 14, lineHeight: 1.8, color: "rgba(255,255,255,0.75)" }}>
           {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
           <a
-            href="https://www.iubenda.com/nutzungsbedingungen/19358914"
+            href="https://www.iubenda.com/privacy-policy/19358914/cookie-policy"
             className="iubenda-white iubenda-noiframe iubenda-embed iub-body-embed"
-            title="AGBs"
+            title="Cookie-Richtlinie"
           >
-            AGBs
+            Cookie-Richtlinie
           </a>
         </div>
 
         <Script
-          id="iubenda-agb-loader"
+          id="iubenda-cookie-loader"
           src="https://cdn.iubenda.com/iubenda.js"
           strategy="afterInteractive"
         />
