@@ -51,7 +51,7 @@ export default function AgbPage() {
           <IubendaEmbed
             url="https://www.iubenda.com/nutzungsbedingungen/19358914"
             title="AGBs"
-            loadingText="AGB werden geladen…"
+            loadingText="AGB ansehen"
           />
         </div>
 

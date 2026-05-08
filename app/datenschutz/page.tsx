@@ -51,7 +51,7 @@ export default function DatenschutzPage() {
           <IubendaEmbed
             url="https://www.iubenda.com/privacy-policy/19358914"
             title="Datenschutzerklärung"
-            loadingText="Datenschutzerklärung wird geladen…"
+            loadingText="Datenschutzerklärung ansehen"
           />
         </div>
 

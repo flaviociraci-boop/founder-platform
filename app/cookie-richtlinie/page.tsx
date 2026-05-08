@@ -51,7 +51,7 @@ export default function CookieRichtliniePage() {
           <IubendaEmbed
             url="https://www.iubenda.com/privacy-policy/19358914/cookie-policy"
             title="Cookie-Richtlinie"
-            loadingText="Cookie-Richtlinie wird geladen…"
+            loadingText="Cookie-Richtlinie ansehen"
           />
         </div>
 
