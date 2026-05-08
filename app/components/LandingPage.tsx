@@ -21,13 +21,13 @@ function useMediaQuery(query: string) {
 const features = [
   {
     Icon: Users,
-    title: "Verifizierte Connects",
-    desc: "Echte Unternehmer, keine Recruiter, keine Fake-Profile. Jedes Profil wird verifiziert.",
+    title: "Echte Connections",
+    desc: "Verbinde dich nur mit Foundern die deine Anfrage aktiv akzeptieren. Du entscheidest mit wem du sprichst — keine ungewollten Nachrichten.",
   },
   {
     Icon: MessageCircle,
     title: "Direkte Gespräche",
-    desc: "Statt LinkedIn-Spam: Direkter Chat mit anderen Foundern auf Augenhöhe. Realtime.",
+    desc: "Direkter Realtime-Chat mit anderen Foundern auf Augenhöhe. Schnell, unkompliziert, ohne Umwege.",
   },
   {
     Icon: TrendingUp,
@@ -50,8 +50,8 @@ const faqs = [
     a: "Verifizierte Founder, Selbstständige und Unternehmer aus dem DACH-Raum. Keine Anfänger, keine Recruiter.",
   },
   {
-    q: "Wie unterscheidet ihr euch von LinkedIn?",
-    a: "Wir bauen explizit keine 'Karriere-Plattform'. Bei uns geht es um echte Connections zwischen Unternehmern — nicht um Sales-Pitches und Spam.",
+    q: "Wie unterscheidet ihr euch von anderen Connect-Plattformen?",
+    a: "Connectyfind ist gezielt für DACH-Founder gebaut. Statt überfluteter Feeds und ungewollter Nachrichten gibt es klare gegenseitige Verbindungen, direkte Chats und gemeinsame Projekte. Fokus statt Lärm.",
   },
   {
     q: "Wie sicher sind meine Daten?",
@@ -190,8 +190,7 @@ export default function LandingPage() {
             marginLeft: "auto",
             marginRight: "auto",
           }}>
-            Die exklusive Founder-Community für den DACH-Raum.
-            Verifiziert. Ohne Recruiter-Spam. Bald live.
+            Die exklusive Founder-Community für den DACH-Raum. Bald live.
           </p>
 
           {/* Waitlist form */}
@@ -318,27 +317,15 @@ export default function LandingPage() {
       {/* SECOND CTA */}
       <section style={{ padding: isDesktop ? "72px 0 96px" : "48px 0 72px", position: "relative", zIndex: 1 }}>
         <div style={inner}>
-          <div style={{
-            maxWidth: 600, margin: "0 auto",
-            background: "linear-gradient(160deg, rgba(99,102,241,0.12), rgba(139,92,246,0.06))",
-            border: "1px solid rgba(99,102,241,0.25)",
-            borderRadius: 24,
-            padding: isDesktop ? "52px 48px" : "36px 24px",
-          }}>
+          <div style={{ maxWidth: isDesktop ? 480 : undefined, margin: "0 auto" }}>
             <h2 style={{
-              fontSize: isDesktop ? 30 : 22,
-              fontWeight: 800, margin: "0 0 10px", lineHeight: 1.25,
+              fontSize: isDesktop ? 28 : 22,
+              fontWeight: 800, margin: "0 0 28px", lineHeight: 1.25,
               textAlign: "center", letterSpacing: -0.3,
             }}>
-              Bereit für eine Founder-Community ohne Recruiter-Spam?
+              Sei dabei wenn wir starten.
             </h2>
-            <p style={{
-              fontSize: 14, color: "rgba(255,255,255,0.5)", lineHeight: 1.6,
-              textAlign: "center", margin: "0 0 28px",
-            }}>
-              Trag dich jetzt ein und sei dabei wenn wir launchen.
-            </p>
-            <WaitlistForm compact />
+            <WaitlistForm />
           </div>
         </div>
       </section>
