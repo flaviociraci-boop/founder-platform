@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { createClient } from "@/utils/supabase/client";
 
 type Mode = "login" | "forgot" | "forgot-sent";
@@ -107,14 +108,16 @@ export default function LoginPage() {
       <div style={{ width: "100%", maxWidth: 400, position: "relative", zIndex: 1 }}>
         {/* Logo */}
         <div style={{ textAlign: "center", marginBottom: 32 }}>
-          <div style={{
-            width: 56, height: 56, borderRadius: 16, margin: "0 auto 12px",
-            background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            fontSize: 24, boxShadow: "0 8px 32px rgba(99,102,241,0.4)",
-          }}>◈</div>
-          <h1 style={{ margin: 0, fontSize: 22, fontWeight: 800, letterSpacing: -0.5 }}>
-            Founder<span style={{ color: "#6366f1" }}>Connect</span>
+          <Image
+            src="/logo-icon.png"
+            alt="Connectyfind"
+            width={40}
+            height={40}
+            style={{ borderRadius: 12, margin: "0 auto 12px", display: "block" }}
+            quality={100}
+          />
+          <h1 style={{ margin: 0, fontSize: 22, fontWeight: 800, letterSpacing: -0.5, color: "#fff" }}>
+            Connectyfind
           </h1>
           <p style={{ margin: "4px 0 0", fontSize: 14, color: "rgba(255,255,255,0.4)" }}>{subtitle}</p>
         </div>
