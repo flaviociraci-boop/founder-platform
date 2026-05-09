@@ -136,7 +136,7 @@ export default function ProjectBoard({ initialProjects, currentUserId, currentUs
               cursor: "pointer",
             }}
           >
-            {cat.icon} {cat.label}
+            {cat.label}
           </button>
         ))}
       </div>

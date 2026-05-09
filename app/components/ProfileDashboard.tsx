@@ -493,8 +493,8 @@ export default function ProfileDashboard({ currentUserId, onLogout, onOpenChat }
                         width: 40, height: 40, borderRadius: 11, flexShrink: 0,
                         background: `linear-gradient(135deg, ${cat?.color ?? "#6366f1"}33, ${cat?.color ?? "#6366f1"}11)`,
                         border: `1px solid ${cat?.color ?? "#6366f1"}33`,
-                        display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18,
-                      }}>{cat?.icon ?? "✦"}</div>
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                      }} />
                       <div style={{ flex: 1, overflow: "hidden" }}>
                         <div style={{ display: "flex", alignItems: "center", gap: 7, flexWrap: "wrap" }}>
                           <span style={{ fontWeight: 700, fontSize: 14 }}>{proj.title}</span>

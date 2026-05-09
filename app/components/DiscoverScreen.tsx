@@ -141,7 +141,7 @@ export default function DiscoverScreen({
               cursor: "pointer",
             }}
           >
-            {cat.icon} {cat.label}
+            {cat.label}
           </button>
         ))}
       </div>

@@ -47,14 +47,14 @@ export type Project = {
 };
 
 export const categories: Category[] = [
-  { id: "all", label: "Alle", icon: "◈", color: "#ffffff" },
-  { id: "ecommerce", label: "E-Commerce", icon: "🛒", color: "#f97316" },
-  { id: "apps", label: "App Dev", icon: "⚡", color: "#6366f1" },
-  { id: "trading", label: "Trading", icon: "📈", color: "#10b981" },
-  { id: "freelancer", label: "Freelancer", icon: "✦", color: "#f59e0b" },
-  { id: "marketing", label: "Marketing", icon: "◎", color: "#ec4899" },
-  { id: "saas", label: "SaaS", icon: "☁", color: "#3b82f6" },
-  { id: "coaching", label: "Coaching", icon: "◉", color: "#8b5cf6" },
+  { id: "all", label: "Alle", icon: "", color: "#ffffff" },
+  { id: "ecommerce", label: "E-Commerce", icon: "", color: "#f97316" },
+  { id: "apps", label: "App Dev", icon: "", color: "#6366f1" },
+  { id: "trading", label: "Trading", icon: "", color: "#10b981" },
+  { id: "freelancer", label: "Freelancer", icon: "", color: "#f59e0b" },
+  { id: "marketing", label: "Marketing", icon: "", color: "#ec4899" },
+  { id: "saas", label: "SaaS", icon: "", color: "#3b82f6" },
+  { id: "coaching", label: "Coaching", icon: "", color: "#8b5cf6" },
 ];
 
 export const modelColors: Record<string, string> = {
