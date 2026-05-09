@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { Search, Users, MessageCircle, Folder, User as UserIcon } from "lucide-react";
 import { User, Project } from "@/app/lib/data";
 import { createClient } from "@/utils/supabase/client";
 import DiscoverScreen from "@/app/components/DiscoverScreen";
@@ -14,12 +15,12 @@ import ProfileDashboard from "@/app/components/ProfileDashboard";
 
 type Tab = "discover" | "match" | "chats" | "projects" | "profile";
 
-const navItems: { icon: string; label: string; id: Tab }[] = [
-  { icon: "◈", label: "Entdecken", id: "discover" },
-  { icon: "🤝", label: "Connect", id: "match" },
-  { icon: "💬", label: "Chats", id: "chats" },
-  { icon: "✦", label: "Projekte", id: "projects" },
-  { icon: "◉", label: "Profil", id: "profile" },
+const navItems: { icon: React.ElementType; label: string; id: Tab }[] = [
+  { icon: Search, label: "Entdecken", id: "discover" },
+  { icon: Users, label: "Connect", id: "match" },
+  { icon: MessageCircle, label: "Chats", id: "chats" },
+  { icon: Folder, label: "Projekte", id: "projects" },
+  { icon: UserIcon, label: "Profil", id: "profile" },
 ];
 
 type Props = {
@@ -233,7 +234,7 @@ export default function AppShell({
             }}
           >
             <div style={{ position: "relative", display: "inline-flex" }}>
-              <span style={{ fontSize: 18 }}>{item.icon}</span>
+              <item.icon size={18} />
               {item.id === "match" && pendingCount > 0 && (
                 <span style={{
                   position: "absolute", top: -4, right: -6,
