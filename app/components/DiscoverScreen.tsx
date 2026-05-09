@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Bell } from "lucide-react";
 import { categories, seekingColors, User } from "@/app/lib/data";
 import { Avatar } from "@/app/components/Avatar";
 
@@ -71,13 +72,13 @@ export default function DiscoverScreen({
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              fontSize: 18,
               cursor: "pointer",
               position: "relative",
               flexShrink: 0,
+              color: "rgba(255,255,255,0.7)",
             }}
           >
-            🔔
+            <Bell size={18} />
             {unreadCount > 0 && (
               <span style={{
                 position: "absolute", top: -4, right: -4,
