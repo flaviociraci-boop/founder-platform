@@ -32,22 +32,31 @@ export async function GET(request: NextRequest) {
         .maybeSingle();
 
       if (!existing) {
+        const meta = data.user.user_metadata ?? {};
+
         const name =
-          data.user.user_metadata?.full_name ??
+          meta.name ??
+          meta.full_name ??
           data.user.email?.split("@")[0] ??
           "Nutzer";
-        const initials = name
-          .split(" ")
-          .map((n: string) => n[0] ?? "")
-          .join("")
-          .toUpperCase()
-          .slice(0, 2);
+
+        const initials =
+          meta.avatar ??
+          name
+            .split(" ")
+            .map((n: string) => n[0] ?? "")
+            .join("")
+            .toUpperCase()
+            .slice(0, 2);
 
         await supabase.from("profiles").insert({
           auth_id: data.user.id,
           name,
+          age: meta.age ?? null,
+          category: meta.category ?? null,
+          seeking: meta.seeking ?? null,
           avatar: initials,
-          color: CATEGORY_COLORS.apps,
+          color: meta.color ?? CATEGORY_COLORS.apps,
           followers: 0,
           following: 0,
           tags: [],

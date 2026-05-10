@@ -109,11 +109,27 @@ export default function RegisterPage() {
 
     const supabase = createClient();
 
-    // 1. Create auth user
+    const initials = form.name
+      .split(" ")
+      .map((n) => n[0] ?? "")
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
+
     const { data, error: signUpError } = await supabase.auth.signUp({
       email: form.email,
       password: form.password,
-      options: { data: { name: form.name } },
+      options: {
+        emailRedirectTo: `${window.location.origin}/auth/callback`,
+        data: {
+          name: form.name,
+          age: form.age ? parseInt(form.age) : null,
+          category: form.category,
+          seeking: form.seeking,
+          avatar: initials,
+          color: CATEGORY_COLORS[form.category] ?? "#6366f1",
+        },
+      },
     });
 
     if (signUpError) {
@@ -128,39 +144,10 @@ export default function RegisterPage() {
       return;
     }
 
-    // 2. Create profile
-    const initials = form.name
-      .split(" ")
-      .map((n) => n[0] ?? "")
-      .join("")
-      .toUpperCase()
-      .slice(0, 2);
-
-    const { error: profileError } = await supabase.from("profiles").insert({
-      auth_id: data.user.id,
-      name: form.name,
-      age: parseInt(form.age) || null,
-      category: form.category,
-      seeking: form.seeking,
-      avatar: initials,
-      color: CATEGORY_COLORS[form.category] ?? "#6366f1",
-      followers: 0,
-      following: 0,
-      tags: [],
-    });
-
-    if (profileError) {
-      setError(profileError.message);
-      setLoading(false);
-      return;
-    }
-
-    // 3. Redirect
     if (data.session) {
       router.push("/");
       router.refresh();
     } else {
-      // Email confirmation required
       setStep(4);
     }
     setLoading(false);
