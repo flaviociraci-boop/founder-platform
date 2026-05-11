@@ -129,14 +129,6 @@ export default function LandingPage() {
                   Early Access
                 </div>
               )}
-              <button
-                onClick={() => router.push("/login")}
-                style={{
-                  background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)",
-                  color: "#fff", padding: "7px 16px", borderRadius: 10,
-                  fontSize: 13, fontWeight: 600, cursor: "pointer",
-                }}
-              >Login</button>
             </div>
           </div>
         </div>
