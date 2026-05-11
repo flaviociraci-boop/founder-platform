@@ -6,21 +6,21 @@ import Image from "next/image";
 import { createClient } from "@/utils/supabase/client";
 
 const CATEGORIES = [
-  { id: "ecommerce", label: "E-Commerce", icon: "🛒", color: "#f97316" },
-  { id: "apps",      label: "App Dev",    icon: "⚡", color: "#6366f1" },
-  { id: "trading",   label: "Trading",    icon: "📈", color: "#10b981" },
-  { id: "freelancer",label: "Freelancer", icon: "✦", color: "#f59e0b" },
-  { id: "marketing", label: "Marketing",  icon: "◎", color: "#ec4899" },
-  { id: "saas",      label: "SaaS",       icon: "☁", color: "#3b82f6" },
-  { id: "coaching",  label: "Coaching",   icon: "◉", color: "#8b5cf6" },
+  { id: "ecommerce", label: "E-Commerce", color: "#f97316" },
+  { id: "apps",      label: "App Dev",    color: "#6366f1" },
+  { id: "trading",   label: "Trading",    color: "#10b981" },
+  { id: "freelancer",label: "Freelancer", color: "#f59e0b" },
+  { id: "marketing", label: "Marketing",  color: "#ec4899" },
+  { id: "saas",      label: "SaaS",       color: "#3b82f6" },
+  { id: "coaching",  label: "Coaching",   color: "#8b5cf6" },
 ];
 
 const SEEKING = [
-  { id: "Investoren",    label: "Investoren",    icon: "💰", color: "#f97316" },
-  { id: "Mitgründer",   label: "Mitgründer",    icon: "🤝", color: "#6366f1" },
-  { id: "Kunden",        label: "Kunden",         icon: "👥", color: "#f59e0b" },
-  { id: "Community",     label: "Community",      icon: "🌍", color: "#10b981" },
-  { id: "Projektpartner",label: "Projektpartner", icon: "⚡", color: "#ec4899" },
+  { id: "Investoren",    label: "Investoren",    color: "#f97316" },
+  { id: "Mitgründer",   label: "Mitgründer",    color: "#6366f1" },
+  { id: "Kunden",        label: "Kunden",         color: "#f59e0b" },
+  { id: "Community",     label: "Community",      color: "#10b981" },
+  { id: "Projektpartner",label: "Projektpartner", color: "#ec4899" },
 ];
 
 const CATEGORY_COLORS: Record<string, string> = Object.fromEntries(
@@ -277,7 +277,7 @@ export default function RegisterPage() {
                       color: form.category === cat.id ? cat.color : "rgba(255,255,255,0.6)",
                       fontSize: 13, fontWeight: 600, transition: "all 0.15s",
                     }}>
-                    {cat.icon} {cat.label}
+                    {cat.label}
                   </button>
                 ))}
               </div>
@@ -309,7 +309,6 @@ export default function RegisterPage() {
                       fontSize: 14, fontWeight: 600, transition: "all 0.15s",
                       display: "flex", alignItems: "center", gap: 10,
                     }}>
-                    <span style={{ fontSize: 18 }}>{opt.icon}</span>
                     {opt.label}
                     {form.seeking === opt.id && <span style={{ marginLeft: "auto" }}>✓</span>}
                   </button>
@@ -326,7 +325,7 @@ export default function RegisterPage() {
                     background: "linear-gradient(135deg, #10b981, #059669)",
                     opacity: loading ? 0.7 : 1,
                   }}>
-                  {loading ? "Wird erstellt..." : "🚀 Loslegen!"}
+                  {loading ? "Wird erstellt..." : "Loslegen!"}
                 </button>
               </div>
             </div>
@@ -335,7 +334,6 @@ export default function RegisterPage() {
           {/* ── STEP 4: Email confirmation ── */}
           {step === 4 && (
             <div style={{ textAlign: "center", padding: "8px 0" }}>
-              <div style={{ fontSize: 48, marginBottom: 16 }}>📬</div>
               <p style={{ margin: "0 0 8px", fontWeight: 700, fontSize: 17 }}>Fast fertig!</p>
               <p style={{ margin: "0 0 24px", fontSize: 14, color: "rgba(255,255,255,0.5)", lineHeight: 1.6 }}>
                 Wir haben dir eine Bestätigungs-Email an <strong style={{ color: "#fff" }}>{form.email}</strong> geschickt.
