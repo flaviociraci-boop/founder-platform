@@ -80,10 +80,8 @@ const SETTINGS: { title: string; icon: string; items: SettingsItem[] }[] = [
     title: "Abos & Zahlungen",
     icon: "◎",
     items: [
-      { label: "Aktueller Plan", desc: "Free Plan — 0 CHF/Monat", action: "Upgraden", highlight: true },
-      { label: "Pro Plan", desc: "Unbegrenzte Connects & Chat — 9 CHF/Monat", action: "Wählen", pro: true },
-      { label: "Zahlungsmethode", desc: "Keine hinterlegt", action: "Hinzufügen" },
-      { label: "Rechnungen", desc: "Keine bisherigen Zahlungen", action: "Ansehen" },
+      { label: "Mein Abo", desc: "Plan & Abrechnungsstatus", action: "Verwalten", route: "/einstellungen/abo" },
+      { label: "Pro werden", desc: "$29/Monat oder $249/Jahr — 3 Tage gratis", action: "Ansehen", route: "/pricing" },
     ],
   },
   {

@@ -6,6 +6,8 @@ const PUBLIC_PATHS = [
   "/",
   "/api/subscribe",
   "/willkommen",
+  "/pricing",
+  "/api/whop/webhook",
   "/impressum",
   "/datenschutz",
   "/agb",
