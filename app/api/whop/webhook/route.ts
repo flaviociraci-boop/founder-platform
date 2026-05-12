@@ -8,7 +8,11 @@ import { createServiceRoleClient } from "@/utils/supabase/service-role";
 // ---------------------------------------------------------------------------
 
 type WhopEventBase<TData = Record<string, unknown>> = {
+  // Whop ist je nach API-Version inkonsistent bei der Benennung des Action-
+  // Felds. Wir lesen alle drei Varianten aus, der erste Treffer gewinnt.
   action?: string;
+  type?: string;
+  event?: string;
   api_version?: string;
   data?: TData;
 };
@@ -427,14 +431,26 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Payload too large" }, { status: 413 });
   }
 
-  let event: WhopEventBase;
+  let parsed: unknown;
   try {
-    event = JSON.parse(rawBody);
+    parsed = JSON.parse(rawBody);
   } catch {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
+  if (!parsed || typeof parsed !== "object") {
+    return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
+  }
+  const event = parsed as WhopEventBase;
 
-  const rawAction = event?.action ?? "";
+  // Debug: Whop-Payload-Struktur loggen, bis wir die tatsächlichen Feldnamen
+  // einer API-Version kennen. Preview auf 500 Zeichen begrenzt.
+  console.log(`${LOG} payload keys:`, Object.keys(event));
+  console.log(`${LOG} payload preview:`, JSON.stringify(event).substring(0, 500));
+
+  const rawAction = event?.action ?? event?.type ?? event?.event ?? "";
+  if (!rawAction) {
+    console.warn(`${LOG} no action field found. Keys: ${Object.keys(event).join(", ")}`);
+  }
   const action = normalizeEventName(rawAction);
   const data = (event?.data ?? {}) as WhopMembership & WhopPayment;
   console.log(`${LOG} received ${rawAction} id=${data?.id ?? "<no-id>"}`);
