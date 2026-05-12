@@ -151,6 +151,7 @@ export default function LoginPage() {
                 {loading ? "Einloggen..." : "Einloggen"}
               </button>
 
+              {/* TODO: Google Login deaktiviert bis Whop-Paywall live ist
               <div style={{ display: "flex", alignItems: "center", gap: 12, margin: "20px 0" }}>
                 <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.08)" }} />
                 <span style={{ fontSize: 12, color: "rgba(255,255,255,0.3)" }}>oder</span>
@@ -170,6 +171,7 @@ export default function LoginPage() {
                 <GoogleIcon />
                 Mit Google einloggen
               </button>
+              */}
 
               <p style={{ textAlign: "center", marginTop: 20, fontSize: 14, color: "rgba(255,255,255,0.4)" }}>
                 Noch kein Zugang?{" "}
