@@ -64,18 +64,50 @@ const MAX_BODY_SIZE_BYTES = 1024 * 1024; // 1 MB
 // Spec: https://www.standardwebhooks.com/  ·  Whop-Doku: docs.whop.com/developer/guides/webhooks
 //
 // Whop sendet drei Headers (webhook-id, webhook-timestamp, webhook-signature).
-// Signed content = `${id}.${timestamp}.${rawBody}`. HMAC-Key ist der Teil
-// hinter "ws_" — base64-dekodiert. Signatur-Header kann mehrere v1,sig
-// (space-separiert) enthalten, ein Match reicht.
+// Signed content = `${id}.${timestamp}.${rawBody}`. Signatur-Header kann
+// mehrere v1,sig (space-separiert) enthalten, ein Match reicht.
 // ---------------------------------------------------------------------------
 
-function decodeSecret(secret: string): Buffer {
-  const trimmed = secret.startsWith("ws_") ? secret.slice(3) : secret;
-  return Buffer.from(trimmed, "base64");
+// Whop liefert ws_<hash>-Secrets. Das Format des hash-Teils ist nicht
+// offiziell dokumentiert; wir probieren mehrere Decode-Varianten und
+// akzeptieren die erste, die matcht. Match-Label wird geloggt für
+// Audit/Debug-Zwecke. Sobald sicher feststeht, welche Variante Whop nutzt,
+// können die anderen entfernt werden.
+function getSecretKeyCandidates(
+  secret: string,
+): Array<{ label: string; key: Buffer }> {
+  const candidates: Array<{ label: string; key: Buffer }> = [];
+  const withoutPrefix = secret.startsWith("ws_") ? secret.slice(3) : secret;
+
+  // Variante A: ohne Prefix, hex-decoded (wahrscheinlichste bei 64-char Hex → 32 Byte Key)
+  if (/^[0-9a-fA-F]+$/.test(withoutPrefix) && withoutPrefix.length % 2 === 0) {
+    try {
+      const key = Buffer.from(withoutPrefix, "hex");
+      if (key.length === 32) candidates.push({ label: "hex-stripped", key });
+    } catch {
+      // ignore
+    }
+  }
+
+  // Variante B: ohne Prefix, als-ist (raw UTF8-string)
+  candidates.push({ label: "raw-stripped", key: Buffer.from(withoutPrefix, "utf8") });
+
+  // Variante C: ganzes Secret als-ist (inkl. ws_-Prefix)
+  candidates.push({ label: "raw-full", key: Buffer.from(secret, "utf8") });
+
+  // Variante D: ohne Prefix, base64-decoded (Standard-Webhooks-Default, Fallback)
+  try {
+    const key = Buffer.from(withoutPrefix, "base64");
+    if (key.length > 0) candidates.push({ label: "base64-stripped", key });
+  } catch {
+    // ignore
+  }
+
+  return candidates;
 }
 
 type VerifyResult =
-  | { ok: true }
+  | { ok: true; variant: string }
   | { ok: false; status: 401; reason: string };
 
 function verifyStandardWebhook(
@@ -94,37 +126,45 @@ function verifyStandardWebhook(
     return { ok: false, status: 401, reason: "Timestamp out of tolerance" };
   }
 
-  let key: Buffer;
-  try {
-    key = decodeSecret(secret);
-  } catch {
+  const candidates = getSecretKeyCandidates(secret);
+  if (candidates.length === 0) {
     return { ok: false, status: 401, reason: "Invalid secret format" };
   }
-  if (key.length === 0) {
-    return { ok: false, status: 401, reason: "Invalid secret format" };
+
+  // Empfangene Signaturen vorab dekodieren — pro Kandidat-Key müssen wir
+  // gegen alle vergleichen, also einmal parsen reicht.
+  const receivedSigs: Buffer[] = [];
+  for (const part of signatureHeader.split(" ")) {
+    const [version, sig] = part.split(",");
+    if (version !== "v1" || !sig) continue;
+    try {
+      receivedSigs.push(Buffer.from(sig, "base64"));
+    } catch {
+      // skip malformed
+    }
+  }
+  if (receivedSigs.length === 0) {
+    return { ok: false, status: 401, reason: "Invalid signature" };
   }
 
   const signedContent = `${webhookId}.${webhookTimestamp}.${rawBody}`;
-  const expected = crypto
-    .createHmac("sha256", key)
-    .update(signedContent)
-    .digest(); // raw Buffer für timingSafeEqual
 
-  const candidates = signatureHeader.split(" ");
-  for (const candidate of candidates) {
-    const [version, sig] = candidate.split(",");
-    if (version !== "v1" || !sig) continue;
-    let sigBuf: Buffer;
-    try {
-      sigBuf = Buffer.from(sig, "base64");
-    } catch {
-      continue;
-    }
-    if (sigBuf.length !== expected.length) continue;
-    if (crypto.timingSafeEqual(sigBuf, expected)) {
-      return { ok: true };
+  for (const { label, key } of candidates) {
+    const expected = crypto
+      .createHmac("sha256", key)
+      .update(signedContent)
+      .digest(); // raw Buffer für timingSafeEqual
+    for (const sigBuf of receivedSigs) {
+      if (sigBuf.length !== expected.length) continue;
+      if (crypto.timingSafeEqual(sigBuf, expected)) {
+        console.log(`${LOG} signature matched variant=${label}`);
+        return { ok: true, variant: label };
+      }
     }
   }
+
+  const labels = candidates.map((c) => c.label).join(", ");
+  console.warn(`${LOG} no variant matched. Tried: ${labels}`);
   return { ok: false, status: 401, reason: "Invalid signature" };
 }
 
