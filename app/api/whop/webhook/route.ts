@@ -243,7 +243,11 @@ function extractWhopUserId(data: WhopMembership & WhopPayment): string | null {
 }
 
 function extractWhopUserEmail(data: WhopMembership & WhopPayment): string | null {
-  return data?.user?.email ?? data?.membership?.user?.email ?? null;
+  // Lowercase, damit der Match in /api/whop/check-subscription und
+  // /auth/callback case-insensitiv funktioniert (Whop preserved Email-Case,
+  // User tippt sie evtl. anders).
+  const email = data?.user?.email ?? data?.membership?.user?.email ?? null;
+  return email ? email.toLowerCase() : null;
 }
 
 // ---------------------------------------------------------------------------

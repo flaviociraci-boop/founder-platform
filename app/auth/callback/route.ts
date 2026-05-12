@@ -1,4 +1,5 @@
 import { createClient } from "@/utils/supabase/server";
+import { createServiceRoleClient } from "@/utils/supabase/service-role";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
@@ -52,6 +53,30 @@ async function ensureProfile(supabase: any, user: any) {
   }
 }
 
+// Phase 2B: verknüpft eine offene Whop-Subscription (user_id IS NULL)
+// mit dem frisch bestätigten Auth-User. Match läuft über whop_user_email
+// (case-insensitiv normalisiert beim Webhook-Schreiben). Service-role,
+// damit RLS umgangen wird.
+async function linkPendingSubscription(authUserId: string, email: string | null | undefined) {
+  if (!email) return;
+  const admin = createServiceRoleClient();
+  const { data, error } = await admin
+    .from("subscriptions")
+    .update({ user_id: authUserId })
+    .eq("whop_user_email", email.toLowerCase())
+    .is("user_id", null)
+    .select("id");
+  if (error) {
+    console.error("linkPendingSubscription failed:", error);
+    return;
+  }
+  if (!data || data.length === 0) {
+    console.warn(`linkPendingSubscription: no pending subscription for ${email}`);
+  } else {
+    console.log(`linkPendingSubscription: linked ${data.length} subscription(s) to user ${authUserId}`);
+  }
+}
+
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
@@ -68,6 +93,7 @@ export async function GET(request: NextRequest) {
 
     if (!error && data.user) {
       await ensureProfile(supabase, data.user);
+      await linkPendingSubscription(data.user.id, data.user.email);
       return NextResponse.redirect(`${origin}${next}`);
     }
 
@@ -84,6 +110,7 @@ export async function GET(request: NextRequest) {
 
     if (!error && data.user) {
       await ensureProfile(supabase, data.user);
+      await linkPendingSubscription(data.user.id, data.user.email);
       return NextResponse.redirect(`${origin}${next}`);
     }
 

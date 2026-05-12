@@ -64,7 +64,7 @@ export default function WelcomeProPage() {
           </p>
 
           <a
-            href="/"
+            href="/register"
             style={{
               display: "block", padding: "15px 0", borderRadius: 14,
               background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
@@ -73,7 +73,7 @@ export default function WelcomeProPage() {
               boxShadow: "0 4px 16px rgba(99,102,241,0.3)",
             }}
           >
-            Zur App →
+            Profil einrichten →
           </a>
         </div>
       </div>

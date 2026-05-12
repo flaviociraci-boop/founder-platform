@@ -100,6 +100,30 @@ export default function RegisterPage() {
     setLoading(true);
     setError("");
 
+    // Pre-Check: matched diese Email eine offene Whop-Subscription?
+    // Antwort kommt aus /api/whop/check-subscription (service-role, gibt nur
+    // { matched: boolean } zurück — keine Sub-Daten an den Client).
+    let subscriptionMatched = false;
+    try {
+      const res = await fetch("/api/whop/check-subscription", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ email: form.email.trim() }),
+      });
+      if (res.ok) {
+        const json = (await res.json()) as { matched?: boolean };
+        subscriptionMatched = json?.matched === true;
+      }
+    } catch (e) {
+      console.warn("Subscription pre-check failed:", e);
+    }
+    if (!subscriptionMatched) {
+      // TODO: In Etappe 4 (Middleware-Paywall) wird das Fehlen einer
+      // Subscription dann zum Block. Aktuell weiter, damit Entwicklung
+      // möglich bleibt (Test-Accounts ohne echten Whop-Kauf).
+      console.warn(`No matching Whop subscription for ${form.email} — continuing anyway (dev fallback)`);
+    }
+
     const supabase = createClient();
 
     const initials = form.name
@@ -216,16 +240,21 @@ export default function RegisterPage() {
             <div>
               <Progress />
 
-              {[
+              {([
                 { label: "Dein Name",  key: "name"     as const, type: "text",     placeholder: "Max Mustermann" },
-                { label: "Email",      key: "email"    as const, type: "email",    placeholder: "deine@email.com" },
+                { label: "Email",      key: "email"    as const, type: "email",    placeholder: "deine@email.com", helper: "Verwende die gleiche Email, mit der du bei Whop bezahlt hast" },
                 { label: "Passwort",   key: "password" as const, type: "password", placeholder: "••••••••" },
                 { label: "Alter",      key: "age"      as const, type: "number",   placeholder: "23" },
-              ].map((f) => (
+              ] as Array<{ label: string; key: "name" | "email" | "password" | "age"; type: string; placeholder: string; helper?: string }>).map((f) => (
                 <div key={f.key} style={{ marginBottom: 14 }}>
                   <label style={label}>{f.label}</label>
                   <input type={f.type} placeholder={f.placeholder} style={inputStyle}
                     value={form[f.key]} onChange={setField(f.key)} />
+                  {f.helper && (
+                    <p style={{ margin: "6px 2px 0", fontSize: 12, color: "rgba(255,255,255,0.5)", lineHeight: 1.4 }}>
+                      {f.helper}
+                    </p>
+                  )}
                 </div>
               ))}
 
@@ -233,6 +262,7 @@ export default function RegisterPage() {
 
               <button onClick={goToStep2} style={btnPrimary}>Weiter →</button>
 
+              {/* PHASE 2 LOCKDOWN: Google Register deaktiviert
               <div style={{ display: "flex", alignItems: "center", gap: 12, margin: "20px 0" }}>
                 <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.08)" }} />
                 <span style={{ fontSize: 12, color: "rgba(255,255,255,0.3)" }}>oder</span>
@@ -245,6 +275,7 @@ export default function RegisterPage() {
               }}>
                 <GoogleIcon /> Mit Google registrieren
               </button>
+              */}
 
               <p style={{ textAlign: "center", marginTop: 20, fontSize: 14, color: "rgba(255,255,255,0.4)" }}>
                 Schon registriert?{" "}
