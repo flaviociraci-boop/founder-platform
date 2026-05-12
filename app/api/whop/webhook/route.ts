@@ -242,6 +242,10 @@ function extractWhopUserId(data: WhopMembership & WhopPayment): string | null {
   );
 }
 
+function extractWhopUserEmail(data: WhopMembership & WhopPayment): string | null {
+  return data?.user?.email ?? data?.membership?.user?.email ?? null;
+}
+
 // ---------------------------------------------------------------------------
 // Event-Handler
 // Jeder Handler wirft bei DB-Fehlern (→ 500 → Whop retried), gibt aber bei
@@ -269,6 +273,7 @@ async function handlePaymentSucceeded(supabase: Supabase, data: WhopPayment & Wh
     {
       whop_membership_id: membershipId,
       whop_user_id: extractWhopUserId(data),
+      whop_user_email: extractWhopUserEmail(data),
       whop_plan_id: planId,
       plan_type: getPlanType(planId),
       status: "active" satisfies SubscriptionStatus,
@@ -348,13 +353,14 @@ async function handleMembershipActivated(supabase: Supabase, data: WhopMembershi
     {
       whop_membership_id: membershipId,
       whop_user_id: extractWhopUserId(data),
+      whop_user_email: extractWhopUserEmail(data),
       whop_plan_id: planId,
       plan_type: getPlanType(planId),
       status,
       trial_ends_at: trialEnd,
       current_period_start: periodStart,
       current_period_end: periodEnd,
-      // user_id wird in Etappe 2 (Register-Flow) verknüpft.
+      // user_id wird in Etappe 2 (Register-Flow) via whop_user_email verknüpft.
       updated_at: nowIso,
     },
     { onConflict: "whop_membership_id" },
