@@ -4,16 +4,9 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { createClient } from "@/utils/supabase/client";
+import { categories } from "@/app/lib/data";
 
-const CATEGORIES = [
-  { id: "ecommerce", label: "E-Commerce", color: "#f97316" },
-  { id: "apps",      label: "App Dev",    color: "#6366f1" },
-  { id: "trading",   label: "Trading",    color: "#10b981" },
-  { id: "freelancer",label: "Freelancer", color: "#f59e0b" },
-  { id: "marketing", label: "Marketing",  color: "#ec4899" },
-  { id: "saas",      label: "SaaS",       color: "#3b82f6" },
-  { id: "coaching",  label: "Coaching",   color: "#8b5cf6" },
-];
+const CATEGORIES = categories.filter((c) => c.id !== "all");
 
 const SEEKING = [
   { id: "Investoren",    label: "Investoren",    color: "#f97316" },

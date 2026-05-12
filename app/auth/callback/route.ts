@@ -2,16 +2,11 @@ import { createClient } from "@/utils/supabase/server";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { categories } from "@/app/lib/data";
 
-const CATEGORY_COLORS: Record<string, string> = {
-  ecommerce: "#f97316",
-  apps: "#6366f1",
-  trading: "#10b981",
-  freelancer: "#f59e0b",
-  marketing: "#ec4899",
-  saas: "#3b82f6",
-  coaching: "#8b5cf6",
-};
+const CATEGORY_COLORS: Record<string, string> = Object.fromEntries(
+  categories.map((c) => [c.id, c.color])
+);
 
 async function ensureProfile(supabase: any, user: any) {
   const { data: existing } = await supabase
