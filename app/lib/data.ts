@@ -55,6 +55,8 @@ export const categories: Category[] = [
   { id: "marketing", label: "Marketing", icon: "", color: "#ec4899" },
   { id: "saas", label: "SaaS", icon: "", color: "#3b82f6" },
   { id: "coaching", label: "Coaching", icon: "", color: "#8b5cf6" },
+  { id: "ai",      label: "AI",      icon: "", color: "#a855f7" },
+  { id: "agency",  label: "Agency",  icon: "", color: "#06b6d4" },
 ];
 
 export const modelColors: Record<string, string> = {
