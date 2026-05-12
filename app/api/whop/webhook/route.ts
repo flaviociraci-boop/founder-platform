@@ -17,12 +17,21 @@ type WhopEventBase<TData = Record<string, unknown>> = {
   data?: TData;
 };
 
+type WhopUser = {
+  id?: string;
+  email?: string;
+  name?: string;
+  username?: string;
+};
+
 type WhopMembership = {
   id?: string;
   user_id?: string;
-  user?: { id?: string; email?: string };
+  user?: WhopUser;
+  member?: { id?: string };
   plan_id?: string;
   product_id?: string;
+  // Whop liefert Strings wie "trialing" | "active" | "past_due" | "completed" | …
   status?: string;
   valid?: boolean;
   trial_end?: number | string | null;
@@ -39,7 +48,7 @@ type WhopPayment = {
   membership_id?: string;
   membership?: WhopMembership;
   user_id?: string;
-  user?: { id?: string; email?: string };
+  user?: WhopUser;
   plan_id?: string;
   status?: string;
   paid_at?: number | string | null;
@@ -176,11 +185,12 @@ function verifyStandardWebhook(
 // Helpers
 // ---------------------------------------------------------------------------
 
-// Normalisiert Event-Namen: lowercase + Bindestriche → Underscores.
-// Whops Docs-URLs nutzen Bindestriche, der payload selber nutzt Underscores —
-// wir wollen beide tolerieren, falls Whop die Konvention mal wechselt.
+// Normalisiert Event-Namen: lowercase + Bindestriche/Punkte → Underscores.
+// Whop sendet im echten Payload Dot-Notation ("membership.activated"), die
+// Docs-URLs nutzen Bindestriche ("membership-activated"), und ältere Quellen
+// nennen Underscores ("membership_activated"). Wir tolerieren alle drei.
 function normalizeEventName(action: string): string {
-  return action.toLowerCase().replace(/-/g, "_");
+  return action.toLowerCase().replace(/[-.]/g, "_");
 }
 
 function getPlanType(planId: string | null | undefined): string {
@@ -220,11 +230,14 @@ function extractPlanId(data: WhopMembership & WhopPayment): string | null {
 }
 
 function extractWhopUserId(data: WhopMembership & WhopPayment): string | null {
+  // Echte Whop-Payloads schicken den User verschachtelt unter data.user;
+  // ältere/flache Strukturen werden zusätzlich als Fallback geprüft.
   return (
-    data?.user_id ??
     data?.user?.id ??
-    data?.membership?.user_id ??
+    data?.user_id ??
+    data?.member?.id ??
     data?.membership?.user?.id ??
+    data?.membership?.user_id ??
     null
   );
 }
@@ -315,12 +328,21 @@ async function handleMembershipActivated(supabase: Supabase, data: WhopMembershi
     console.warn(`${LOG} membership_activated missing id`);
     return;
   }
-  const planId = data?.plan_id ?? null;
+  const planId = extractPlanId(data) ?? null;
   const trialEnd = parseTimestamp(data?.trial_end);
   const periodStart = parseTimestamp(data?.renewal_period_start ?? data?.created_at);
   const periodEnd = parseTimestamp(data?.renewal_period_end ?? data?.expires_at);
-  const status: SubscriptionStatus = trialEnd ? "trial" : "active";
+  // Whop signalisiert Trial entweder per status="trialing" oder per trial_end.
+  const isTrial = trialEnd != null || data?.status === "trialing";
+  const status: SubscriptionStatus = isTrial ? "trial" : "active";
   const nowIso = new Date().toISOString();
+
+  // Helpful während Etappe 2 noch nicht steht — wir wissen damit, welcher
+  // User später beim Register-Flow verknüpft werden muss.
+  console.log(
+    `${LOG} membership user_email=${data?.user?.email ?? "<no-email>"} ` +
+      `user_id=${data?.user?.id ?? "<no-id>"} status=${status}`,
+  );
 
   const { error } = await supabase.from("subscriptions").upsert(
     {
