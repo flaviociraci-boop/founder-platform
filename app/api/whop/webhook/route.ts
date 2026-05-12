@@ -2,160 +2,442 @@ import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
 import { createServiceRoleClient } from "@/utils/supabase/service-role";
 
-const WHOP_WEBHOOK_SECRET = process.env.WHOP_WEBHOOK_SECRET ?? "";
-const MONTHLY_PLAN_ID = process.env.WHOP_MONTHLY_PLAN_ID ?? "plan_guzJNAzucfCXz";
-const YEARLY_PLAN_ID = process.env.WHOP_YEARLY_PLAN_ID ?? "plan_x7IVn5qGLXsfM";
+// ---------------------------------------------------------------------------
+// Types — defensiv: Whop kann Felder zwischen API-Versionen verschieben,
+// deshalb sind alle Payload-Felder optional und werden mit ?. ausgelesen.
+// ---------------------------------------------------------------------------
 
-function verifySignature(body: string, signature: string | null): boolean {
-  if (!signature || !WHOP_WEBHOOK_SECRET) return false;
-  const digest = crypto
-    .createHmac("sha256", WHOP_WEBHOOK_SECRET)
-    .update(body)
-    .digest("hex");
-  try {
-    return crypto.timingSafeEqual(Buffer.from(digest, "hex"), Buffer.from(signature, "hex"));
-  } catch {
-    return false;
-  }
+type WhopEventBase<TData = Record<string, unknown>> = {
+  action?: string;
+  api_version?: string;
+  data?: TData;
+};
+
+type WhopMembership = {
+  id?: string;
+  user_id?: string;
+  user?: { id?: string; email?: string };
+  plan_id?: string;
+  product_id?: string;
+  status?: string;
+  valid?: boolean;
+  trial_end?: number | string | null;
+  renewal_period_start?: number | string | null;
+  renewal_period_end?: number | string | null;
+  expires_at?: number | string | null;
+  cancel_at_period_end?: boolean;
+  canceled_at?: number | string | null;
+  created_at?: number | string | null;
+};
+
+type WhopPayment = {
+  id?: string;
+  membership_id?: string;
+  membership?: WhopMembership;
+  user_id?: string;
+  user?: { id?: string; email?: string };
+  plan_id?: string;
+  status?: string;
+  paid_at?: number | string | null;
+  created_at?: number | string | null;
+  expiration_date?: number | string | null;
+};
+
+type SubscriptionStatus =
+  | "pending"
+  | "trial"
+  | "active"
+  | "past_due"
+  | "canceled"
+  | "expired";
+
+// ---------------------------------------------------------------------------
+// Konstanten
+// ---------------------------------------------------------------------------
+
+const LOG = "WHOP_WEBHOOK:";
+const SIGNATURE_TOLERANCE_SECONDS = 300;
+const MAX_BODY_SIZE_BYTES = 1024 * 1024; // 1 MB
+
+// ---------------------------------------------------------------------------
+// Standard-Webhooks-Signaturprüfung
+// Spec: https://www.standardwebhooks.com/  ·  Whop-Doku: docs.whop.com/developer/guides/webhooks
+//
+// Whop sendet drei Headers (webhook-id, webhook-timestamp, webhook-signature).
+// Signed content = `${id}.${timestamp}.${rawBody}`. HMAC-Key ist der Teil
+// hinter "ws_" — base64-dekodiert. Signatur-Header kann mehrere v1,sig
+// (space-separiert) enthalten, ein Match reicht.
+// ---------------------------------------------------------------------------
+
+function decodeSecret(secret: string): Buffer {
+  const trimmed = secret.startsWith("ws_") ? secret.slice(3) : secret;
+  return Buffer.from(trimmed, "base64");
 }
 
-function resolvePlanType(planId: string | undefined): string {
-  if (planId === MONTHLY_PLAN_ID) return "monthly";
-  if (planId === YEARLY_PLAN_ID) return "yearly";
+type VerifyResult =
+  | { ok: true }
+  | { ok: false; status: 401; reason: string };
+
+function verifyStandardWebhook(
+  rawBody: string,
+  webhookId: string,
+  webhookTimestamp: string,
+  signatureHeader: string,
+  secret: string,
+): VerifyResult {
+  const ts = Number(webhookTimestamp);
+  if (!Number.isFinite(ts)) {
+    return { ok: false, status: 401, reason: "Invalid timestamp" };
+  }
+  const now = Math.floor(Date.now() / 1000);
+  if (Math.abs(now - ts) > SIGNATURE_TOLERANCE_SECONDS) {
+    return { ok: false, status: 401, reason: "Timestamp out of tolerance" };
+  }
+
+  let key: Buffer;
+  try {
+    key = decodeSecret(secret);
+  } catch {
+    return { ok: false, status: 401, reason: "Invalid secret format" };
+  }
+  if (key.length === 0) {
+    return { ok: false, status: 401, reason: "Invalid secret format" };
+  }
+
+  const signedContent = `${webhookId}.${webhookTimestamp}.${rawBody}`;
+  const expected = crypto
+    .createHmac("sha256", key)
+    .update(signedContent)
+    .digest(); // raw Buffer für timingSafeEqual
+
+  const candidates = signatureHeader.split(" ");
+  for (const candidate of candidates) {
+    const [version, sig] = candidate.split(",");
+    if (version !== "v1" || !sig) continue;
+    let sigBuf: Buffer;
+    try {
+      sigBuf = Buffer.from(sig, "base64");
+    } catch {
+      continue;
+    }
+    if (sigBuf.length !== expected.length) continue;
+    if (crypto.timingSafeEqual(sigBuf, expected)) {
+      return { ok: true };
+    }
+  }
+  return { ok: false, status: 401, reason: "Invalid signature" };
+}
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+// Normalisiert Event-Namen: lowercase + Bindestriche → Underscores.
+// Whops Docs-URLs nutzen Bindestriche, der payload selber nutzt Underscores —
+// wir wollen beide tolerieren, falls Whop die Konvention mal wechselt.
+function normalizeEventName(action: string): string {
+  return action.toLowerCase().replace(/-/g, "_");
+}
+
+function getPlanType(planId: string | null | undefined): string {
+  if (!planId) return "unknown";
+  if (planId === process.env.WHOP_MONTHLY_PLAN_ID) return "monthly";
+  if (planId === process.env.WHOP_YEARLY_PLAN_ID) return "yearly";
+  console.warn(`${LOG} unknown plan_id ${planId}`);
   return "unknown";
 }
 
-async function findUserIdByEmail(supabase: ReturnType<typeof createServiceRoleClient>, email: string): Promise<string | null> {
-  const { data, error } = await supabase.auth.admin.listUsers({ perPage: 1000 });
-  if (error) { console.error("listUsers error:", error); return null; }
-  const found = data?.users?.find((u) => u.email === email);
-  return found?.id ?? null;
+// Akzeptiert unix seconds, unix milliseconds, ISO-Strings — Whop ist da
+// nicht ganz konsistent, je nach Event sind Felder Numbers (sec) oder Strings.
+function parseTimestamp(value: unknown): string | null {
+  if (value == null) return null;
+  if (typeof value === "number" && Number.isFinite(value)) {
+    const ms = value > 1e11 ? value : value * 1000;
+    return new Date(ms).toISOString();
+  }
+  if (typeof value === "string") {
+    const n = Number(value);
+    if (Number.isFinite(n) && value.trim() !== "") {
+      const ms = n > 1e11 ? n : n * 1000;
+      return new Date(ms).toISOString();
+    }
+    const parsed = Date.parse(value);
+    if (Number.isFinite(parsed)) return new Date(parsed).toISOString();
+  }
+  return null;
 }
 
-export async function POST(request: NextRequest) {
-  const body = await request.text();
-  const signature = request.headers.get("x-whop-signature");
+function extractMembershipId(data: WhopMembership & WhopPayment): string | null {
+  return data?.membership_id ?? data?.membership?.id ?? data?.id ?? null;
+}
 
-  if (!verifySignature(body, signature)) {
-    console.error("Whop webhook: invalid signature");
-    return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
+function extractPlanId(data: WhopMembership & WhopPayment): string | null {
+  return data?.plan_id ?? data?.membership?.plan_id ?? null;
+}
+
+function extractWhopUserId(data: WhopMembership & WhopPayment): string | null {
+  return (
+    data?.user_id ??
+    data?.user?.id ??
+    data?.membership?.user_id ??
+    data?.membership?.user?.id ??
+    null
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Event-Handler
+// Jeder Handler wirft bei DB-Fehlern (→ 500 → Whop retried), gibt aber bei
+// fehlenden Payload-Feldern nur eine Warning aus (→ 200, kein Retry).
+// ---------------------------------------------------------------------------
+
+type Supabase = ReturnType<typeof createServiceRoleClient>;
+
+async function handlePaymentSucceeded(supabase: Supabase, data: WhopPayment & WhopMembership) {
+  const membershipId = extractMembershipId(data);
+  if (!membershipId) {
+    console.warn(`${LOG} payment_succeeded missing membership id`);
+    return;
+  }
+  const planId = extractPlanId(data);
+  const periodStart = parseTimestamp(
+    data?.membership?.renewal_period_start ?? data?.paid_at ?? data?.created_at,
+  );
+  const periodEnd = parseTimestamp(
+    data?.membership?.renewal_period_end ?? data?.expiration_date,
+  );
+  const nowIso = new Date().toISOString();
+
+  const { error } = await supabase.from("subscriptions").upsert(
+    {
+      whop_membership_id: membershipId,
+      whop_user_id: extractWhopUserId(data),
+      whop_plan_id: planId,
+      plan_type: getPlanType(planId),
+      status: "active" satisfies SubscriptionStatus,
+      current_period_start: periodStart,
+      current_period_end: periodEnd,
+      updated_at: nowIso,
+    },
+    { onConflict: "whop_membership_id" },
+  );
+  if (error) {
+    throw new Error(`payment_succeeded upsert failed: ${error.message}`);
+  }
+}
+
+async function handlePaymentFailed(supabase: Supabase, data: WhopPayment & WhopMembership) {
+  const membershipId = extractMembershipId(data);
+  if (!membershipId) {
+    console.warn(`${LOG} payment_failed missing membership id`);
+    return;
+  }
+  const { data: existing, error: lookupErr } = await supabase
+    .from("subscriptions")
+    .select("id")
+    .eq("whop_membership_id", membershipId)
+    .maybeSingle();
+  if (lookupErr) {
+    throw new Error(`payment_failed lookup failed: ${lookupErr.message}`);
+  }
+  if (!existing) {
+    console.warn(`${LOG} payment_failed for unknown membership ${membershipId}`);
+    return;
+  }
+  const { error } = await supabase
+    .from("subscriptions")
+    .update({
+      status: "past_due" satisfies SubscriptionStatus,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("whop_membership_id", membershipId);
+  if (error) {
+    throw new Error(`payment_failed update failed: ${error.message}`);
+  }
+}
+
+// payment_created ist rein informativ: zu diesem Zeitpunkt weiß Whop schon,
+// dass eine Zahlung initiiert wurde, aber noch nicht ob sie durchgeht.
+// Wir warten bewusst auf payment_succeeded oder membership_activated bevor
+// wir eine subscription anlegen — andernfalls bekämen wir "stale" pending-
+// Rows von Karten, die später abgelehnt werden.
+async function handlePaymentCreated(_supabase: Supabase, data: WhopPayment) {
+  console.log(`${LOG} payment_created (informational, no DB write) id=${data?.id ?? "<no-id>"}`);
+}
+
+async function handleMembershipActivated(supabase: Supabase, data: WhopMembership) {
+  const membershipId = data?.id;
+  if (!membershipId) {
+    console.warn(`${LOG} membership_activated missing id`);
+    return;
+  }
+  const planId = data?.plan_id ?? null;
+  const trialEnd = parseTimestamp(data?.trial_end);
+  const periodStart = parseTimestamp(data?.renewal_period_start ?? data?.created_at);
+  const periodEnd = parseTimestamp(data?.renewal_period_end ?? data?.expires_at);
+  const status: SubscriptionStatus = trialEnd ? "trial" : "active";
+  const nowIso = new Date().toISOString();
+
+  const { error } = await supabase.from("subscriptions").upsert(
+    {
+      whop_membership_id: membershipId,
+      whop_user_id: extractWhopUserId(data),
+      whop_plan_id: planId,
+      plan_type: getPlanType(planId),
+      status,
+      trial_ends_at: trialEnd,
+      current_period_start: periodStart,
+      current_period_end: periodEnd,
+      // user_id wird in Etappe 2 (Register-Flow) verknüpft.
+      updated_at: nowIso,
+    },
+    { onConflict: "whop_membership_id" },
+  );
+  if (error) {
+    throw new Error(`membership_activated upsert failed: ${error.message}`);
+  }
+}
+
+async function handleMembershipDeactivated(supabase: Supabase, data: WhopMembership) {
+  const membershipId = data?.id;
+  if (!membershipId) {
+    console.warn(`${LOG} membership_deactivated missing id`);
+    return;
+  }
+  const { error } = await supabase
+    .from("subscriptions")
+    .update({
+      status: "expired" satisfies SubscriptionStatus,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("whop_membership_id", membershipId);
+  if (error) {
+    throw new Error(`membership_deactivated update failed: ${error.message}`);
+  }
+}
+
+async function handleCancelAtPeriodEndChanged(supabase: Supabase, data: WhopMembership) {
+  const membershipId = data?.id;
+  if (!membershipId) {
+    console.warn(`${LOG} cancel_at_period_end_changed missing id`);
+    return;
+  }
+  const cancelRequested = data?.cancel_at_period_end === true;
+  const { error } = await supabase
+    .from("subscriptions")
+    .update({
+      canceled_at: cancelRequested ? new Date().toISOString() : null,
+      // Status bleibt 'active'/'trial' bis zum tatsächlichen Period-End.
+      updated_at: new Date().toISOString(),
+    })
+    .eq("whop_membership_id", membershipId);
+  if (error) {
+    throw new Error(`cancel_at_period_end_changed update failed: ${error.message}`);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Route Handler
+// ---------------------------------------------------------------------------
+
+export async function POST(request: NextRequest) {
+  const secret = process.env.WHOP_WEBHOOK_SECRET;
+  if (!secret) {
+    console.error(`${LOG} WHOP_WEBHOOK_SECRET not configured`);
+    return NextResponse.json({ error: "Server misconfigured" }, { status: 500 });
   }
 
-  let event: { action: string; data: Record<string, any> };
+  // Raw body VOR JSON-Parse — wir signieren über exakt diese Bytes.
+  let rawBody: string;
   try {
-    event = JSON.parse(body);
+    rawBody = await request.text();
+  } catch (err) {
+    console.error(`${LOG} failed to read body`, err);
+    return NextResponse.json({ error: "Cannot read body" }, { status: 400 });
+  }
+
+  const webhookId = request.headers.get("webhook-id");
+  const webhookTimestamp = request.headers.get("webhook-timestamp");
+  const webhookSignature = request.headers.get("webhook-signature");
+
+  if (!webhookId || !webhookTimestamp || !webhookSignature) {
+    console.warn(`${LOG} missing signature headers`);
+    return NextResponse.json(
+      { error: "Missing signature headers" },
+      { status: 401 },
+    );
+  }
+
+  const verify = verifyStandardWebhook(
+    rawBody,
+    webhookId,
+    webhookTimestamp,
+    webhookSignature,
+    secret,
+  );
+  if (!verify.ok) {
+    console.warn(`${LOG} signature verification failed: ${verify.reason}`);
+    return NextResponse.json({ error: verify.reason }, { status: verify.status });
+  }
+
+  // Body-Size-Limit NACH Signaturprüfung — Schutz gegen Mist von authentifizierten
+  // Quellen. Whop-Payloads sind in der Regel < 5 KB.
+  if (Buffer.byteLength(rawBody, "utf8") > MAX_BODY_SIZE_BYTES) {
+    console.warn(`${LOG} body exceeds ${MAX_BODY_SIZE_BYTES} bytes`);
+    return NextResponse.json({ error: "Payload too large" }, { status: 413 });
+  }
+
+  let event: WhopEventBase;
+  try {
+    event = JSON.parse(rawBody);
   } catch {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  const { action, data } = event;
-  console.log(`Whop webhook received: ${action}`, data?.id ?? "");
+  const rawAction = event?.action ?? "";
+  const action = normalizeEventName(rawAction);
+  const data = (event?.data ?? {}) as WhopMembership & WhopPayment;
+  console.log(`${LOG} received ${rawAction} id=${data?.id ?? "<no-id>"}`);
 
   const supabase = createServiceRoleClient();
 
-  switch (action) {
-    case "payment_succeeded": {
-      const email = data?.user?.email ?? data?.email;
-      const membershipId = data?.membership_id ?? data?.id;
-
-      if (!email || !membershipId) {
-        console.warn("payment_succeeded: missing email or membershipId", { email, membershipId });
+  try {
+    switch (action) {
+      case "payment_succeeded":
+        await handlePaymentSucceeded(supabase, data);
         break;
-      }
-
-      const userId = await findUserIdByEmail(supabase, email);
-      if (!userId) {
-        console.warn("payment_succeeded: no user found for email", email);
+      case "payment_failed":
+        await handlePaymentFailed(supabase, data);
         break;
-      }
-
-      const { error } = await supabase.from("subscriptions").upsert({
-        user_id: userId,
-        whop_user_id: data?.user?.id ?? null,
-        whop_membership_id: membershipId,
-        whop_plan_id: data?.plan_id ?? null,
-        status: "active",
-        plan_type: resolvePlanType(data?.plan_id),
-        current_period_start: data?.created_at
-          ? new Date(data.created_at * 1000).toISOString()
-          : null,
-        current_period_end: data?.expiration_date
-          ? new Date(data.expiration_date * 1000).toISOString()
-          : null,
-      }, { onConflict: "whop_membership_id" });
-
-      if (error) console.error("payment_succeeded upsert error:", error);
-      else console.log("payment_succeeded: subscription upserted for user", userId);
-      break;
+      case "payment_created":
+        await handlePaymentCreated(supabase, data);
+        break;
+      // Whop hat den Aktivierungs-Event je nach API-Version unterschiedlich
+      // benannt — beide Spellings akzeptieren, schadet nicht.
+      case "membership_activated":
+      case "membership_went_valid":
+        await handleMembershipActivated(supabase, data);
+        break;
+      case "membership_deactivated":
+      case "membership_went_invalid":
+        await handleMembershipDeactivated(supabase, data);
+        break;
+      // Spec nennt es ohne '-d', die Whop-Docs/V5 mit '-d' — beide handhaben.
+      case "membership_cancel_at_period_end_changed":
+      case "membership_cancel_at_period_end_change":
+        await handleCancelAtPeriodEndChanged(supabase, data);
+        break;
+      default:
+        console.warn(`${LOG} unhandled event: ${rawAction}`);
+        // Bewusst 200 — Retry wäre sinnlos.
+        break;
     }
-
-    case "membership_activated": {
-      const membershipId = data?.id;
-      if (!membershipId) { console.warn("membership_activated: missing id"); break; }
-
-      const trialEnd = data?.trial_end
-        ? new Date(data.trial_end * 1000).toISOString()
-        : null;
-
-      const { error } = await supabase
-        .from("subscriptions")
-        .update({ status: "active", trial_ends_at: trialEnd })
-        .eq("whop_membership_id", membershipId);
-
-      if (error) console.error("membership_activated update error:", error);
-      else console.log("membership_activated:", membershipId);
-      break;
-    }
-
-    case "membership_deactivated": {
-      const membershipId = data?.id;
-      if (!membershipId) { console.warn("membership_deactivated: missing id"); break; }
-
-      const { error } = await supabase
-        .from("subscriptions")
-        .update({ status: "inactive" })
-        .eq("whop_membership_id", membershipId);
-
-      if (error) console.error("membership_deactivated update error:", error);
-      else console.log("membership_deactivated:", membershipId);
-      break;
-    }
-
-    case "refund_created": {
-      const membershipId = data?.membership_id ?? data?.id;
-      if (!membershipId) { console.warn("refund_created: missing membershipId"); break; }
-
-      const { error } = await supabase
-        .from("subscriptions")
-        .update({ status: "canceled", canceled_at: new Date().toISOString() })
-        .eq("whop_membership_id", membershipId);
-
-      if (error) console.error("refund_created update error:", error);
-      else console.log("refund_created: subscription canceled for membership", membershipId);
-      break;
-    }
-
-    case "membership_cancel_at_period_end_changed": {
-      const membershipId = data?.id;
-      console.log(
-        "membership_cancel_at_period_end_changed:",
-        membershipId,
-        "cancel_at_period_end:", data?.cancel_at_period_end
-      );
-      break;
-    }
-
-    case "payment_failed":
-      console.log("payment_failed:", data?.id ?? "");
-      break;
-
-    case "payment_pending":
-      console.log("payment_pending:", data?.id ?? "");
-      break;
-
-    default:
-      console.log("Unhandled Whop event:", action);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    console.error(`${LOG} handler error for ${rawAction}:`, message, err);
+    // Kein Stack-Trace im Response.
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 
-  return NextResponse.json({ received: true });
+  return NextResponse.json({ received: true }, { status: 200 });
 }
