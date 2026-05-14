@@ -75,7 +75,12 @@ export default function WaitlistForm({ compact = false }: { compact?: boolean })
               borderRadius: 12, padding: "12px 16px",
               fontSize: 12, color: "rgba(255,255,255,0.45)", lineHeight: 1.5, textAlign: "left",
             }}>
-              Schau auch im Spam-Ordner nach falls du die E-Mail nicht findest.
+              <span style={{ fontWeight: 700, color: "#f59e0b" }}>Wichtig!</span>{" "}
+              Schau auch im{" "}
+              <span style={{ fontWeight: 600, color: "rgba(255,255,255,0.7)" }}>Werbung-Tab</span>{" "}
+              oder im{" "}
+              <span style={{ fontWeight: 600, color: "rgba(255,255,255,0.7)" }}>Spam-Ordner</span>{" "}
+              nach, falls du die E-Mail nicht findest.
             </div>
           </>
         )}

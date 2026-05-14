@@ -193,7 +193,12 @@ export default function EmailSignupForm() {
                 borderRadius: 12, padding: "14px 16px",
                 fontSize: 12, color: "rgba(255,255,255,0.5)", lineHeight: 1.5,
               }}>
-                💡 Tipp: Schau auch im Spam-Ordner nach falls du die E-Mail nicht findest.
+                <span style={{ fontWeight: 700, color: "#f59e0b" }}>Wichtig!</span>{" "}
+                Schau auch im{" "}
+                <span style={{ fontWeight: 600, color: "rgba(255,255,255,0.75)" }}>Werbung-Tab</span>{" "}
+                oder im{" "}
+                <span style={{ fontWeight: 600, color: "rgba(255,255,255,0.75)" }}>Spam-Ordner</span>{" "}
+                nach, falls du die E-Mail nicht findest.
               </div>
             </>
           )}
