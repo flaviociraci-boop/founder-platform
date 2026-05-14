@@ -1,10 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { createClient } from "@/utils/supabase/client";
 import { categories } from "@/app/lib/data";
+import { registerUser } from "./actions";
 
 const CATEGORIES = categories.filter((c) => c.id !== "all");
 
@@ -15,10 +14,6 @@ const SEEKING = [
   { id: "Community",     label: "Community",      color: "#10b981" },
   { id: "Projektpartner",label: "Projektpartner", color: "#ec4899" },
 ];
-
-const CATEGORY_COLORS: Record<string, string> = Object.fromEntries(
-  CATEGORIES.map((c) => [c.id, c.color])
-);
 
 const inputStyle: React.CSSProperties = {
   width: "100%",
@@ -62,7 +57,6 @@ const label: React.CSSProperties = {
 };
 
 export default function RegisterForm() {
-  const router = useRouter();
   const [step, setStep] = useState(1);
   const [form, setForm] = useState({
     name: "", email: "", password: "", age: "",
@@ -100,82 +94,22 @@ export default function RegisterForm() {
     setLoading(true);
     setError("");
 
-    // Pre-Check: matched diese Email eine offene Whop-Subscription?
-    // Antwort kommt aus /api/whop/check-subscription (service-role, gibt nur
-    // { matched: boolean } zurück — keine Sub-Daten an den Client).
-    let subscriptionMatched = false;
-    try {
-      const res = await fetch("/api/whop/check-subscription", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ email: form.email.trim() }),
-      });
-      if (res.ok) {
-        const json = (await res.json()) as { matched?: boolean };
-        subscriptionMatched = json?.matched === true;
-      }
-    } catch (e) {
-      console.warn("Subscription pre-check failed:", e);
-    }
-    if (!subscriptionMatched) {
-      // TODO: In Etappe 4 (Middleware-Paywall) wird das Fehlen einer
-      // Subscription dann zum Block. Aktuell weiter, damit Entwicklung
-      // möglich bleibt (Test-Accounts ohne echten Whop-Kauf).
-      console.warn(`No matching Whop subscription for ${form.email} — continuing anyway (dev fallback)`);
-    }
-
-    const supabase = createClient();
-
-    const initials = form.name
-      .split(" ")
-      .map((n) => n[0] ?? "")
-      .join("")
-      .toUpperCase()
-      .slice(0, 2);
-
-    const { data, error: signUpError } = await supabase.auth.signUp({
+    // Server-Action validiert Subscription, legt User via Admin-API an,
+    // verknüpft Sub + Profile, setzt Session, redirected auf "/".
+    // Bei Erfolg kommt der Code hierhin nicht zurück.
+    const result = await registerUser({
       email: form.email,
       password: form.password,
-      options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
-        data: {
-          name: form.name,
-          age: form.age ? parseInt(form.age) : null,
-          category: form.category,
-          seeking: form.seeking,
-          avatar: initials,
-          color: CATEGORY_COLORS[form.category] ?? "#6366f1",
-        },
-      },
+      name: form.name,
+      age: form.age,
+      category: form.category,
+      seeking: form.seeking,
     });
 
-    if (signUpError) {
-      setError(signUpError.message);
+    if (result?.error) {
+      setError(result.error);
       setLoading(false);
-      return;
     }
-
-    if (!data.user) {
-      setError("Registrierung fehlgeschlagen. Bitte versuche es erneut.");
-      setLoading(false);
-      return;
-    }
-
-    if (data.session) {
-      router.push("/");
-      router.refresh();
-    } else {
-      setStep(4);
-    }
-    setLoading(false);
-  };
-
-  const handleGoogle = async () => {
-    const supabase = createClient();
-    await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: { redirectTo: `${window.location.origin}/auth/callback` },
-    });
   };
 
   const Progress = () => (
@@ -193,8 +127,7 @@ export default function RegisterForm() {
   const stepLabel =
     step === 1 ? "Erstelle dein Profil"
     : step === 2 ? "Wähle deine Kategorie"
-    : step === 3 ? "Was suchst du?"
-    : "Fast fertig!";
+    : "Was suchst du?";
 
   return (
     <div style={{
@@ -355,36 +288,9 @@ export default function RegisterForm() {
             </div>
           )}
 
-          {/* ── STEP 4: Email confirmation ── */}
-          {step === 4 && (
-            <div style={{ textAlign: "center", padding: "8px 0" }}>
-              <p style={{ margin: "0 0 8px", fontWeight: 700, fontSize: 17 }}>Fast fertig!</p>
-              <p style={{ margin: "0 0 24px", fontSize: 14, color: "rgba(255,255,255,0.5)", lineHeight: 1.6 }}>
-                Wir haben dir eine Bestätigungs-Email an <strong style={{ color: "#fff" }}>{form.email}</strong> geschickt.
-                Klicke den Link darin um loszulegen.
-              </p>
-              <a href="/login" style={{
-                display: "inline-block", padding: "12px 24px", borderRadius: 14,
-                background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
-                color: "#fff", fontWeight: 600, fontSize: 14, textDecoration: "none",
-              }}>
-                Zum Login
-              </a>
-            </div>
-          )}
         </div>
       </div>
     </div>
   );
 }
 
-function GoogleIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-      <path d="M17.64 9.205c0-.639-.057-1.252-.164-1.841H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615Z" fill="#4285F4"/>
-      <path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18Z" fill="#34A853"/>
-      <path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332Z" fill="#FBBC05"/>
-      <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58Z" fill="#EA4335"/>
-    </svg>
-  );
-}
