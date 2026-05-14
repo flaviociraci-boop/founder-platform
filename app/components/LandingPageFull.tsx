@@ -54,7 +54,9 @@ export default function LandingPage() {
   const [openFaq, setOpenFaq] = useState(0);
   const isDesktop = useMediaQuery("(min-width: 1024px)");
 
-  const goRegister = () => router.push("/register");
+  // Direkte Registrierung ist hinter dem Whop-Checkout gegated — alle
+  // "Get started"-CTAs führen auf /pricing.
+  const goRegister = () => router.push("/pricing");
   const goLogin = () => router.push("/login");
   const scrollToSignup = () => document.getElementById("email-signup")?.scrollIntoView({ behavior: "smooth" });
 

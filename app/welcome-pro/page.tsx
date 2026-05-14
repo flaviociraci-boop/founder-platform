@@ -64,7 +64,7 @@ export default function WelcomeProPage() {
           </p>
 
           <a
-            href="/register"
+            href="/register?status=success"
             style={{
               display: "block", padding: "15px 0", borderRadius: 14,
               background: "linear-gradient(135deg, #6366f1, #8b5cf6)",

@@ -2,6 +2,8 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 const AUTH_PATHS = ["/login", "/register", "/auth"];
+
+// Routen, die für anonyme Besucher erreichbar sind (kein /login-Redirect).
 const PUBLIC_PATHS = [
   "/",
   "/api/subscribe",
@@ -18,8 +20,9 @@ const PUBLIC_PATHS = [
 ];
 
 // Routen, bei denen für eingeloggte User der Subscription-Check entfällt.
-// Alles aus AUTH_PATHS und PUBLIC_PATHS gilt automatisch als bypass; diese
-// Prefix-Liste deckt zusätzliche Callbacks/API-Pfade ab.
+// = PUBLIC_PATHS ohne "/", weil "/" für eingeloggte User die AppShell
+// rendert — die soll nur mit aktiver Sub sichtbar sein.
+const PAYWALL_BYPASS_PATHS = PUBLIC_PATHS.filter((p) => p !== "/");
 const PAYWALL_BYPASS_PREFIXES = ["/auth/", "/api/whop/", "/api/auth/"];
 
 // Subscription-Status, die App-Zugang geben. Whop's eigener Wert ist
@@ -56,7 +59,7 @@ export async function proxy(request: NextRequest) {
   const isPublicPath = PUBLIC_PATHS.includes(pathname);
   const isPaywallBypass =
     isAuthPath ||
-    isPublicPath ||
+    PAYWALL_BYPASS_PATHS.includes(pathname) ||
     PAYWALL_BYPASS_PREFIXES.some((p) => pathname.startsWith(p));
 
   // Redirect unauthenticated users to login (but not from landing page or auth pages)
