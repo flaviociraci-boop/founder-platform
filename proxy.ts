@@ -17,6 +17,17 @@ const PUBLIC_PATHS = [
   "/cookie-richtlinie",
 ];
 
+// Routen, bei denen für eingeloggte User der Subscription-Check entfällt.
+// Alles aus AUTH_PATHS und PUBLIC_PATHS gilt automatisch als bypass; diese
+// Prefix-Liste deckt zusätzliche Callbacks/API-Pfade ab.
+const PAYWALL_BYPASS_PREFIXES = ["/auth/", "/api/whop/", "/api/auth/"];
+
+// Subscription-Status, die App-Zugang geben. Whop's eigener Wert ist
+// "trialing", unser Webhook-Handler mappt das aktuell aber auf "trial"
+// (siehe handleMembershipActivated). Wir akzeptieren beide, damit
+// Phase 4 unabhängig vom Status-Mapping funktioniert.
+const PAYWALL_PASS_STATUSES = ["active", "trial", "trialing"];
+
 export async function proxy(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
 
@@ -43,6 +54,10 @@ export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const isAuthPath = AUTH_PATHS.some((p) => pathname.startsWith(p));
   const isPublicPath = PUBLIC_PATHS.includes(pathname);
+  const isPaywallBypass =
+    isAuthPath ||
+    isPublicPath ||
+    PAYWALL_BYPASS_PREFIXES.some((p) => pathname.startsWith(p));
 
   // Redirect unauthenticated users to login (but not from landing page or auth pages)
   if (!user && !isAuthPath && !isPublicPath) {
@@ -52,6 +67,26 @@ export async function proxy(request: NextRequest) {
   // Redirect logged-in users away from login/register
   if (user && (pathname === "/login" || pathname === "/register")) {
     return NextResponse.redirect(new URL("/", request.url));
+  }
+
+  // Paywall: eingeloggte User ohne aktive/trialing Subscription → /pricing.
+  // RLS auf subscriptions erlaubt den SELECT auf die eigene Row (auth.uid()
+  // = user_id). Bei DB-Fehler durchlassen — lieber kurz Gratis-Zugang als
+  // kaputte App. Vercel-Log-Filter: "[paywall]".
+  if (user && !isPaywallBypass) {
+    const { data, error } = await supabase
+      .from("subscriptions")
+      .select("id")
+      .eq("user_id", user.id)
+      .in("status", PAYWALL_PASS_STATUSES)
+      .limit(1)
+      .maybeSingle();
+
+    if (error) {
+      console.error("[paywall] subscription check failed:", error);
+    } else if (!data) {
+      return NextResponse.redirect(new URL("/pricing", request.url), 307);
+    }
   }
 
   return supabaseResponse;
