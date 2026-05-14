@@ -56,10 +56,13 @@ const label: React.CSSProperties = {
   marginBottom: 6,
 };
 
-export default function RegisterForm() {
+type Props = { prefilledEmail?: string };
+
+export default function RegisterForm({ prefilledEmail = "" }: Props) {
+  const emailLocked = !!prefilledEmail;
   const [step, setStep] = useState(1);
   const [form, setForm] = useState({
-    name: "", email: "", password: "", age: "",
+    name: "", email: prefilledEmail, password: "", age: "",
     category: "", seeking: "",
   });
   const [error, setError] = useState("");
@@ -178,18 +181,36 @@ export default function RegisterForm() {
                 { label: "Email",      key: "email"    as const, type: "email",    placeholder: "deine@email.com", helper: "Verwende die gleiche Email, mit der du bei Whop bezahlt hast" },
                 { label: "Passwort",   key: "password" as const, type: "password", placeholder: "••••••••" },
                 { label: "Alter",      key: "age"      as const, type: "number",   placeholder: "23" },
-              ] as Array<{ label: string; key: "name" | "email" | "password" | "age"; type: string; placeholder: string; helper?: string }>).map((f) => (
-                <div key={f.key} style={{ marginBottom: 14 }}>
-                  <label style={label}>{f.label}</label>
-                  <input type={f.type} placeholder={f.placeholder} style={inputStyle}
-                    value={form[f.key]} onChange={setField(f.key)} />
-                  {f.helper && (
-                    <p style={{ margin: "6px 2px 0", fontSize: 12, color: "rgba(255,255,255,0.5)", lineHeight: 1.4 }}>
-                      {f.helper}
-                    </p>
-                  )}
-                </div>
-              ))}
+              ] as Array<{ label: string; key: "name" | "email" | "password" | "age"; type: string; placeholder: string; helper?: string }>).map((f) => {
+                const isLockedEmail = f.key === "email" && emailLocked;
+                return (
+                  <div key={f.key} style={{ marginBottom: 14 }}>
+                    <label style={label}>{f.label}</label>
+                    <input
+                      type={f.type}
+                      placeholder={f.placeholder}
+                      style={{
+                        ...inputStyle,
+                        ...(isLockedEmail
+                          ? { opacity: 0.75, cursor: "not-allowed", color: "rgba(255,255,255,0.75)" }
+                          : {}),
+                      }}
+                      value={form[f.key]}
+                      onChange={setField(f.key)}
+                      disabled={isLockedEmail}
+                    />
+                    {isLockedEmail ? (
+                      <p style={{ margin: "6px 2px 0", fontSize: 12, color: "#10b981", lineHeight: 1.4, display: "flex", alignItems: "center", gap: 4 }}>
+                        <span aria-hidden>✓</span> Verifiziert über Whop
+                      </p>
+                    ) : f.helper ? (
+                      <p style={{ margin: "6px 2px 0", fontSize: 12, color: "rgba(255,255,255,0.5)", lineHeight: 1.4 }}>
+                        {f.helper}
+                      </p>
+                    ) : null}
+                  </div>
+                );
+              })}
 
               {error && <p style={{ color: "#f87171", fontSize: 13, marginBottom: 12 }}>{error}</p>}
 

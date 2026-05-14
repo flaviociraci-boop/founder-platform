@@ -41,6 +41,12 @@ type WhopMembership = {
   cancel_at_period_end?: boolean;
   canceled_at?: number | string | null;
   created_at?: number | string | null;
+  // Whop hängt im Checkout-Redirect ?payment_id=… an; je nach Payload sitzt
+  // die ID an unterschiedlichen Stellen. Defensiv alle drei abdecken.
+  payment_id?: string;
+  last_payment?: { id?: string };
+  receipt?: { id?: string };
+  receipt_id?: string;
 };
 
 type WhopPayment = {
@@ -250,6 +256,21 @@ function extractWhopUserEmail(data: WhopMembership & WhopPayment): string | null
   return email ? email.toLowerCase() : null;
 }
 
+// Payment-ID-Extraktion für /register-Email-Prefill via subscriptions.
+// payment_succeeded ruft separat data.id, weil dort data SELBST das Payment
+// ist; für Membership-Events probieren wir verschiedene Stellen, weil Whop
+// das Feld je nach Payload mal flach, mal unter last_payment / receipt
+// liefert.
+function extractMembershipPaymentId(data: WhopMembership & WhopPayment): string | null {
+  return (
+    data?.payment_id ??
+    data?.last_payment?.id ??
+    data?.receipt?.id ??
+    data?.receipt_id ??
+    null
+  );
+}
+
 // ---------------------------------------------------------------------------
 // Event-Handler
 // Jeder Handler wirft bei DB-Fehlern (→ 500 → Whop retried), gibt aber bei
@@ -271,6 +292,8 @@ async function handlePaymentSucceeded(supabase: Supabase, data: WhopPayment & Wh
   const periodEnd = parseTimestamp(
     data?.membership?.renewal_period_end ?? data?.expiration_date,
   );
+  // payment_succeeded: data IST das Payment-Objekt, also data.id = payment_id.
+  const paymentId = data?.id ?? null;
   const nowIso = new Date().toISOString();
 
   const { error } = await supabase.from("subscriptions").upsert(
@@ -283,6 +306,9 @@ async function handlePaymentSucceeded(supabase: Supabase, data: WhopPayment & Wh
       status: "active" satisfies SubscriptionStatus,
       current_period_start: periodStart,
       current_period_end: periodEnd,
+      // Nur setzen wenn vorhanden — andernfalls würde ein späteres Event
+      // ohne payment_id einen bestehenden Wert mit NULL überschreiben.
+      ...(paymentId ? { whop_payment_id: paymentId } : {}),
       updated_at: nowIso,
     },
     { onConflict: "whop_membership_id" },
@@ -353,6 +379,8 @@ async function handleMembershipActivated(supabase: Supabase, data: WhopMembershi
       `user_id=${data?.user?.id ?? "<no-id>"} status=${status}`,
   );
 
+  const paymentId = extractMembershipPaymentId(data);
+
   const { error } = await supabase.from("subscriptions").upsert(
     {
       whop_membership_id: membershipId,
@@ -365,6 +393,8 @@ async function handleMembershipActivated(supabase: Supabase, data: WhopMembershi
       current_period_start: periodStart,
       current_period_end: periodEnd,
       // user_id wird in Etappe 2 (Register-Flow) via whop_user_email verknüpft.
+      // Nur setzen wenn vorhanden — Race mit payment_succeeded sonst.
+      ...(paymentId ? { whop_payment_id: paymentId } : {}),
       updated_at: nowIso,
     },
     { onConflict: "whop_membership_id" },

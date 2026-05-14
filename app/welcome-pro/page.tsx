@@ -6,7 +6,20 @@ export const metadata: Metadata = {
   title: "Willkommen bei Pro — Connectyfind",
 };
 
-export default function WelcomeProPage() {
+export default async function WelcomeProPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ payment_id?: string }>;
+}) {
+  // payment_id durchreichen, damit /register die Email aus der Sub-Row
+  // lookupen und vorausfüllen kann. Fehlt sie, fällt /register auf
+  // manuelles Tippen zurück.
+  const params = await searchParams;
+  const paymentId = params.payment_id;
+  const registerHref = `/register?status=success${
+    paymentId ? `&payment_id=${encodeURIComponent(paymentId)}` : ""
+  }`;
+
   return (
     <div style={{
       fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif",
@@ -64,7 +77,7 @@ export default function WelcomeProPage() {
           </p>
 
           <a
-            href="/register?status=success"
+            href={registerHref}
             style={{
               display: "block", padding: "15px 0", borderRadius: 14,
               background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
