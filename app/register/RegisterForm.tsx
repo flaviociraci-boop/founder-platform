@@ -152,7 +152,7 @@ export default function RegisterForm({ prefilledEmail = "" }: Props) {
         {/* Logo */}
         <div style={{ textAlign: "center", marginBottom: 32 }}>
           <Image
-            src="/logo-icon.png"
+            src="/connectyfind-logo-light.svg"
             alt="Connectyfind"
             width={40}
             height={40}

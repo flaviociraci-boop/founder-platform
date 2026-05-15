@@ -23,7 +23,7 @@ export default function AgbPage() {
           style={{ display: "inline-flex", alignItems: "center", gap: 8, marginBottom: 48, textDecoration: "none" }}
         >
           <Image
-            src="/logo-icon.png"
+            src="/connectyfind-logo-light.svg"
             alt="Connectyfind"
             width={32}
             height={32}

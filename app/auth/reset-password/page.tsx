@@ -62,7 +62,7 @@ export default function ResetPasswordPage() {
       <div style={{ width: "100%", maxWidth: 400, position: "relative", zIndex: 1 }}>
         <div style={{ textAlign: "center", marginBottom: 32 }}>
           <Image
-            src="/logo-icon.png"
+            src="/connectyfind-logo-light.svg"
             alt="Connectyfind"
             width={40}
             height={40}

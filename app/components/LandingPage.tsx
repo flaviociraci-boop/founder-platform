@@ -104,7 +104,7 @@ export default function LandingPage() {
             {/* Logo */}
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <Image
-                src="/logo-icon.png"
+                src="/connectyfind-logo-light.svg"
                 alt="Connectyfind"
                 width={64}
                 height={64}
@@ -339,7 +339,7 @@ export default function LandingPage() {
             {/* Logo */}
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <Image
-                src="/logo-icon.png"
+                src="/connectyfind-logo-light.svg"
                 alt="Connectyfind"
                 width={64}
                 height={64}

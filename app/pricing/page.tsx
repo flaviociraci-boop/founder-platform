@@ -36,7 +36,7 @@ export default function PricingPage() {
         {/* Nav */}
         <div style={{ padding: "20px 0 0" }}>
           <a href="/" style={{ display: "inline-flex", alignItems: "center", gap: 8, textDecoration: "none" }}>
-            <Image src="/logo-icon.png" alt="Connectyfind" width={32} height={32} style={{ borderRadius: 8 }} quality={100} />
+            <Image src="/connectyfind-logo-light.svg" alt="Connectyfind" width={32} height={32} style={{ borderRadius: 8 }} quality={100} />
             <span style={{ fontWeight: 800, fontSize: 15, color: "#fff" }}>Connectyfind</span>
           </a>
         </div>
