@@ -2,9 +2,11 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { Users } from "lucide-react";
 import { User, categories } from "@/app/lib/data";
 import { createClient } from "@/utils/supabase/client";
 import { Avatar } from "@/app/components/Avatar";
+import { useIsPro } from "@/app/lib/hooks/useIsPro";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -66,10 +68,9 @@ type SettingsItem = {
   route?: string;
 };
 
-const SETTINGS: { title: string; icon: string; items: SettingsItem[] }[] = [
+const SETTINGS: { title: string; items: SettingsItem[] }[] = [
   {
     title: "Sicherheit",
-    icon: "◈",
     items: [
       { label: "Passwort ändern", desc: "Neues Passwort festlegen", action: "Ändern", route: "/einstellungen/passwort" },
       { label: "Zwei-Faktor-Auth", desc: "Nicht aktiviert", action: "Aktivieren", warning: true },
@@ -78,7 +79,6 @@ const SETTINGS: { title: string; icon: string; items: SettingsItem[] }[] = [
   },
   {
     title: "Abos & Zahlungen",
-    icon: "◎",
     items: [
       { label: "Mein Abo", desc: "Plan & Abrechnungsstatus", action: "Verwalten", route: "/einstellungen/abo" },
       { label: "Pro werden", desc: "$29/Monat oder $249/Jahr — 3 Tage gratis", action: "Ansehen", route: "/pricing" },
@@ -86,7 +86,6 @@ const SETTINGS: { title: string; icon: string; items: SettingsItem[] }[] = [
   },
   {
     title: "Datenschutz",
-    icon: "◇",
     items: [
       { label: "Profil Sichtbarkeit", desc: "Öffentlich für alle", action: "Ändern", route: "/einstellungen/sichtbarkeit" },
       { label: "Daten exportieren", desc: "Alle deine Daten herunterladen", action: "Exportieren" },
@@ -95,18 +94,16 @@ const SETTINGS: { title: string; icon: string; items: SettingsItem[] }[] = [
   },
   {
     title: "Benachrichtigungen",
-    icon: "◆",
     items: [
       { label: "Push & E-Mail Einstellungen", desc: "Matches, Nachrichten, Bewerbungen", action: "Verwalten", route: "/einstellungen/benachrichtigungen" },
     ],
   },
   {
     title: "Rechtliches",
-    icon: "◻",
     items: [
-      { label: "AGB", desc: "Allgemeine Geschäftsbedingungen", action: "Ansehen" },
-      { label: "Datenschutzerklärung", desc: "DSGVO-konforme Erklärung", action: "Ansehen" },
-      { label: "Impressum", desc: "Pflichtangaben", action: "Ansehen" },
+      { label: "AGB", desc: "Allgemeine Geschäftsbedingungen", action: "Ansehen", route: "/agb" },
+      { label: "Datenschutzerklärung", desc: "DSGVO-konforme Erklärung", action: "Ansehen", route: "/datenschutz" },
+      { label: "Impressum", desc: "Pflichtangaben", action: "Ansehen", route: "/impressum" },
     ],
   },
 ];
@@ -122,6 +119,7 @@ type Props = {
 export default function ProfileDashboard({ currentUserId, onLogout, onOpenChat }: Props) {
   const router = useRouter();
   const supabase = useMemo(() => createClient(), []);
+  const { isPro } = useIsPro();
 
   const [activeTab, setActiveTab] = useState<ActiveTab>("Profil");
   const [expandedSection, setExpandedSection] = useState<string>("");
@@ -338,25 +336,30 @@ export default function ProfileDashboard({ currentUserId, onLogout, onOpenChat }
       {/* ── PROFIL TAB ── */}
       {activeTab === "Profil" && (
         <div style={{ padding: 20 }}>
-          {/* Plan badge */}
-          <div style={{
-            background: "linear-gradient(135deg, rgba(99,102,241,0.1), rgba(139,92,246,0.07))",
-            border: "1px solid rgba(99,102,241,0.22)",
-            borderRadius: 16, padding: 16,
-            display: "flex", alignItems: "center", gap: 12, marginBottom: 20,
-          }}>
-            <span style={{ fontSize: 20 }}>✦</span>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontWeight: 700, fontSize: 15 }}>Free Plan</div>
-              <div style={{ fontSize: 13, color: "rgba(255,255,255,0.4)" }}>Upgrade für unbegrenzte Connects</div>
+          {/* Plan badge — Upgrade-CTA nur für Nicht-Pro-User */}
+          {!isPro && (
+            <div style={{
+              background: "linear-gradient(135deg, rgba(99,102,241,0.1), rgba(139,92,246,0.07))",
+              border: "1px solid rgba(99,102,241,0.22)",
+              borderRadius: 16, padding: 16,
+              display: "flex", alignItems: "center", gap: 12, marginBottom: 20,
+            }}>
+              <span style={{ fontSize: 20 }}>✦</span>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontWeight: 700, fontSize: 15 }}>Free Plan</div>
+                <div style={{ fontSize: 13, color: "rgba(255,255,255,0.4)" }}>Upgrade für unbegrenzte Connects</div>
+              </div>
+              <button
+                onClick={() => router.push("/pricing")}
+                style={{
+                  background: "linear-gradient(135deg, #6366f1, #8b5cf6)", border: "none",
+                  color: "#fff", padding: "8px 14px", borderRadius: 10,
+                  fontSize: 13, fontWeight: 700, cursor: "pointer",
+                  boxShadow: "0 4px 12px rgba(99,102,241,0.3)",
+                }}
+              >Pro ✦</button>
             </div>
-            <button style={{
-              background: "linear-gradient(135deg, #6366f1, #8b5cf6)", border: "none",
-              color: "#fff", padding: "8px 14px", borderRadius: 10,
-              fontSize: 13, fontWeight: 700, cursor: "pointer",
-              boxShadow: "0 4px 12px rgba(99,102,241,0.3)",
-            }}>Pro ✦</button>
-          </div>
+          )}
 
           {/* Bio */}
           <div style={{ marginBottom: 20 }}>
@@ -525,7 +528,10 @@ export default function ProfileDashboard({ currentUserId, onLogout, onOpenChat }
           <h3 style={{ ...sLabel, marginBottom: 16 }}>Deine Matches ({connections.length})</h3>
           {connections.length === 0 ? (
             <div style={{ textAlign: "center", padding: "40px 0" }}>
-              <div style={{ fontSize: 40, marginBottom: 14 }}>🤝</div>
+              {/* Connect-Tab-Icon (Users aus lucide-react, identisch zu AppShell-Bottom-Nav) */}
+              <div style={{ display: "flex", justifyContent: "center", marginBottom: 14 }}>
+                <Users size={52} color="#694CBB" strokeWidth={1.5} />
+              </div>
               <p style={{ margin: 0, fontSize: 14, color: "rgba(255,255,255,0.35)", lineHeight: 1.6 }}>
                 Noch keine Matches. Geh zu <strong style={{ color: "#6366f1" }}>Connect</strong>!
               </p>
@@ -571,7 +577,7 @@ export default function ProfileDashboard({ currentUserId, onLogout, onOpenChat }
 
           {/* Account section */}
           <AccordionSection
-            title="Account" icon="◉"
+            title="Account"
             open={expandedSection === "__account"}
             onToggle={() => setExpandedSection(expandedSection === "__account" ? "" : "__account")}
           >
@@ -586,24 +592,31 @@ export default function ProfileDashboard({ currentUserId, onLogout, onOpenChat }
             />
           </AccordionSection>
 
-          {SETTINGS.map((section) => (
-            <AccordionSection
-              key={section.title}
-              title={section.title} icon={section.icon}
-              open={expandedSection === section.title}
-              onToggle={() => setExpandedSection(expandedSection === section.title ? "" : section.title)}
-            >
-              {section.items.map((item, i) => (
-                <AccordionRow
-                  key={item.label}
-                  label={item.label} desc={item.desc} action={item.action}
-                  highlight={item.highlight} pro={item.pro} danger={item.danger} warning={item.warning}
-                  onClick={item.route ? () => router.push(item.route!) : undefined}
-                  divider={i > 0}
-                />
-              ))}
-            </AccordionSection>
-          ))}
+          {SETTINGS.map((section) => {
+            // "Pro werden" nur zeigen wenn User KEIN aktives Pro-Abo hat.
+            const items = section.items.filter(
+              (it) => !(it.label === "Pro werden" && isPro),
+            );
+            if (items.length === 0) return null;
+            return (
+              <AccordionSection
+                key={section.title}
+                title={section.title}
+                open={expandedSection === section.title}
+                onToggle={() => setExpandedSection(expandedSection === section.title ? "" : section.title)}
+              >
+                {items.map((item, i) => (
+                  <AccordionRow
+                    key={item.label}
+                    label={item.label} desc={item.desc} action={item.action}
+                    highlight={item.highlight} pro={item.pro} danger={item.danger} warning={item.warning}
+                    onClick={item.route ? () => router.push(item.route!) : undefined}
+                    divider={i > 0}
+                  />
+                ))}
+              </AccordionSection>
+            );
+          })}
 
           <button
             onClick={handleLogout}
@@ -625,9 +638,9 @@ export default function ProfileDashboard({ currentUserId, onLogout, onOpenChat }
 // ─── Accordion sub-components ─────────────────────────────────────────────────
 
 function AccordionSection({
-  title, icon, open, onToggle, children,
+  title, open, onToggle, children,
 }: {
-  title: string; icon: string; open: boolean; onToggle: () => void; children: React.ReactNode;
+  title: string; open: boolean; onToggle: () => void; children: React.ReactNode;
 }) {
   return (
     <div style={{ marginBottom: 10 }}>
@@ -638,7 +651,6 @@ function AccordionSection({
         borderRadius: open ? "14px 14px 0 0" : 14,
         padding: "14px 16px", cursor: "pointer", color: "#fff",
       }}>
-        <span style={{ fontSize: 14, color: "rgba(255,255,255,0.45)" }}>{icon}</span>
         <span style={{ flex: 1, fontWeight: 700, fontSize: 15, textAlign: "left" }}>{title}</span>
         <span style={{
           fontSize: 11, color: "rgba(255,255,255,0.28)",
