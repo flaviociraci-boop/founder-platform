@@ -444,16 +444,6 @@ export default function MatchScreen({ users, currentUserId, onOpenChat }: Props)
                 <div style={{ flex: 1 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                     <span style={{ fontWeight: 700, fontSize: 15 }}>{user.name}</span>
-                    {state === "accepted" && (
-                      <span style={{
-                        fontSize: 11, padding: "2px 8px", borderRadius: 20,
-                        background: "rgba(16,185,129,0.15)",
-                        border: "1px solid rgba(16,185,129,0.3)",
-                        color: "#10b981", fontWeight: 700,
-                      }}>
-                        🤝 MATCH
-                      </span>
-                    )}
                   </div>
                   <div style={{ fontSize: 13, color: "rgba(255,255,255,0.45)", marginTop: 1 }}>
                     {user.role} · {user.location}
