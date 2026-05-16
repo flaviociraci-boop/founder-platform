@@ -19,6 +19,7 @@ type Props = {
 export default function ProfileScreen({ user, onBack, followed, toggleFollow, currentUserId, onOpenChat }: Props) {
   const supabase = useMemo(() => createClient(), []);
   const [connStatus, setConnStatus] = useState<ConnStatus>("none");
+  const [actionError, setActionError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!currentUserId) { setConnStatus("none"); return; }
@@ -55,35 +56,85 @@ export default function ProfileScreen({ user, onBack, followed, toggleFollow, cu
     check();
   }, [currentUserId, user.id, supabase]);
 
+  // Vier Mutationen, gleiches Muster wie MatchScreen: optimistic UI,
+  // bei DB-Fehler State zurückrollen + Inline-Message. sendConnect nutzt
+  // upsert statt delete-then-insert — atomisch, kein Race.
+
   const sendConnect = async () => {
     if (!currentUserId) return;
+    const prev = connStatus;
+    setActionError(null);
     setConnStatus("pending_sent");
-    // Remove any stale rejected row before inserting
-    await supabase.from("connections").delete()
-      .eq("user_id", currentUserId).eq("target_id", user.id);
-    await supabase.from("connections")
-      .insert({ user_id: currentUserId, target_id: user.id, status: "pending" });
+
+    const { error } = await supabase
+      .from("connections")
+      .upsert(
+        { user_id: currentUserId, target_id: user.id, status: "pending" },
+        { onConflict: "user_id,target_id" },
+      );
+
+    if (error) {
+      console.error("[connect] sendConnect failed:", error);
+      setConnStatus(prev);
+      setActionError(`Anfrage konnte nicht gesendet werden: ${error.message}`);
+    }
   };
 
   const withdrawConnect = async () => {
     if (!currentUserId) return;
+    const prev = connStatus;
+    setActionError(null);
     setConnStatus("none");
-    await supabase.from("connections").delete()
-      .eq("user_id", currentUserId).eq("target_id", user.id);
+
+    const { error } = await supabase
+      .from("connections")
+      .delete()
+      .eq("user_id", currentUserId)
+      .eq("target_id", user.id);
+
+    if (error) {
+      console.error("[connect] withdrawConnect failed:", error);
+      setConnStatus(prev);
+      setActionError(`Zurückziehen fehlgeschlagen: ${error.message}`);
+    }
   };
 
   const acceptRequest = async () => {
     if (!currentUserId) return;
-    await supabase.from("connections").update({ status: "accepted" })
-      .eq("user_id", user.id).eq("target_id", currentUserId);
+    const prev = connStatus;
+    setActionError(null);
     setConnStatus("accepted");
+
+    const { error } = await supabase
+      .from("connections")
+      .update({ status: "accepted" })
+      .eq("user_id", user.id)
+      .eq("target_id", currentUserId);
+
+    if (error) {
+      console.error("[connect] acceptRequest failed:", error);
+      setConnStatus(prev);
+      setActionError(`Annehmen fehlgeschlagen: ${error.message}`);
+    }
   };
 
   const rejectRequest = async () => {
     if (!currentUserId) return;
-    await supabase.from("connections").update({ status: "rejected" })
-      .eq("user_id", user.id).eq("target_id", currentUserId);
+    const prev = connStatus;
+    setActionError(null);
     setConnStatus("none");
+
+    const { error } = await supabase
+      .from("connections")
+      .update({ status: "rejected" })
+      .eq("user_id", user.id)
+      .eq("target_id", currentUserId);
+
+    if (error) {
+      console.error("[connect] rejectRequest failed:", error);
+      setConnStatus(prev);
+      setActionError(`Ablehnen fehlgeschlagen: ${error.message}`);
+    }
   };
 
   return (
@@ -110,6 +161,42 @@ export default function ProfileScreen({ user, onBack, followed, toggleFollow, cu
         >
           ← Zurück
         </button>
+
+        {actionError && (
+          <div
+            role="alert"
+            style={{
+              background: "rgba(239,68,68,0.08)",
+              border: "1px solid rgba(239,68,68,0.3)",
+              borderRadius: 12,
+              padding: "10px 14px",
+              color: "#fca5a5",
+              fontSize: 13,
+              lineHeight: 1.4,
+              display: "flex",
+              gap: 10,
+              alignItems: "flex-start",
+              marginBottom: 16,
+            }}
+          >
+            <span style={{ flex: 1 }}>{actionError}</span>
+            <button
+              onClick={() => setActionError(null)}
+              aria-label="Fehler schließen"
+              style={{
+                background: "transparent",
+                border: "none",
+                color: "rgba(252,165,165,0.6)",
+                cursor: "pointer",
+                fontSize: 16,
+                padding: 0,
+                lineHeight: 1,
+              }}
+            >
+              ×
+            </button>
+          </div>
+        )}
 
         <div style={{ display: "flex", alignItems: "flex-start", gap: 16 }}>
           <Avatar src={user.avatar} color={user.color} size={72} radius={20}

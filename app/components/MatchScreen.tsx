@@ -19,6 +19,7 @@ export default function MatchScreen({ users, currentUserId, onOpenChat }: Props)
   const [incoming, setIncoming] = useState<IncomingReq[]>([]);
   const [showMatchPopup, setShowMatchPopup] = useState<User | null>(null);
   const [query, setQuery] = useState("");
+  const [actionError, setActionError] = useState<string | null>(null);
   const supabase = useMemo(() => createClient(), []);
 
   useEffect(() => {
@@ -66,47 +67,99 @@ export default function MatchScreen({ users, currentUserId, onOpenChat }: Props)
     load();
   }, [currentUserId, supabase, users]);
 
+  // Alle vier Mutationen folgen dem gleichen Muster:
+  // 1. Aktuellen State sichern, optimistic UI updaten, Error-State leeren
+  // 2. DB-Call ausführen + { error } prüfen
+  // 3. Bei Fehler: State zurückrollen + Inline-Message setzen + console.error
+  // sendConnect nutzt upsert statt insert, damit re-pending nach einer alten
+  // 'rejected'-Row (Unique-Constraint auf (user_id, target_id)) nicht still
+  // an der PK-Verletzung scheitert.
+
   const sendConnect = async (userId: number) => {
     if (!currentUserId) return;
-    setConnStates((prev) => ({ ...prev, [userId]: "pending_sent" }));
-    await supabase
+    const prev = connStates[userId];
+    setActionError(null);
+    setConnStates((p) => ({ ...p, [userId]: "pending_sent" }));
+
+    const { error } = await supabase
       .from("connections")
-      .insert({ user_id: currentUserId, target_id: userId, status: "pending" });
+      .upsert(
+        { user_id: currentUserId, target_id: userId, status: "pending" },
+        { onConflict: "user_id,target_id" },
+      );
+
+    if (error) {
+      console.error("[connect] sendConnect failed:", error);
+      setConnStates((p) => {
+        const n = { ...p };
+        if (prev === undefined) delete n[userId];
+        else n[userId] = prev;
+        return n;
+      });
+      setActionError(`Anfrage konnte nicht gesendet werden: ${error.message}`);
+    }
   };
 
   const withdrawConnect = async (userId: number) => {
     if (!currentUserId) return;
-    setConnStates((prev) => { const n = { ...prev }; delete n[userId]; return n; });
-    await supabase
+    const prev = connStates[userId];
+    setActionError(null);
+    setConnStates((p) => { const n = { ...p }; delete n[userId]; return n; });
+
+    const { error } = await supabase
       .from("connections")
       .delete()
       .eq("user_id", currentUserId)
       .eq("target_id", userId);
+
+    if (error) {
+      console.error("[connect] withdrawConnect failed:", error);
+      setConnStates((p) => (prev === undefined ? p : { ...p, [userId]: prev }));
+      setActionError(`Zurückziehen fehlgeschlagen: ${error.message}`);
+    }
   };
 
   const acceptRequest = async (senderId: number) => {
     if (!currentUserId) return;
-    await supabase
+    setActionError(null);
+    const user = users.find((u) => u.id === senderId);
+
+    const { error } = await supabase
       .from("connections")
       .update({ status: "accepted" })
       .eq("user_id", senderId)
       .eq("target_id", currentUserId);
-    setIncoming((prev) => prev.filter((r) => r.senderId !== senderId));
-    const user = users.find((u) => u.id === senderId);
+
+    if (error) {
+      console.error("[connect] acceptRequest failed:", error);
+      setActionError(`Annehmen fehlgeschlagen: ${error.message}`);
+      return;
+    }
+
+    setIncoming((p) => p.filter((r) => r.senderId !== senderId));
     if (user) {
-      setConnStates((prev) => ({ ...prev, [senderId]: "accepted" }));
+      setConnStates((p) => ({ ...p, [senderId]: "accepted" }));
       setShowMatchPopup(user);
     }
   };
 
   const rejectRequest = async (senderId: number) => {
     if (!currentUserId) return;
-    await supabase
+    setActionError(null);
+
+    const { error } = await supabase
       .from("connections")
       .update({ status: "rejected" })
       .eq("user_id", senderId)
       .eq("target_id", currentUserId);
-    setIncoming((prev) => prev.filter((r) => r.senderId !== senderId));
+
+    if (error) {
+      console.error("[connect] rejectRequest failed:", error);
+      setActionError(`Ablehnen fehlgeschlagen: ${error.message}`);
+      return;
+    }
+
+    setIncoming((p) => p.filter((r) => r.senderId !== senderId));
   };
 
   return (
@@ -227,6 +280,43 @@ export default function MatchScreen({ users, currentUserId, onOpenChat }: Props)
           />
         </div>
       </div>
+
+      {actionError && (
+        <div style={{ padding: "0 20px", marginBottom: 12 }}>
+          <div
+            role="alert"
+            style={{
+              background: "rgba(239,68,68,0.08)",
+              border: "1px solid rgba(239,68,68,0.3)",
+              borderRadius: 12,
+              padding: "10px 14px",
+              color: "#fca5a5",
+              fontSize: 13,
+              lineHeight: 1.4,
+              display: "flex",
+              gap: 10,
+              alignItems: "flex-start",
+            }}
+          >
+            <span style={{ flex: 1 }}>{actionError}</span>
+            <button
+              onClick={() => setActionError(null)}
+              aria-label="Fehler schließen"
+              style={{
+                background: "transparent",
+                border: "none",
+                color: "rgba(252,165,165,0.6)",
+                cursor: "pointer",
+                fontSize: 16,
+                padding: 0,
+                lineHeight: 1,
+              }}
+            >
+              ×
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Incoming requests */}
       {incoming.length > 0 && (
