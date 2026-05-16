@@ -6,7 +6,6 @@ import { Users } from "lucide-react";
 import { User, categories } from "@/app/lib/data";
 import { createClient } from "@/utils/supabase/client";
 import { Avatar } from "@/app/components/Avatar";
-import { useIsPro } from "@/app/lib/hooks/useIsPro";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -81,7 +80,6 @@ const SETTINGS: { title: string; items: SettingsItem[] }[] = [
     title: "Abos & Zahlungen",
     items: [
       { label: "Mein Abo", desc: "Plan & Abrechnungsstatus", action: "Verwalten", route: "/einstellungen/abo" },
-      { label: "Pro werden", desc: "$29/Monat oder $249/Jahr — 3 Tage gratis", action: "Ansehen", route: "/pricing" },
     ],
   },
   {
@@ -119,7 +117,6 @@ type Props = {
 export default function ProfileDashboard({ currentUserId, onLogout, onOpenChat }: Props) {
   const router = useRouter();
   const supabase = useMemo(() => createClient(), []);
-  const { isPro } = useIsPro();
 
   const [activeTab, setActiveTab] = useState<ActiveTab>("Profil");
   const [expandedSection, setExpandedSection] = useState<string>("");
@@ -336,30 +333,24 @@ export default function ProfileDashboard({ currentUserId, onLogout, onOpenChat }
       {/* ── PROFIL TAB ── */}
       {activeTab === "Profil" && (
         <div style={{ padding: 20 }}>
-          {/* Plan badge — Upgrade-CTA nur für Nicht-Pro-User */}
-          {!isPro && (
-            <div style={{
-              background: "linear-gradient(135deg, rgba(99,102,241,0.1), rgba(139,92,246,0.07))",
-              border: "1px solid rgba(99,102,241,0.22)",
-              borderRadius: 16, padding: 16,
-              display: "flex", alignItems: "center", gap: 12, marginBottom: 20,
-            }}>
-              <span style={{ fontSize: 20 }}>✦</span>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontWeight: 700, fontSize: 15 }}>Free Plan</div>
-                <div style={{ fontSize: 13, color: "rgba(255,255,255,0.4)" }}>Upgrade für unbegrenzte Connects</div>
-              </div>
-              <button
-                onClick={() => router.push("/pricing")}
-                style={{
-                  background: "linear-gradient(135deg, #6366f1, #8b5cf6)", border: "none",
-                  color: "#fff", padding: "8px 14px", borderRadius: 10,
-                  fontSize: 13, fontWeight: 700, cursor: "pointer",
-                  boxShadow: "0 4px 12px rgba(99,102,241,0.3)",
-                }}
-              >Pro ✦</button>
-            </div>
-          )}
+          {/* Status-Tag: jeder User in der App ist per Definition Pro (Paywall
+              in proxy.ts lässt nur active/trial/trialing durch). Daher
+              unconditional — kein CTA, kein Upgrade-Wording. */}
+          <div style={{
+            background: "linear-gradient(135deg, rgba(105,76,187,0.12), rgba(64,21,134,0.08))",
+            border: "1px solid rgba(105,76,187,0.3)",
+            borderRadius: 12,
+            padding: "10px 14px",
+            marginBottom: 20,
+            display: "inline-flex",
+            alignItems: "center",
+            fontSize: 13,
+            fontWeight: 600,
+            color: "#a78bfa",
+            letterSpacing: 0.3,
+          }}>
+            Pro-Mitglied
+          </div>
 
           {/* Bio */}
           <div style={{ marginBottom: 20 }}>
@@ -592,31 +583,24 @@ export default function ProfileDashboard({ currentUserId, onLogout, onOpenChat }
             />
           </AccordionSection>
 
-          {SETTINGS.map((section) => {
-            // "Pro werden" nur zeigen wenn User KEIN aktives Pro-Abo hat.
-            const items = section.items.filter(
-              (it) => !(it.label === "Pro werden" && isPro),
-            );
-            if (items.length === 0) return null;
-            return (
-              <AccordionSection
-                key={section.title}
-                title={section.title}
-                open={expandedSection === section.title}
-                onToggle={() => setExpandedSection(expandedSection === section.title ? "" : section.title)}
-              >
-                {items.map((item, i) => (
-                  <AccordionRow
-                    key={item.label}
-                    label={item.label} desc={item.desc} action={item.action}
-                    highlight={item.highlight} pro={item.pro} danger={item.danger} warning={item.warning}
-                    onClick={item.route ? () => router.push(item.route!) : undefined}
-                    divider={i > 0}
-                  />
-                ))}
-              </AccordionSection>
-            );
-          })}
+          {SETTINGS.map((section) => (
+            <AccordionSection
+              key={section.title}
+              title={section.title}
+              open={expandedSection === section.title}
+              onToggle={() => setExpandedSection(expandedSection === section.title ? "" : section.title)}
+            >
+              {section.items.map((item, i) => (
+                <AccordionRow
+                  key={item.label}
+                  label={item.label} desc={item.desc} action={item.action}
+                  highlight={item.highlight} pro={item.pro} danger={item.danger} warning={item.warning}
+                  onClick={item.route ? () => router.push(item.route!) : undefined}
+                  divider={i > 0}
+                />
+              ))}
+            </AccordionSection>
+          ))}
 
           <button
             onClick={handleLogout}
