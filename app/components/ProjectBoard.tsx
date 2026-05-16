@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { categories, modelColors, Project } from "@/app/lib/data";
-import { createClient } from "@/utils/supabase/client";
 import { timeAgo } from "@/app/lib/data";
+import ApplicationModal from "@/app/components/ApplicationModal";
 
 type Props = {
   initialProjects: Project[];
@@ -20,6 +20,8 @@ export default function ProjectBoard({ initialProjects, currentUserId, currentUs
   const [applied, setApplied] = useState<Record<number, boolean>>({});
   const [filterCat, setFilterCat] = useState("all");
   const [query, setQuery] = useState("");
+  const [modalProject, setModalProject] = useState<Project | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const q = query.trim().toLowerCase();
   const filtered = projects
@@ -32,18 +34,14 @@ export default function ProjectBoard({ initialProjects, currentUserId, currentUs
       (p.tags ?? []).some((t) => (t ?? "").toLowerCase().includes(q))
     );
 
-  const applyToProject = async (id: number) => {
-    if (!currentUserId) return;
-    setApplied((prev) => ({ ...prev, [id]: true }));
+  const handleApplicationSuccess = (projectId: number) => {
+    setApplied((prev) => ({ ...prev, [projectId]: true }));
     setProjects((prev) =>
-      prev.map((p) => (p.id === id ? { ...p, applicants: p.applicants + 1 } : p))
+      prev.map((p) => (p.id === projectId ? { ...p, applicants: p.applicants + 1 } : p)),
     );
-
-    const supabase = createClient();
-    await Promise.all([
-      supabase.from("applications").insert({ project_id: id, user_id: currentUserId }),
-      supabase.rpc("increment_applicants", { project_id: id }),
-    ]);
+    setModalProject(null);
+    setSuccessMessage("Bewerbung gesendet — der Projekt-Ersteller bekommt eine Benachrichtigung.");
+    setTimeout(() => setSuccessMessage(null), 4000);
   };
 
   return (
@@ -256,7 +254,7 @@ export default function ProjectBoard({ initialProjects, currentUserId, currentUs
                 Bewerber
               </span>
               <button
-                onClick={() => applyToProject(project.id)}
+                onClick={() => { if (!applied[project.id]) setModalProject(project); }}
                 disabled={applied[project.id]}
                 style={{
                   padding: "9px 20px",
@@ -280,6 +278,42 @@ export default function ProjectBoard({ initialProjects, currentUserId, currentUs
           </div>
         ))}
       </div>
+
+      {successMessage && (
+        <div
+          role="status"
+          style={{
+            position: "fixed",
+            bottom: 100,
+            left: "50%",
+            transform: "translateX(-50%)",
+            zIndex: 200,
+            maxWidth: 400,
+            width: "calc(100% - 32px)",
+            background: "rgba(16,185,129,0.12)",
+            border: "1px solid rgba(16,185,129,0.4)",
+            borderRadius: 14,
+            padding: "12px 16px",
+            color: "#10b981",
+            fontSize: 13,
+            fontWeight: 600,
+            lineHeight: 1.4,
+            backdropFilter: "blur(12px)",
+            boxShadow: "0 8px 24px rgba(0,0,0,0.4)",
+          }}
+        >
+          {successMessage}
+        </div>
+      )}
+
+      {modalProject && currentUserId && (
+        <ApplicationModal
+          project={modalProject}
+          applicantUserId={currentUserId}
+          onClose={() => setModalProject(null)}
+          onSuccess={() => handleApplicationSuccess(modalProject.id)}
+        />
+      )}
     </div>
   );
 }
