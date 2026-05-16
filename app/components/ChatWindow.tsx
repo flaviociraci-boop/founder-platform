@@ -50,8 +50,25 @@ export default function ChatWindow({ partner, currentUserId, onBack }: Props) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
+  // Genau eine Message wird zu einer Zeit animiert — die zuletzt
+  // hinzugefügte. Nach ~200 ms zurückgesetzt, damit ältere Messages beim
+  // Scrollen oder Re-Render nicht erneut animieren.
+  const [animatedMessageId, setAnimatedMessageId] = useState<number | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const supabase = useMemo(() => createClient(), []);
+
+  // Bei Mount + Partner-Wechsel: alle ungelesenen new_message-Notifications
+  // vom aktuellen Chat-Partner als gelesen markieren (Chat ist offen, also
+  // ist die Bell für genau diese Conversation redundant).
+  useEffect(() => {
+    void supabase
+      .from("notifications")
+      .update({ is_read: true })
+      .eq("type", "new_message")
+      .eq("recipient_id", currentUserId)
+      .eq("sender_id", partner.id)
+      .eq("is_read", false);
+  }, [currentUserId, partner.id, supabase]);
 
   // Lock document scroll while chat is open so iOS never shifts the
   // layout viewport (keeps vp.offsetTop = 0, eliminating the keyboard gap).
@@ -87,11 +104,36 @@ export default function ChatWindow({ partner, currentUserId, onBack }: Props) {
           const inConversation =
             (msg.sender_id === currentUserId && msg.receiver_id === partner.id) ||
             (msg.sender_id === partner.id && msg.receiver_id === currentUserId);
-          if (inConversation) {
-            setMessages((prev) => {
-              if (prev.some((m) => m.id === msg.id)) return prev;
-              return [...prev, msg];
-            });
+          if (!inConversation) return;
+
+          let appended = false;
+          setMessages((prev) => {
+            if (prev.some((m) => m.id === msg.id)) return prev;
+            appended = true;
+            return [...prev, msg];
+          });
+          if (!appended) return;
+
+          // Animation triggern (~180 ms, danach automatisch zurückgesetzt
+          // damit ältere Messages beim Scroll nicht erneut animieren).
+          setAnimatedMessageId(msg.id);
+          setTimeout(
+            () => setAnimatedMessageId((cur) => (cur === msg.id ? null : cur)),
+            220,
+          );
+
+          // Incoming-only: gleicher Send-Sound wie beim Senden + Notification
+          // sofort als gelesen markieren, damit die Bell nicht aufzuckt
+          // während der Chat offen ist.
+          if (msg.sender_id === partner.id) {
+            playSwoosh();
+            void supabase
+              .from("notifications")
+              .update({ is_read: true })
+              .eq("type", "new_message")
+              .eq("recipient_id", currentUserId)
+              .eq("sender_id", partner.id)
+              .eq("is_read", false);
           }
         }
       )
@@ -224,6 +266,7 @@ export default function ChatWindow({ partner, currentUserId, onBack }: Props) {
           const isMine = msg.sender_id === currentUserId;
           const prevMsg = messages[i - 1];
           const isFirstInGroup = !prevMsg || prevMsg.sender_id !== msg.sender_id;
+          const isAnimating = msg.id === animatedMessageId;
           return (
             <div
               key={msg.id}
@@ -231,6 +274,7 @@ export default function ChatWindow({ partner, currentUserId, onBack }: Props) {
                 display: "flex",
                 justifyContent: isMine ? "flex-end" : "flex-start",
                 marginTop: isFirstInGroup && i > 0 ? 8 : 0,
+                animation: isAnimating ? "message-in 180ms ease-out" : undefined,
               }}
             >
               <div style={{
