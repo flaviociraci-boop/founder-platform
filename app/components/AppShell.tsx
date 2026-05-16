@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Search, Users, MessageCircle, Folder, User as UserIcon } from "lucide-react";
 import { User, Project } from "@/app/lib/data";
 import { createClient } from "@/utils/supabase/client";
+import { unlockAudio } from "@/app/lib/audio";
 import DiscoverScreen from "@/app/components/DiscoverScreen";
 import MatchScreen from "@/app/components/MatchScreen";
 import ProjectBoard from "@/app/components/ProjectBoard";
@@ -54,6 +55,24 @@ export default function AppShell({
   const [activeCategory, setActiveCategory] = useState("all");
   const [pendingCount, setPendingCount] = useState(0);
   const [unreadCount, setUnreadCount] = useState(0);
+
+  // iOS Safari: AudioContext startet 'suspended' und wird nur durch ein
+  // User-Gesture entsperrt. Beim ersten Touch/Click irgendwo in der App
+  // ctx.resume() rufen — danach spielt auch der Receive-Sound aus dem
+  // Realtime-WebSocket-Event durch.
+  useEffect(() => {
+    const unlock = () => {
+      unlockAudio();
+      document.removeEventListener("touchstart", unlock);
+      document.removeEventListener("click", unlock);
+    };
+    document.addEventListener("touchstart", unlock, { once: true, passive: true });
+    document.addEventListener("click", unlock, { once: true });
+    return () => {
+      document.removeEventListener("touchstart", unlock);
+      document.removeEventListener("click", unlock);
+    };
+  }, []);
 
   useEffect(() => {
     if (!currentUserId) return;
