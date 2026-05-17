@@ -12,6 +12,7 @@ const PUBLIC_PATHS = [
   "/welcome-pro",
   "/api/whop/webhook",
   "/api/whop/check-subscription",
+  "/monitoring",
   "/impressum",
   "/datenschutz",
   "/agb",
