@@ -177,37 +177,33 @@ export default function ProfileDashboard({ currentUserId, onLogout, onOpenChat }
         applicants: p.applicants ?? 0,
       })));
 
-      const { data: sent } = await supabase
+      // Bidirektional zählen: ein Match = EINE Row in connections (vom
+      // Sender), status='accepted'. Partner-ID = die andere Seite, je
+      // nachdem ob ich Sender oder Empfänger war. Gleiches Pattern wie
+      // ChatsScreen.tsx — Konsistenz mit dem Match/Chat-Listing.
+      const { data: accepted } = await supabase
         .from("connections")
-        .select("target_id")
-        .eq("user_id", currentUserId);
+        .select("user_id, target_id")
+        .eq("status", "accepted")
+        .or(`user_id.eq.${currentUserId},target_id.eq.${currentUserId}`);
 
-      const sentIds = (sent ?? []).map((c) => c.target_id);
-      let matchIds: number[] = [];
+      const matchIds = (accepted ?? []).map((c) =>
+        c.user_id === currentUserId ? c.target_id : c.user_id,
+      );
       let matchProfiles: Connection[] = [];
 
-      if (sentIds.length > 0) {
-        const { data: mutual } = await supabase
-          .from("connections")
-          .select("user_id")
-          .eq("target_id", currentUserId)
-          .in("user_id", sentIds);
+      if (matchIds.length > 0) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { data: profiles } = await supabase
+          .from("profiles")
+          .select("id, name, role, location, avatar, color")
+          .in("id", matchIds);
 
-        matchIds = (mutual ?? []).map((c) => c.user_id);
-
-        if (matchIds.length > 0) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const { data: profiles } = await supabase
-            .from("profiles")
-            .select("id, name, role, location, avatar, color")
-            .in("id", matchIds);
-
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          matchProfiles = (profiles ?? []).map((mp: any) => ({
-            id: mp.id, name: mp.name, role: mp.role ?? "",
-            location: mp.location ?? "", avatar: mp.avatar, color: mp.color,
-          }));
-        }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        matchProfiles = (profiles ?? []).map((mp: any) => ({
+          id: mp.id, name: mp.name, role: mp.role ?? "",
+          location: mp.location ?? "", avatar: mp.avatar, color: mp.color,
+        }));
       }
 
       setStats({ connections: p?.followers ?? 0, projects: projectCount ?? 0, matches: matchIds.length });
