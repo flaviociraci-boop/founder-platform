@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Bell } from "lucide-react";
+import { Bell, Search } from "lucide-react";
 import { categories, seekingColors, User } from "@/app/lib/data";
 import { Avatar } from "@/app/components/Avatar";
 
@@ -96,10 +96,14 @@ export default function DiscoverScreen({
 
         {/* Search bar */}
         <div style={{ position: "relative", marginTop: 16 }}>
-          <span style={{
-            position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)",
-            fontSize: 16, pointerEvents: "none", opacity: 0.4,
-          }}>🔍</span>
+          <Search
+            size={16}
+            strokeWidth={2}
+            style={{
+              position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)",
+              color: "#fff", opacity: 0.5, pointerEvents: "none",
+            }}
+          />
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}

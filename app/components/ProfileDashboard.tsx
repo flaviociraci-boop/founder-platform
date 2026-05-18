@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Users } from "lucide-react";
+import { MapPin, Users } from "lucide-react";
 import { User, categories } from "@/app/lib/data";
 import { createClient } from "@/utils/supabase/client";
 import { Avatar } from "@/app/components/Avatar";
@@ -271,8 +271,12 @@ export default function ProfileDashboard({ currentUserId, onLogout, onOpenChat }
               {displayUsername}{profile?.age ? ` · ${profile.age} Jahre` : ""}
             </p>
             {profile?.location && (
-              <p style={{ margin: "2px 0 0", fontSize: 13, color: "rgba(255,255,255,0.28)" }}>
-                📍 {profile.location}
+              <p style={{
+                margin: "2px 0 0", fontSize: 13, color: "rgba(255,255,255,0.28)",
+                display: "inline-flex", alignItems: "center", gap: 4,
+              }}>
+                <MapPin size={14} color="#694CBB" strokeWidth={2} />
+                {profile.location}
               </p>
             )}
           </div>

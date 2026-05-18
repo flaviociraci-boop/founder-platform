@@ -453,7 +453,7 @@ export default function MatchScreen({ users, currentUserId, onOpenChat }: Props)
                     color: seekingColors[user.seeking] ?? "rgba(255,255,255,0.4)",
                     fontWeight: 600,
                   }}>
-                    🔍 Sucht: {user.seeking}
+                    Sucht: {user.seeking}
                   </div>
                 </div>
 
@@ -489,7 +489,7 @@ export default function MatchScreen({ users, currentUserId, onOpenChat }: Props)
                   }}
                 >
                   {state === "accepted"
-                    ? "✓ Matched"
+                    ? "Matched"
                     : state === "pending_sent"
                     ? "Anfrage gesendet"
                     : "Connect"}
@@ -520,7 +520,7 @@ export default function MatchScreen({ users, currentUserId, onOpenChat }: Props)
                       cursor: "pointer",
                     }}
                   >
-                    💬 Chat öffnen
+                    Chat öffnen
                   </button>
                   <button
                     style={{
