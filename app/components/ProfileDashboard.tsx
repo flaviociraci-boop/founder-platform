@@ -370,7 +370,7 @@ export default function ProfileDashboard({ currentUserId, onLogout, onOpenChat }
                 display: "inline-block", padding: "8px 16px", borderRadius: 20,
                 background: "rgba(99,102,241,0.12)", border: "1px solid rgba(99,102,241,0.28)",
                 color: "#6366f1", fontSize: 14, fontWeight: 600,
-              }}>🔍 {profile.seeking}</span>
+              }}>{profile.seeking}</span>
             </div>
           )}
 
@@ -554,7 +554,7 @@ export default function ProfileDashboard({ currentUserId, onLogout, onOpenChat }
                       color: "rgba(255,255,255,0.6)", padding: "7px 14px",
                       borderRadius: 10, fontSize: 12, fontWeight: 600, cursor: "pointer", flexShrink: 0,
                     }}
-                  >💬 Chat</button>
+                  >Chat</button>
                 </div>
               ))}
             </div>
@@ -702,7 +702,7 @@ function AccordionRow({
 function ProjectStatusBadge({ status }: { status: string }) {
   const map: Record<string, { label: string; color: string; bg: string; border: string }> = {
     active:  { label: "● AKTIV",       color: "#10b981", bg: "rgba(16,185,129,0.12)",  border: "rgba(16,185,129,0.28)" },
-    paused:  { label: "⏸ PAUSIERT",   color: "#f59e0b", bg: "rgba(245,158,11,0.12)",  border: "rgba(245,158,11,0.28)" },
+    paused:  { label: "PAUSIERT",     color: "#f59e0b", bg: "rgba(245,158,11,0.12)",  border: "rgba(245,158,11,0.28)" },
     closed:  { label: "■ GESCHLOSSEN", color: "rgba(255,255,255,0.3)", bg: "rgba(255,255,255,0.05)", border: "rgba(255,255,255,0.1)" },
   };
   const s = map[status] ?? map.active;

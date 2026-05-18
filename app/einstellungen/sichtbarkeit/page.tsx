@@ -2,13 +2,14 @@
 
 import { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
+import { Globe, Lock, type LucideIcon } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 
 type Visibility = "public" | "private";
 
-const OPTIONS: { key: Visibility; label: string; desc: string; icon: string }[] = [
-  { key: "public", label: "Öffentlich", desc: "Alle Nutzer können dein Profil sehen", icon: "🌍" },
-  { key: "private", label: "Privat", desc: "Nur Matches können dein Profil sehen", icon: "🔒" },
+const OPTIONS: { key: Visibility; label: string; desc: string; Icon: LucideIcon }[] = [
+  { key: "public", label: "Öffentlich", desc: "Alle Nutzer können dein Profil sehen", Icon: Globe },
+  { key: "private", label: "Privat", desc: "Nur Matches können dein Profil sehen", Icon: Lock },
 ];
 
 export default function VisibilityPage() {
@@ -94,7 +95,7 @@ export default function VisibilityPage() {
             fontWeight: 700, fontSize: 14, cursor: saving || saved ? "default" : "pointer",
             opacity: saving ? 0.6 : 1,
           }}
-        >{saving ? "…" : saved ? "✓ Gespeichert" : "Speichern"}</button>
+        >{saving ? "…" : saved ? "Gespeichert" : "Speichern"}</button>
       </div>
 
       <div style={{ padding: "32px 20px" }}>
@@ -113,7 +114,7 @@ export default function VisibilityPage() {
                   transition: "all 0.15s",
                 }}
               >
-                <span style={{ fontSize: 28 }}>{opt.icon}</span>
+                <opt.Icon size={28} color="#694CBB" strokeWidth={1.75} />
                 <div style={{ flex: 1 }}>
                   <div style={{ fontWeight: 700, fontSize: 15, color: active ? "#6366f1" : "#fff" }}>{opt.label}</div>
                   <div style={{ fontSize: 13, color: "rgba(255,255,255,0.4)", marginTop: 3 }}>{opt.desc}</div>

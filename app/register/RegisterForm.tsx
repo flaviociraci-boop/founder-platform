@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import { Check } from "lucide-react";
 import { categories } from "@/app/lib/data";
 import { registerUser } from "./actions";
 
@@ -201,7 +202,7 @@ export default function RegisterForm({ prefilledEmail = "" }: Props) {
                     />
                     {isLockedEmail ? (
                       <p style={{ margin: "6px 2px 0", fontSize: 12, color: "#10b981", lineHeight: 1.4, display: "flex", alignItems: "center", gap: 4 }}>
-                        <span aria-hidden>✓</span> Verifiziert über Whop
+                        <Check size={12} strokeWidth={2.5} aria-hidden /> Verifiziert über Whop
                       </p>
                     ) : f.helper ? (
                       <p style={{ margin: "6px 2px 0", fontSize: 12, color: "rgba(255,255,255,0.5)", lineHeight: 1.4 }}>

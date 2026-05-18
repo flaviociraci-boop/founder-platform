@@ -337,7 +337,7 @@ export default function NeuesProjektPage() {
             boxShadow: title.trim() ? "0 8px 24px rgba(99,102,241,0.35)" : "none",
             transition: "all 0.2s",
           }}
-        >{posting ? "Wird gepostet…" : "Projekt posten ✦"}</button>
+        >{posting ? "Wird gepostet…" : "Projekt posten"}</button>
       </div>
     </div>
   );

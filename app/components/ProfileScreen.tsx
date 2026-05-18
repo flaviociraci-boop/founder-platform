@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { MapPin } from "lucide-react";
 import { User, seekingColors } from "@/app/lib/data";
 import { Avatar } from "@/app/components/Avatar";
 import { createClient } from "@/utils/supabase/client";
@@ -208,8 +209,12 @@ export default function ProfileScreen({ user, onBack, followed, toggleFollow, cu
               <span style={{ fontSize: 13, color: "rgba(255,255,255,0.4)" }}>{user.age} J.</span>
             </div>
             <p style={{ margin: "4px 0 0", fontSize: 14, color: "rgba(255,255,255,0.6)" }}>{user.role}</p>
-            <p style={{ margin: "2px 0 0", fontSize: 13, color: "rgba(255,255,255,0.35)" }}>
-              📍 {user.location}
+            <p style={{
+              margin: "2px 0 0", fontSize: 13, color: "rgba(255,255,255,0.35)",
+              display: "inline-flex", alignItems: "center", gap: 4,
+            }}>
+              <MapPin size={14} color="#694CBB" strokeWidth={2} />
+              {user.location}
             </p>
           </div>
         </div>
@@ -252,7 +257,7 @@ export default function ProfileScreen({ user, onBack, followed, toggleFollow, cu
               cursor: "pointer",
             }}
           >
-            {followed[user.id] ? "✓ Gefolgt" : "Folgen"}
+            {followed[user.id] ? "Gefolgt" : "Folgen"}
           </button>
 
           {connStatus === "pending_received" ? (
@@ -293,7 +298,7 @@ export default function ProfileScreen({ user, onBack, followed, toggleFollow, cu
                 transition: "all 0.2s",
               }}
             >
-              💬 Chat öffnen
+              Chat öffnen
             </button>
           ) : connStatus === "pending_sent" ? (
             <button
@@ -455,7 +460,7 @@ export default function ProfileScreen({ user, onBack, followed, toggleFollow, cu
             fontWeight: 600,
           }}
         >
-          🔍 {user.seeking}
+          {user.seeking}
         </span>
       </div>
 

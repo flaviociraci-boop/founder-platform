@@ -209,7 +209,7 @@ export default function DiscoverScreen({
                         color: followed[user.id] ? "rgba(255,255,255,0.4)" : user.color,
                       }}
                     >
-                      {followed[user.id] ? "✓" : "+ Folgen"}
+                      {followed[user.id] ? "Gefolgt" : "+ Folgen"}
                     </button>
                   </div>
 
@@ -296,7 +296,7 @@ export default function DiscoverScreen({
                         fontWeight: 600,
                       }}
                     >
-                      🔍 {user.seeking}
+                      {user.seeking}
                     </div>
                   </div>
                 </div>

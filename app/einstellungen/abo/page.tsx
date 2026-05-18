@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { Zap } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 
 type Subscription = {
@@ -162,7 +163,9 @@ export default function AboPage() {
               textAlign: "center",
               marginBottom: 16,
             }}>
-              <div style={{ fontSize: 40, marginBottom: 12 }}>⚡</div>
+              <div style={{ display: "flex", justifyContent: "center", marginBottom: 12 }}>
+                <Zap size={40} color="#694CBB" strokeWidth={1.5} />
+              </div>
               <p style={{ margin: "0 0 6px", fontWeight: 700, fontSize: 16 }}>Kein aktives Abo</p>
               <p style={{ margin: 0, fontSize: 14, color: "rgba(255,255,255,0.4)", lineHeight: 1.6 }}>
                 Werde Pro und bekomme unbegrenzten Zugang zu allen Features.

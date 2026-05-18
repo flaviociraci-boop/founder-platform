@@ -290,7 +290,7 @@ export default function EditProfileForm() {
           fontWeight: 700, fontSize: 14, cursor: saving || saved ? "default" : "pointer",
           opacity: saving ? 0.6 : 1,
           boxShadow: saved ? "none" : "0 4px 12px rgba(99,102,241,0.3)",
-        }}>{saving ? "…" : saved ? "✓ Gespeichert" : "Speichern"}</button>
+        }}>{saving ? "…" : saved ? "Gespeichert" : "Speichern"}</button>
       </div>
 
       <div style={{ padding: "28px 20px 80px" }}>

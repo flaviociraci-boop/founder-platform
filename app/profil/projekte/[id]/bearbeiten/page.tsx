@@ -140,7 +140,7 @@ export default function ProjektBearbeitenPage() {
           fontSize: 14, fontWeight: 700, zIndex: 999,
           backdropFilter: "blur(12px)",
         }}>
-          Projekt aktualisiert ✓
+          Projekt aktualisiert
         </div>
       )}
 
@@ -342,7 +342,7 @@ export default function ProjektBearbeitenPage() {
             transition: "all 0.2s",
             marginBottom: 12,
           }}
-        >{saving ? "Wird gespeichert…" : "Änderungen speichern ✦"}</button>
+        >{saving ? "Wird gespeichert…" : "Änderungen speichern"}</button>
 
         <button
           onClick={() => router.back()}

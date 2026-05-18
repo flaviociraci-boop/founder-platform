@@ -78,7 +78,7 @@ export default function EmailSignupForm() {
             background: "rgba(99,102,241,0.15)", border: "1px solid rgba(99,102,241,0.3)",
             borderRadius: 20, fontSize: 11, fontWeight: 700, color: "#6366f1",
             letterSpacing: 1,
-          }}>✦ EARLY ACCESS</div>
+          }}>EARLY ACCESS</div>
 
           <h2 style={{ fontSize: 24, fontWeight: 800, color: "#fff", margin: "0 0 10px", lineHeight: 1.25 }}>
             Sei der erste<br />

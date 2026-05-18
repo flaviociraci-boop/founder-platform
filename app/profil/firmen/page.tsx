@@ -2,6 +2,7 @@
 
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { Building2, Pencil, X } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 
 type Company = {
@@ -257,7 +258,9 @@ function FirmenPageInner() {
         {/* List */}
         {companies.length === 0 && editingId === null && (
           <div style={{ textAlign: "center", padding: "60px 0" }}>
-            <div style={{ fontSize: 48, marginBottom: 16 }}>🏢</div>
+            <div style={{ display: "flex", justifyContent: "center", marginBottom: 16 }}>
+              <Building2 size={48} color="#694CBB" strokeWidth={1.5} />
+            </div>
             <p style={{ margin: "0 0 6px", fontWeight: 700, fontSize: 16 }}>Noch keine Firmen</p>
             <p style={{ margin: 0, fontSize: 14, color: "rgba(255,255,255,0.35)", lineHeight: 1.6 }}>
               Füge deine erste Firma oder Brand hinzu.
@@ -301,16 +304,16 @@ function FirmenPageInner() {
               </div>
 
               <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
-                <button onClick={() => startEdit(company)} style={{
+                <button onClick={() => startEdit(company)} aria-label="Bearbeiten" style={{
                   background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)",
                   borderRadius: 8, width: 32, height: 32, color: "rgba(255,255,255,0.5)",
-                  cursor: "pointer", fontSize: 14, display: "flex", alignItems: "center", justifyContent: "center",
-                }}>✎</button>
-                <button onClick={() => remove(company.id)} style={{
+                  cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
+                }}><Pencil size={14} strokeWidth={2} /></button>
+                <button onClick={() => remove(company.id)} aria-label="Löschen" style={{
                   background: "rgba(239,68,68,0.07)", border: "1px solid rgba(239,68,68,0.18)",
                   borderRadius: 8, width: 32, height: 32, color: "rgba(239,68,68,0.6)",
-                  cursor: "pointer", fontSize: 14, display: "flex", alignItems: "center", justifyContent: "center",
-                }}>✕</button>
+                  cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
+                }}><X size={16} strokeWidth={2} /></button>
               </div>
             </div>
           ))}

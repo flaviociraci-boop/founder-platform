@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { Briefcase } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 import { categories, modelColors } from "@/app/lib/data";
 
@@ -29,7 +30,7 @@ const STATUS_OPTS: { value: ProjectStatus; label: string }[] = [
 function statusStyle(status: ProjectStatus) {
   const map = {
     active:  { label: "● AKTIV",       color: "#10b981", bg: "rgba(16,185,129,0.12)",  border: "rgba(16,185,129,0.28)" },
-    paused:  { label: "⏸ PAUSIERT",   color: "#f59e0b", bg: "rgba(245,158,11,0.12)",  border: "rgba(245,158,11,0.28)" },
+    paused:  { label: "PAUSIERT",     color: "#f59e0b", bg: "rgba(245,158,11,0.12)",  border: "rgba(245,158,11,0.28)" },
     closed:  { label: "■ GESCHLOSSEN", color: "rgba(255,255,255,0.3)", bg: "rgba(255,255,255,0.05)", border: "rgba(255,255,255,0.1)" },
   };
   return map[status] ?? map.active;
@@ -148,7 +149,9 @@ export default function MeineProjektePage() {
 
         {!loading && sorted.length === 0 && (
           <div style={{ textAlign: "center", padding: "60px 0" }}>
-            <div style={{ fontSize: 40, marginBottom: 16 }}>✦</div>
+            <div style={{ display: "flex", justifyContent: "center", marginBottom: 16 }}>
+              <Briefcase size={40} color="#694CBB" strokeWidth={1.5} />
+            </div>
             <p style={{ margin: "0 0 6px", fontWeight: 700, fontSize: 16 }}>Noch keine Projekte</p>
             <p style={{ margin: "0 0 24px", fontSize: 14, color: "rgba(255,255,255,0.35)", lineHeight: 1.6 }}>
               Erstelle dein erstes Projekt und finde Partner.

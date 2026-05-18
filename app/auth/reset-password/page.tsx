@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { CheckCircle2 } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 
 const inputStyle: React.CSSProperties = {
@@ -73,7 +74,7 @@ export default function ResetPasswordPage() {
             Connectyfind
           </h1>
           <p style={{ margin: "4px 0 0", fontSize: 14, color: "rgba(255,255,255,0.4)" }}>
-            {done ? "Passwort gesetzt! ✓" : "Neues Passwort wählen"}
+            {done ? "Passwort gesetzt!" : "Neues Passwort wählen"}
           </p>
         </div>
 
@@ -85,7 +86,9 @@ export default function ResetPasswordPage() {
         }}>
           {done ? (
             <div style={{ textAlign: "center", padding: "8px 0" }}>
-              <div style={{ fontSize: 48, marginBottom: 16 }}>✅</div>
+              <div style={{ display: "flex", justifyContent: "center", marginBottom: 16 }}>
+                <CheckCircle2 size={48} color="#10b981" strokeWidth={1.5} />
+              </div>
               <p style={{ margin: 0, fontSize: 15, color: "rgba(255,255,255,0.7)" }}>
                 Passwort erfolgreich geändert. Du wirst weitergeleitet…
               </p>

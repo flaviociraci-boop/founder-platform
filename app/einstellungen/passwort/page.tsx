@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
+import { CheckCircle2 } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 
 const inp: React.CSSProperties = {
@@ -75,7 +76,9 @@ export default function PasswordPage() {
       <div style={{ padding: "32px 20px" }}>
         {done ? (
           <div style={{ textAlign: "center", paddingTop: 60 }}>
-            <div style={{ fontSize: 56, marginBottom: 20 }}>✅</div>
+            <div style={{ display: "flex", justifyContent: "center", marginBottom: 20 }}>
+              <CheckCircle2 size={56} color="#10b981" strokeWidth={1.5} />
+            </div>
             <p style={{ fontSize: 18, fontWeight: 700, color: "#10b981" }}>Passwort geändert!</p>
             <p style={{ fontSize: 14, color: "rgba(255,255,255,0.4)", marginTop: 8 }}>Du wirst zurückgeleitet…</p>
           </div>

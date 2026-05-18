@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { MapPin, Search } from "lucide-react";
 import { categories, modelColors, Project } from "@/app/lib/data";
 import { timeAgo } from "@/app/lib/data";
 import ApplicationModal from "@/app/components/ApplicationModal";
@@ -83,16 +84,20 @@ export default function ProjectBoard({ initialProjects, currentUserId, currentUs
               gap: 6,
             }}
           >
-            ✦ Neu
+            Neu
           </button>
         </div>
 
         {/* Search bar */}
         <div style={{ position: "relative", marginTop: 16 }}>
-          <span style={{
-            position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)",
-            fontSize: 16, pointerEvents: "none", opacity: 0.4,
-          }}>🔍</span>
+          <Search
+            size={16}
+            strokeWidth={2}
+            style={{
+              position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)",
+              color: "#fff", opacity: 0.5, pointerEvents: "none",
+            }}
+          />
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
@@ -232,9 +237,11 @@ export default function ProjectBoard({ initialProjects, currentUserId, currentUs
                     background: "rgba(255,255,255,0.05)",
                     border: "1px solid rgba(255,255,255,0.08)",
                     color: "rgba(255,255,255,0.4)",
+                    display: "inline-flex", alignItems: "center", gap: 4,
                   }}
                 >
-                  📍 {project.location}
+                  <MapPin size={12} color="#694CBB" strokeWidth={2} />
+                  {project.location}
                 </span>
               </div>
             )}
@@ -272,7 +279,7 @@ export default function ProjectBoard({ initialProjects, currentUserId, currentUs
                   transition: "all 0.2s",
                 }}
               >
-                {applied[project.id] ? "✓ Beworben" : "Bewerben"}
+                {applied[project.id] ? "Beworben" : "Bewerben"}
               </button>
             </div>
           </div>

@@ -227,7 +227,7 @@ export default function ChatWindow({ partner, currentUserId, onBack }: Props) {
               style={{ boxShadow: `0 8px 24px ${partner.color}33` }} />
             <div style={{ textAlign: "center" }}>
               <div style={{ fontWeight: 700, fontSize: 16, color: "#fff", marginBottom: 6 }}>
-                Ihr habt ein Match! 🤝
+                Ihr habt ein Match!
               </div>
               <div style={{ fontSize: 13, color: "rgba(255,255,255,0.35)", lineHeight: 1.5 }}>
                 Starte das Gespräch mit {partner.name}

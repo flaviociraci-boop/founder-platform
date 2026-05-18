@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { Mail } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 
 type Mode = "login" | "forgot" | "forgot-sent";
@@ -209,7 +210,9 @@ export default function LoginPage() {
           {/* ── FORGOT SENT ── */}
           {mode === "forgot-sent" && (
             <div style={{ textAlign: "center", padding: "8px 0" }}>
-              <div style={{ fontSize: 48, marginBottom: 16 }}>📬</div>
+              <div style={{ display: "flex", justifyContent: "center", marginBottom: 16 }}>
+                <Mail size={48} color="#694CBB" strokeWidth={1.5} />
+              </div>
               <p style={{ margin: "0 0 8px", fontWeight: 700, fontSize: 17 }}>Email ist unterwegs!</p>
               <p style={{ margin: "0 0 24px", fontSize: 14, color: "rgba(255,255,255,0.5)", lineHeight: 1.6 }}>
                 Prüfe dein Postfach und klicke auf den Link um dein Passwort zurückzusetzen.

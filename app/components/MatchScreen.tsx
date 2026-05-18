@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import { Lightbulb, Search, Users } from "lucide-react";
 import { seekingColors, User } from "@/app/lib/data";
 import { createClient } from "@/utils/supabase/client";
 import { Avatar } from "@/app/components/Avatar";
@@ -190,7 +191,9 @@ export default function MatchScreen({ users, currentUserId, onOpenChat }: Props)
               boxShadow: `0 0 60px ${showMatchPopup.color}33`,
             }}
           >
-            <div style={{ fontSize: 48, marginBottom: 12 }}>🤝</div>
+            <div style={{ display: "flex", justifyContent: "center", marginBottom: 12 }}>
+              <Users size={48} color="#694CBB" strokeWidth={1.5} />
+            </div>
             <h2 style={{ margin: "0 0 8px", fontSize: 22, fontWeight: 800 }}>It&#39;s a Match!</h2>
             <p style={{ margin: "0 0 20px", color: "rgba(255,255,255,0.5)", fontSize: 15 }}>
               Du und{" "}
@@ -234,7 +237,7 @@ export default function MatchScreen({ users, currentUserId, onOpenChat }: Props)
                   fontSize: 14,
                 }}
               >
-                💬 Nachricht senden
+                Nachricht senden
               </button>
             </div>
           </div>
@@ -260,10 +263,14 @@ export default function MatchScreen({ users, currentUserId, onOpenChat }: Props)
         </p>
 
         <div style={{ position: "relative", marginTop: 16 }}>
-          <span style={{
-            position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)",
-            fontSize: 16, pointerEvents: "none", opacity: 0.4,
-          }}>🔍</span>
+          <Search
+            size={16}
+            strokeWidth={2}
+            style={{
+              position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)",
+              color: "#fff", opacity: 0.5, pointerEvents: "none",
+            }}
+          />
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
@@ -395,7 +402,7 @@ export default function MatchScreen({ users, currentUserId, onOpenChat }: Props)
           gap: 12,
         }}
       >
-        <span style={{ fontSize: 20 }}>💡</span>
+        <Lightbulb size={20} color="#694CBB" strokeWidth={2} style={{ flexShrink: 0 }} />
         <div style={{ fontSize: 13, color: "rgba(255,255,255,0.6)", lineHeight: 1.5 }}>
           Drücke <strong style={{ color: "#6366f1" }}>Connect</strong> bei einem Profil. Sobald die
           andere Person deine Anfrage annimmt → Match! Erst dann wird der Chat freigeschaltet.

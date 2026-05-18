@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { Search, Users } from "lucide-react";
 import { User } from "@/app/lib/data";
 import { createClient } from "@/utils/supabase/client";
 import { Avatar } from "@/app/components/Avatar";
@@ -149,10 +150,14 @@ export default function ChatsScreen({ currentUserId, onOpenChat }: Props) {
         {/* Search bar */}
         {!loading && chats.length > 0 && (
           <div style={{ position: "relative", marginTop: 16 }}>
-            <span style={{
-              position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)",
-              fontSize: 16, pointerEvents: "none", opacity: 0.4,
-            }}>🔍</span>
+            <Search
+              size={16}
+              strokeWidth={2}
+              style={{
+                position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)",
+                color: "#fff", opacity: 0.5, pointerEvents: "none",
+              }}
+            />
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
@@ -173,7 +178,9 @@ export default function ChatsScreen({ currentUserId, onOpenChat }: Props) {
 
       {!loading && chats.length === 0 && (
         <div style={{ padding: "48px 32px", textAlign: "center" }}>
-          <div style={{ fontSize: 52, marginBottom: 16 }}>🤝</div>
+          <div style={{ display: "flex", justifyContent: "center", marginBottom: 16 }}>
+            <Users size={52} color="#694CBB" strokeWidth={1.5} />
+          </div>
           <p style={{ margin: "0 0 6px", fontWeight: 700, fontSize: 16 }}>Noch keine Matches</p>
           <p style={{ margin: 0, fontSize: 14, color: "rgba(255,255,255,0.35)", lineHeight: 1.6 }}>
             Geh zu <strong style={{ color: "#6366f1" }}>Connect</strong> und schicke Anfragen — sobald jemand zurückschickt, öffnet sich der Chat.

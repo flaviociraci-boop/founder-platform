@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { Bell } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 import { Avatar } from "@/app/components/Avatar";
 
@@ -190,7 +191,9 @@ export default function MitteilungenPage() {
 
         {!loading && notifications.length === 0 && (
           <div style={{ padding: "80px 32px", textAlign: "center" }}>
-            <div style={{ fontSize: 52, marginBottom: 16 }}>🔔</div>
+            <div style={{ display: "flex", justifyContent: "center", marginBottom: 16 }}>
+              <Bell size={52} color="#694CBB" strokeWidth={1.5} />
+            </div>
             <p style={{ margin: "0 0 6px", fontWeight: 700, fontSize: 16 }}>Keine Mitteilungen</p>
             <p style={{ margin: 0, fontSize: 14, color: "rgba(255,255,255,0.35)", lineHeight: 1.6 }}>
               Hier erscheinen Benachrichtigungen über Anfragen, Matches und Nachrichten.
@@ -237,8 +240,9 @@ export default function MitteilungenPage() {
                       width: 44, height: 44, borderRadius: 13, flexShrink: 0,
                       background: "rgba(99,102,241,0.2)",
                       display: "flex", alignItems: "center", justifyContent: "center",
-                      fontSize: 20,
-                    }}>🔔</div>
+                    }}>
+                      <Bell size={20} color="#a78bfa" strokeWidth={2} />
+                    </div>
                   )}
                 </div>
 

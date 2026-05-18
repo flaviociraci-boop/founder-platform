@@ -67,7 +67,7 @@ export default async function WelcomeProPage({
           </div>
 
           <h2 style={{ margin: "0 0 10px", fontSize: 20, fontWeight: 800 }}>
-            Willkommen bei Connectyfind Pro! 🎉
+            Willkommen bei Connectyfind Pro!
           </h2>
           <p style={{ margin: "0 0 10px", fontSize: 14, color: "rgba(255,255,255,0.55)", lineHeight: 1.6 }}>
             Deine Zahlung war erfolgreich. Dein Pro-Zugang ist jetzt aktiv.

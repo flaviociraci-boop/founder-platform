@@ -100,7 +100,7 @@ export default function UsernamePage() {
             fontWeight: 700, fontSize: 14, cursor: saving || saved ? "default" : "pointer",
             opacity: saving ? 0.6 : 1,
           }}
-        >{saving ? "…" : saved ? "✓ Gespeichert" : "Speichern"}</button>
+        >{saving ? "…" : saved ? "Gespeichert" : "Speichern"}</button>
       </div>
 
       <div style={{ padding: "32px 20px" }}>
