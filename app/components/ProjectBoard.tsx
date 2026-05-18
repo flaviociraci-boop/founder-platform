@@ -6,6 +6,7 @@ import { MapPin, Search } from "lucide-react";
 import { categories, modelColors, Project } from "@/app/lib/data";
 import { timeAgo } from "@/app/lib/data";
 import ApplicationModal from "@/app/components/ApplicationModal";
+import InfoBox from "@/app/components/InfoBox";
 
 type Props = {
   initialProjects: Project[];
@@ -143,6 +144,11 @@ export default function ProjectBoard({ initialProjects, currentUserId, currentUs
           </button>
         ))}
       </div>
+
+      <InfoBox>
+        Pitche dein eigenes Projekt oder bewirb dich auf Projekte anderer Gründer. Bei Interesse
+        meldet sich die jeweils andere Seite direkt bei dir, und ihr findet als Partner zusammen.
+      </InfoBox>
 
       <div style={{ padding: "0 20px", display: "flex", flexDirection: "column", gap: 12 }}>
         {filtered.map((project) => (

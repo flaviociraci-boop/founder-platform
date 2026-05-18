@@ -1,10 +1,11 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { Lightbulb, Search, Users } from "lucide-react";
+import { Search, Users } from "lucide-react";
 import { seekingColors, User } from "@/app/lib/data";
 import { createClient } from "@/utils/supabase/client";
 import { Avatar } from "@/app/components/Avatar";
+import InfoBox from "@/app/components/InfoBox";
 
 type OutgoingStatus = "pending_sent" | "accepted";
 type IncomingReq = { senderId: number; user: User | null };
@@ -390,24 +391,10 @@ export default function MatchScreen({ users, currentUserId, onOpenChat }: Props)
         </div>
       )}
 
-      <div
-        style={{
-          margin: "0 20px 20px",
-          background: "rgba(99,102,241,0.08)",
-          border: "1px solid rgba(99,102,241,0.2)",
-          borderRadius: 16,
-          padding: "14px 16px",
-          display: "flex",
-          alignItems: "flex-start",
-          gap: 12,
-        }}
-      >
-        <Lightbulb size={20} color="#694CBB" strokeWidth={2} style={{ flexShrink: 0 }} />
-        <div style={{ fontSize: 13, color: "rgba(255,255,255,0.6)", lineHeight: 1.5 }}>
-          Drücke <strong style={{ color: "#6366f1" }}>Connect</strong> bei einem Profil. Sobald die
-          andere Person deine Anfrage annimmt → Match! Erst dann wird der Chat freigeschaltet.
-        </div>
-      </div>
+      <InfoBox>
+        Drücke <strong style={{ color: "#6366f1" }}>Connect</strong> bei einem Profil. Sobald die
+        andere Person deine Anfrage annimmt → Match! Erst dann wird der Chat freigeschaltet.
+      </InfoBox>
 
       <div style={{ padding: "0 20px", display: "flex", flexDirection: "column", gap: 12 }}>
         {users.filter((u) => {
