@@ -6,7 +6,12 @@ import { Bell } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 import { Avatar } from "@/app/components/Avatar";
 
-type NotifType = "connection_request" | "connection_accepted" | "new_message" | "new_project";
+type NotifType =
+  | "connection_request"
+  | "connection_accepted"
+  | "new_message"
+  | "new_project"
+  | "application_received";
 
 type Notification = {
   id: number;
@@ -20,26 +25,35 @@ type Notification = {
     avatar: string | null;
     color: string;
   } | null;
+  // Nur befüllt für application_received — wird im init-Effect nachgeladen,
+  // weil related_id keinen FK-Constraint auf projects hat (kein Auto-Join).
+  projectTitle?: string;
 };
 
-function notifText(type: NotifType, senderName: string): string {
-  switch (type) {
+function notifText(notif: Notification): string {
+  switch (notif.type) {
     case "connection_request": return `möchte sich mit dir connecten`;
     case "connection_accepted": return `hat deine Anfrage angenommen`;
     case "new_message": return `hat dir eine Nachricht gesendet`;
     case "new_project": return `hat ein neues Projekt veröffentlicht`;
+    case "application_received":
+      return `hat sich auf dein Projekt "${notif.projectTitle ?? "…"}" beworben`;
   }
 }
 
-function notifTab(type: NotifType): string {
-  switch (type) {
+// Deep-Link je Notification-Typ. application_received geht direkt zur
+// Bewerbungs-Liste des Projekts; alles andere zur passenden Tab im AppShell.
+function notifHref(notif: Notification): string {
+  switch (notif.type) {
+    case "application_received":
+      return notif.related_id ? `/projekte/${notif.related_id}/bewerbungen` : "/?tab=projects";
     case "connection_request":
     case "connection_accepted":
-      return "match";
+      return "/?tab=match";
     case "new_message":
-      return "chats";
+      return "/?tab=chats";
     case "new_project":
-      return "projects";
+      return "/?tab=projects";
   }
 }
 
@@ -87,14 +101,40 @@ export default function MitteilungenPage() {
         .limit(50);
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      setNotifications((data ?? []).map((n: any) => ({
+      const baseList: Notification[] = (data ?? []).map((n: any) => ({
         id: n.id,
         type: n.type,
         related_id: n.related_id,
         is_read: n.is_read,
         created_at: n.created_at,
         sender: Array.isArray(n.sender) ? n.sender[0] ?? null : n.sender ?? null,
-      })));
+      }));
+
+      // Project-Titles für application_received-Notifications nachladen
+      // (related_id hat keinen FK auf projects).
+      const projectIds = Array.from(
+        new Set(
+          baseList
+            .filter((n) => n.type === "application_received" && n.related_id != null)
+            .map((n) => n.related_id as number),
+        ),
+      );
+      if (projectIds.length > 0) {
+        const { data: projects } = await supabase
+          .from("projects")
+          .select("id, title")
+          .in("id", projectIds);
+        const titleById = new Map<number, string>(
+          (projects ?? []).map((p) => [p.id as number, (p.title as string) ?? ""]),
+        );
+        for (const n of baseList) {
+          if (n.type === "application_received" && n.related_id != null) {
+            n.projectTitle = titleById.get(n.related_id);
+          }
+        }
+      }
+
+      setNotifications(baseList);
       setLoading(false);
     };
     init();
@@ -107,7 +147,7 @@ export default function MitteilungenPage() {
         prev.map((n) => n.id === notif.id ? { ...n, is_read: true } : n)
       );
     }
-    router.push(`/?tab=${notifTab(notif.type)}`);
+    router.push(notifHref(notif));
   };
 
   const markAllRead = async () => {
@@ -253,7 +293,7 @@ export default function MitteilungenPage() {
                       <strong style={{ color: "#fff" }}>{notif.sender.name} </strong>
                     )}
                     <span style={{ color: "rgba(255,255,255,0.7)" }}>
-                      {notifText(notif.type, notif.sender?.name ?? "")}
+                      {notifText(notif)}
                     </span>
                   </div>
                   <div style={{ fontSize: 12, color: "rgba(255,255,255,0.3)", marginTop: 4 }}>
