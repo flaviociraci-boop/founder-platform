@@ -24,6 +24,15 @@ export default function ChatWindow({ partner, currentUserId, onBack }: Props) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
+  // Defensiv: profile.id aus auth.uid auflösen statt sich auf den Prop zu
+  // verlassen. Falls currentUserId aus irgendeinem Pfad als UUID/null
+  // ankommt, scheitert der Mark-as-Read-UPDATE silent (notifications.
+  // recipient_id ist integer). Resolved-State erst nach Auflösung gesetzt.
+  const [resolvedProfileId, setResolvedProfileId] = useState<number | null>(null);
+  // Ref-Spiegel des State, damit der Realtime-Callback (Closure capture nur
+  // beim subscribe) immer den aktuellen Wert sieht — ohne re-subscribe.
+  const resolvedProfileIdRef = useRef<number | null>(null);
+  useEffect(() => { resolvedProfileIdRef.current = resolvedProfileId; }, [resolvedProfileId]);
   // Genau eine Message wird zu einer Zeit animiert — die zuletzt
   // hinzugefügte. Nach ~200 ms zurückgesetzt, damit ältere Messages beim
   // Scrollen oder Re-Render nicht erneut animieren.
@@ -31,18 +40,52 @@ export default function ChatWindow({ partner, currentUserId, onBack }: Props) {
   const bottomRef = useRef<HTMLDivElement>(null);
   const supabase = useMemo(() => createClient(), []);
 
-  // Bei Mount + Partner-Wechsel: alle ungelesenen new_message-Notifications
-  // vom aktuellen Chat-Partner als gelesen markieren (Chat ist offen, also
-  // ist die Bell für genau diese Conversation redundant).
+  // Auth-User → profile.id auflösen + ausführlicher Diagnose-Log.
   useEffect(() => {
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("auth_id", user.id)
+        .maybeSingle();
+      const pid = profile?.id ?? null;
+      console.log("[chat] mount diagnostic", {
+        currentUserIdProp: currentUserId,
+        currentUserIdType: typeof currentUserId,
+        resolvedProfileId: pid,
+        resolvedProfileIdType: typeof pid,
+        authUid: user.id,
+        partnerIdValue: partner.id,
+        partnerIdType: typeof partner.id,
+      });
+      setResolvedProfileId(typeof pid === "number" ? pid : null);
+    })();
+  }, [supabase, currentUserId, partner.id]);
+
+  // Bei Mount + Partner-Wechsel: alle ungelesenen new_message-Notifications
+  // vom aktuellen Chat-Partner als gelesen markieren. Nutzt resolvedProfileId
+  // (s.o.), nicht currentUserId-Prop.
+  useEffect(() => {
+    if (resolvedProfileId == null) return;
+    console.log("[chat] mount mark-as-read attempt", {
+      recipient_id: resolvedProfileId, sender_id: partner.id,
+    });
     void supabase
       .from("notifications")
       .update({ is_read: true })
       .eq("type", "new_message")
-      .eq("recipient_id", currentUserId)
+      .eq("recipient_id", resolvedProfileId)
       .eq("sender_id", partner.id)
-      .eq("is_read", false);
-  }, [currentUserId, partner.id, supabase]);
+      .eq("is_read", false)
+      .select("id")
+      .then(({ data, error }) => {
+        console.log("[chat] mount mark-as-read result", {
+          marked: data?.length ?? 0, error: error?.message,
+        });
+      });
+  }, [resolvedProfileId, partner.id, supabase]);
 
   // Lock document scroll while chat is open so iOS never shifts the
   // layout viewport (keeps vp.offsetTop = 0, eliminating the keyboard gap).
@@ -106,22 +149,34 @@ export default function ChatWindow({ partner, currentUserId, onBack }: Props) {
           // equal würde sonst silent versagen.)
           if (senderId === partner.id) {
             playSwoosh();
-            console.log("[chat] incoming from partner — marking notifications read", {
-              recipient_id: currentUserId, sender_id: partner.id,
-            });
-            void supabase
-              .from("notifications")
-              .update({ is_read: true })
-              .eq("type", "new_message")
-              .eq("recipient_id", currentUserId)
-              .eq("sender_id", partner.id)
-              .eq("is_read", false)
-              .select("id")
-              .then(({ data, error }) => {
-                console.log("[chat] mark-as-read result", {
-                  marked: data?.length ?? 0, error: error?.message,
-                });
+            // Ref statt State — Realtime-Callback sieht immer aktuellen
+            // resolved profile.id ohne re-subscribe.
+            const pid = resolvedProfileIdRef.current;
+            if (pid != null) {
+              console.log("[chat] realtime mark-as-read attempt", {
+                currentUserIdProp: currentUserId,
+                currentUserIdType: typeof currentUserId,
+                resolvedProfileId: pid,
+                resolvedProfileIdType: typeof pid,
+                partnerIdValue: partner.id,
+                partnerIdType: typeof partner.id,
               });
+              void supabase
+                .from("notifications")
+                .update({ is_read: true })
+                .eq("type", "new_message")
+                .eq("recipient_id", pid)
+                .eq("sender_id", partner.id)
+                .eq("is_read", false)
+                .select("id")
+                .then(({ data, error }) => {
+                  console.log("[chat] realtime mark-as-read result", {
+                    marked: data?.length ?? 0, error: error?.message,
+                  });
+                });
+            } else {
+              console.warn("[chat] realtime mark-as-read SKIPPED — resolvedProfileId null (resolve-effect not done yet)");
+            }
           }
         }
       )

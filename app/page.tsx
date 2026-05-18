@@ -7,7 +7,7 @@ import { User, Project, timeAgo } from "@/app/lib/data";
 export default async function Page({
   searchParams,
 }: {
-  searchParams: Promise<{ tab?: string }>;
+  searchParams: Promise<{ tab?: string; with?: string }>;
 }) {
   const params = await searchParams;
   const cookieStore = await cookies();
@@ -84,6 +84,7 @@ export default async function Page({
       currentUserAvatar={currentProfile?.avatar ?? null}
       currentUserColor={currentProfile?.color ?? null}
       initialTab={params.tab}
+      initialChatWithProfileId={params.with ? Number.parseInt(params.with, 10) : null}
     />
   );
 }

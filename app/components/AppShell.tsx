@@ -32,6 +32,10 @@ type Props = {
   currentUserAvatar: string | null;
   currentUserColor: string | null;
   initialTab?: string;
+  // Optional deep-link aus Notification ("application_accepted") oder
+  // ProjectBoard ("Chat öffnen"-Button): /?tab=chats&with=<profileId>.
+  // Wird zu setChatWith(matchingUser) beim Mount.
+  initialChatWithProfileId?: number | null;
 };
 
 const VALID_TABS: Tab[] = ["discover", "match", "chats", "projects", "profile"];
@@ -44,13 +48,18 @@ export default function AppShell({
   currentUserAvatar,
   currentUserColor,
   initialTab,
+  initialChatWithProfileId,
 }: Props) {
   const router = useRouter();
   const [tab, setTab] = useState<Tab>(
     VALID_TABS.includes(initialTab as Tab) ? (initialTab as Tab) : "discover"
   );
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [chatWith, setChatWith] = useState<User | null>(null);
+  // Initial chatWith aus Deep-Link auflösen (?with=<profileId>).
+  const [chatWith, setChatWith] = useState<User | null>(() => {
+    if (!initialChatWithProfileId) return null;
+    return initialUsers.find((u) => u.id === initialChatWithProfileId) ?? null;
+  });
   const [followed, setFollowed] = useState<Record<number, boolean>>({});
   const [activeCategory, setActiveCategory] = useState("all");
   const [pendingCount, setPendingCount] = useState(0);

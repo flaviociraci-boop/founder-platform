@@ -17,16 +17,50 @@ type Props = {
   currentUserColor: string | null;
 };
 
+type AppliedStatus = "pending" | "accepted" | "rejected";
+
 export default function ProjectBoard({ initialProjects, currentUserId, currentUserName, currentUserAvatar, currentUserColor }: Props) {
   const router = useRouter();
   const [projects, setProjects] = useState<Project[]>(initialProjects);
-  const [applied, setApplied] = useState<Record<number, boolean>>({});
+  // Map project_id → status der eigenen Bewerbung. Steuert den Button-State:
+  // undefined → "Bewerben", pending/rejected → disabled mit Label,
+  // accepted → "Chat öffnen".
+  const [appliedStatus, setAppliedStatus] = useState<Record<number, AppliedStatus>>({});
   const [filterCat, setFilterCat] = useState("all");
   const [query, setQuery] = useState("");
   const [modalProject, setModalProject] = useState<Project | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const supabase = useMemo(() => createClient(), []);
+
+  // Eigene Bewerbungs-Status pro Projekt vorab laden + Realtime mitziehen.
+  useEffect(() => {
+    if (!currentUserId) return;
+    const load = async () => {
+      const { data } = await supabase
+        .from("applications")
+        .select("project_id, status")
+        .eq("user_id", currentUserId);
+      const m: Record<number, AppliedStatus> = {};
+      for (const row of data ?? []) {
+        m[row.project_id as number] = row.status as AppliedStatus;
+      }
+      setAppliedStatus(m);
+    };
+    load();
+
+    // Realtime: Wenn der Owner accepted/rejected klickt, ändert sich
+    // unsere status-Row → Button updatet ohne Reload.
+    const channel = supabase
+      .channel("applications-mine")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "applications" },
+        () => load(),
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [currentUserId, supabase]);
 
   // Realtime: neue Projekte live in die Liste appenden (kein Reload nötig).
   // Payload-Spalten sind snake_case — wir mappen auf den Project-Type wie
@@ -77,7 +111,7 @@ export default function ProjectBoard({ initialProjects, currentUserId, currentUs
     );
 
   const handleApplicationSuccess = (projectId: number) => {
-    setApplied((prev) => ({ ...prev, [projectId]: true }));
+    setAppliedStatus((prev) => ({ ...prev, [projectId]: "pending" }));
     setProjects((prev) =>
       prev.map((p) => (p.id === projectId ? { ...p, applicants: p.applicants + 1 } : p)),
     );
@@ -306,27 +340,50 @@ export default function ProjectBoard({ initialProjects, currentUserId, currentUs
                 </span>{" "}
                 Bewerber
               </span>
-              <button
-                onClick={() => { if (!applied[project.id]) setModalProject(project); }}
-                disabled={applied[project.id]}
-                style={{
-                  padding: "9px 20px",
-                  borderRadius: 20,
-                  fontSize: 13,
-                  fontWeight: 700,
-                  cursor: applied[project.id] ? "default" : "pointer",
-                  border: applied[project.id]
-                    ? "1px solid rgba(255,255,255,0.1)"
-                    : `1px solid ${project.color}55`,
-                  background: applied[project.id]
-                    ? "rgba(255,255,255,0.04)"
-                    : `linear-gradient(135deg, ${project.color}33, ${project.color}11)`,
-                  color: applied[project.id] ? "rgba(255,255,255,0.3)" : project.color,
-                  transition: "all 0.2s",
-                }}
-              >
-                {applied[project.id] ? "Beworben" : "Bewerben"}
-              </button>
+              {(() => {
+                const status = appliedStatus[project.id];
+                const isOwn = project.userId === currentUserId;
+                // Eigene Projekte: kein Bewerben-Button.
+                if (isOwn) {
+                  return <span style={{ fontSize: 12, color: "rgba(255,255,255,0.3)" }}>Dein Projekt</span>;
+                }
+                let label: string;
+                let disabled = false;
+                let onClick: (() => void) | undefined;
+                let muted = false;
+                if (status === "pending") {
+                  label = "Bewerbung läuft"; disabled = true; muted = true;
+                } else if (status === "accepted") {
+                  label = "Chat öffnen"; onClick = () => router.push(`/?tab=chats&with=${project.userId}`);
+                } else if (status === "rejected") {
+                  label = "Abgelehnt"; disabled = true; muted = true;
+                } else {
+                  label = "Bewerben"; onClick = () => setModalProject(project);
+                }
+                return (
+                  <button
+                    onClick={onClick}
+                    disabled={disabled}
+                    style={{
+                      padding: "9px 20px",
+                      borderRadius: 20,
+                      fontSize: 13,
+                      fontWeight: 700,
+                      cursor: disabled ? "default" : "pointer",
+                      border: muted
+                        ? "1px solid rgba(255,255,255,0.1)"
+                        : `1px solid ${project.color}55`,
+                      background: muted
+                        ? "rgba(255,255,255,0.04)"
+                        : `linear-gradient(135deg, ${project.color}33, ${project.color}11)`,
+                      color: muted ? "rgba(255,255,255,0.3)" : project.color,
+                      transition: "all 0.2s",
+                    }}
+                  >
+                    {label}
+                  </button>
+                );
+              })()}
             </div>
           </div>
         ))}

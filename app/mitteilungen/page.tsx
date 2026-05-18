@@ -11,7 +11,9 @@ type NotifType =
   | "connection_accepted"
   | "new_message"
   | "new_project"
-  | "application_received";
+  | "application_received"
+  | "application_accepted"
+  | "application_rejected";
 
 type Notification = {
   id: number;
@@ -38,6 +40,10 @@ function notifText(notif: Notification): string {
     case "new_project": return `hat ein neues Projekt veröffentlicht`;
     case "application_received":
       return `hat sich auf dein Projekt "${notif.projectTitle ?? "…"}" beworben`;
+    case "application_accepted":
+      return `hat deine Bewerbung auf "${notif.projectTitle ?? "…"}" angenommen`;
+    case "application_rejected":
+      return `hat deine Bewerbung auf "${notif.projectTitle ?? "…"}" abgelehnt`;
   }
 }
 
@@ -47,6 +53,11 @@ function notifHref(notif: Notification): string {
   switch (notif.type) {
     case "application_received":
       return notif.related_id ? `/projekte/${notif.related_id}/bewerbungen` : "/?tab=projects";
+    case "application_accepted":
+      // Owner ist sender_id — Chat mit ihm öffnen via ?with=
+      return notif.sender?.id ? `/?tab=chats&with=${notif.sender.id}` : "/?tab=projects";
+    case "application_rejected":
+      return notif.related_id ? `/projekte` : "/?tab=projects";
     case "connection_request":
     case "connection_accepted":
       return "/?tab=match";
@@ -110,12 +121,15 @@ export default function MitteilungenPage() {
         sender: Array.isArray(n.sender) ? n.sender[0] ?? null : n.sender ?? null,
       }));
 
-      // Project-Titles für application_received-Notifications nachladen
-      // (related_id hat keinen FK auf projects).
+      // Project-Titles für application_*-Notifications nachladen (alle drei
+      // Types haben related_id = project_id, kein FK auf projects).
+      const APPLICATION_TYPES: NotifType[] = [
+        "application_received", "application_accepted", "application_rejected",
+      ];
       const projectIds = Array.from(
         new Set(
           baseList
-            .filter((n) => n.type === "application_received" && n.related_id != null)
+            .filter((n) => APPLICATION_TYPES.includes(n.type) && n.related_id != null)
             .map((n) => n.related_id as number),
         ),
       );
@@ -128,7 +142,7 @@ export default function MitteilungenPage() {
           (projects ?? []).map((p) => [p.id as number, (p.title as string) ?? ""]),
         );
         for (const n of baseList) {
-          if (n.type === "application_received" && n.related_id != null) {
+          if (APPLICATION_TYPES.includes(n.type) && n.related_id != null) {
             n.projectTitle = titleById.get(n.related_id);
           }
         }
