@@ -67,6 +67,21 @@ export default function MatchScreen({ users, currentUserId, onOpenChat }: Props)
       );
     };
     load();
+
+    // Realtime: bei jeder Connections-Änderung Status frisch ziehen.
+    // Brauchen wir damit der Sender live sieht, wenn der Empfänger
+    // accepted/rejected drückt (sonst zeigt "Anfrage gesendet" bis
+    // Tab-Wechsel). Filter weg — UPDATE-Events mit DEFAULT-Replica-
+    // Identity liefern sonst keine non-PK-Spalten zurück.
+    const channel = supabase
+      .channel("match-connections")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "connections" },
+        () => load(),
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
   }, [currentUserId, supabase, users]);
 
   // Alle vier Mutationen folgen dem gleichen Muster:

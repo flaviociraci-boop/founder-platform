@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { MapPin, Search } from "lucide-react";
 import { categories, modelColors, Project } from "@/app/lib/data";
 import { timeAgo } from "@/app/lib/data";
+import { createClient } from "@/utils/supabase/client";
 import ApplicationModal from "@/app/components/ApplicationModal";
 import InfoBox from "@/app/components/InfoBox";
 
@@ -24,6 +25,45 @@ export default function ProjectBoard({ initialProjects, currentUserId, currentUs
   const [query, setQuery] = useState("");
   const [modalProject, setModalProject] = useState<Project | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  const supabase = useMemo(() => createClient(), []);
+
+  // Realtime: neue Projekte live in die Liste appenden (kein Reload nötig).
+  // Payload-Spalten sind snake_case — wir mappen auf den Project-Type wie
+  // page.tsx beim Initial-Load.
+  useEffect(() => {
+    const channel = supabase
+      .channel("projects-live")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "projects" },
+        (payload) => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const p = payload.new as any;
+          const mapped: Project = {
+            id: p.id,
+            userId: p.user_id,
+            title: p.title,
+            desc: p.description,
+            category: p.category,
+            location: p.location,
+            model: p.model,
+            tags: p.tags ?? [],
+            applicants: p.applicants ?? 0,
+            color: p.color,
+            avatar: p.avatar,
+            userName: p.user_name,
+            timeAgo: timeAgo(p.created_at),
+          };
+          setProjects((prev) => {
+            if (prev.some((existing) => existing.id === mapped.id)) return prev;
+            return [mapped, ...prev];
+          });
+        },
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [supabase]);
 
   const q = query.trim().toLowerCase();
   const filtered = projects

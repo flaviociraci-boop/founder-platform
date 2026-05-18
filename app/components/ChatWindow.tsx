@@ -75,9 +75,11 @@ export default function ChatWindow({ partner, currentUserId, onBack }: Props) {
         { event: "INSERT", schema: "public", table: "messages" },
         (payload) => {
           const msg = payload.new as Message;
+          const senderId = Number(msg.sender_id);
+          const receiverId = Number(msg.receiver_id);
           const inConversation =
-            (msg.sender_id === currentUserId && msg.receiver_id === partner.id) ||
-            (msg.sender_id === partner.id && msg.receiver_id === currentUserId);
+            (senderId === currentUserId && receiverId === partner.id) ||
+            (senderId === partner.id && receiverId === currentUserId);
           if (!inConversation) return;
 
           let appended = false;
@@ -99,15 +101,27 @@ export default function ChatWindow({ partner, currentUserId, onBack }: Props) {
           // Incoming-only: gleicher Send-Sound wie beim Senden + Notification
           // sofort als gelesen markieren, damit die Bell nicht aufzuckt
           // während der Chat offen ist.
-          if (msg.sender_id === partner.id) {
+          // (senderId/receiverId oben bereits via Number() konvertiert —
+          // Realtime-Payload-IDs kommen gelegentlich als String an, strict-
+          // equal würde sonst silent versagen.)
+          if (senderId === partner.id) {
             playSwoosh();
+            console.log("[chat] incoming from partner — marking notifications read", {
+              recipient_id: currentUserId, sender_id: partner.id,
+            });
             void supabase
               .from("notifications")
               .update({ is_read: true })
               .eq("type", "new_message")
               .eq("recipient_id", currentUserId)
               .eq("sender_id", partner.id)
-              .eq("is_read", false);
+              .eq("is_read", false)
+              .select("id")
+              .then(({ data, error }) => {
+                console.log("[chat] mark-as-read result", {
+                  marked: data?.length ?? 0, error: error?.message,
+                });
+              });
           }
         }
       )

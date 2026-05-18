@@ -89,11 +89,17 @@ export default function AppShell({
 
     loadPending();
 
+    // Filter raus — UPDATE-Events liefern bei Postgres-Realtime mit
+    // REPLICA IDENTITY DEFAULT nur die PK-Spalte zurück, sodass der
+    // recipient_id-Filter UPDATEs verschluckt. Stattdessen reagieren wir
+    // auf jede Connections-Änderung und refetchen den Counter (loadPending
+    // filtert selbst auf currentUserId). Bei kleinen User-Zahlen kein
+    // Performance-Problem.
     const pendingChannel = supabase
       .channel("pending-badge")
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "connections", filter: `target_id=eq.${currentUserId}` },
+        { event: "*", schema: "public", table: "connections" },
         () => loadPending()
       )
       .subscribe();
@@ -106,21 +112,26 @@ export default function AppShell({
     const supabase = createClient();
 
     const loadUnread = async () => {
-      const { count } = await supabase
+      // Counter aus Liste abgeleitet (statt head:true count) — robuster
+      // gegen Replica-Identity-Defaults beim Mark-as-Read-UPDATE.
+      const { data } = await supabase
         .from("notifications")
-        .select("*", { count: "exact", head: true })
+        .select("id")
         .eq("recipient_id", currentUserId)
         .eq("is_read", false);
-      setUnreadCount(count ?? 0);
+      setUnreadCount(data?.length ?? 0);
     };
 
     loadUnread();
 
+    // Filter raus (siehe Pending-Channel-Kommentar oben) — wir refetchen
+    // bei jeder Notifications-Änderung und filtern serverseitig per
+    // recipient_id im loadUnread-Call.
     const notifChannel = supabase
       .channel("notif-badge")
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "notifications", filter: `recipient_id=eq.${currentUserId}` },
+        { event: "*", schema: "public", table: "notifications" },
         () => loadUnread()
       )
       .subscribe();
