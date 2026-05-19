@@ -33,6 +33,9 @@ export default function ChatWindow({ partner, currentUserId, onBack }: Props) {
   // beim subscribe) immer den aktuellen Wert sieht — ohne re-subscribe.
   const resolvedProfileIdRef = useRef<number | null>(null);
   useEffect(() => { resolvedProfileIdRef.current = resolvedProfileId; }, [resolvedProfileId]);
+  // Diagnose-State für den Debug-Banner (nur sichtbar in non-prod Env).
+  const [lastMarkResult, setLastMarkResult] = useState<{ marked: number; error: string | null; at: string } | null>(null);
+  const isDebugEnv = process.env.NEXT_PUBLIC_VERCEL_ENV !== "production";
   // Genau eine Message wird zu einer Zeit animiert — die zuletzt
   // hinzugefügte. Nach ~200 ms zurückgesetzt, damit ältere Messages beim
   // Scrollen oder Re-Render nicht erneut animieren.
@@ -83,6 +86,11 @@ export default function ChatWindow({ partner, currentUserId, onBack }: Props) {
       .then(({ data, error }) => {
         console.log("[chat] mount mark-as-read result", {
           marked: data?.length ?? 0, error: error?.message,
+        });
+        setLastMarkResult({
+          marked: data?.length ?? 0,
+          error: error?.message ?? null,
+          at: new Date().toLocaleTimeString(),
         });
       });
   }, [resolvedProfileId, partner.id, supabase]);
@@ -172,6 +180,11 @@ export default function ChatWindow({ partner, currentUserId, onBack }: Props) {
                 .then(({ data, error }) => {
                   console.log("[chat] realtime mark-as-read result", {
                     marked: data?.length ?? 0, error: error?.message,
+                  });
+                  setLastMarkResult({
+                    marked: data?.length ?? 0,
+                    error: error?.message ?? null,
+                    at: new Date().toLocaleTimeString(),
                   });
                 });
             } else {
@@ -268,6 +281,33 @@ export default function ChatWindow({ partner, currentUserId, onBack }: Props) {
           flexShrink: 0,
         }} />
       </div>
+
+      {/* Debug-Banner für Mark-as-Read (nur non-prod). Zeigt aktuell
+          resolvted profile.id, partner.id, letzten Mark-Versuch.
+          Damit Flavio bei laufendem Bug 1 per Screenshot belegen kann
+          was die Werte sind. */}
+      {isDebugEnv && (
+        <div style={{
+          padding: "6px 12px",
+          background: "rgba(245,158,11,0.08)",
+          borderBottom: "1px solid rgba(245,158,11,0.25)",
+          fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
+          fontSize: 10, lineHeight: 1.5, color: "#fcd34d",
+          flexShrink: 0,
+        }}>
+          <div>
+            <strong>resolved:</strong> {String(resolvedProfileId)}
+            {" · "}<strong>prop:</strong> {String(currentUserId)}
+            {" · "}<strong>partner:</strong> {String(partner.id)}
+          </div>
+          <div>
+            <strong>last mark:</strong>{" "}
+            {lastMarkResult
+              ? `marked=${lastMarkResult.marked}${lastMarkResult.error ? `, err="${lastMarkResult.error}"` : ""} @ ${lastMarkResult.at}`
+              : "—"}
+          </div>
+        </div>
+      )}
 
       {/* Messages — flex:1 fills the remaining space between header and input */}
       <div

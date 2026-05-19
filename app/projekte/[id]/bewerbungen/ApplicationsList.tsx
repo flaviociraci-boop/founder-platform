@@ -6,6 +6,7 @@
 // auto-anlegen damit Chat nach Accept funktioniert.
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 import { Avatar } from "@/app/components/Avatar";
@@ -122,9 +123,16 @@ export default function ApplicationsList({
     }
   };
 
+  // Pattern wie Connect-Bug (f1fb580): optimistic State, prev-Wert
+  // sichern, bei DB-Error → State zurückrollen + Inline-Banner.
+
   const handleAccept = async (app: Application) => {
+    const prevStatus = app.status;
     setPendingActionId(app.id);
     setActionError(null);
+    setApplications((prev) =>
+      prev.map((a) => (a.id === app.id ? { ...a, status: "accepted" } : a)),
+    );
 
     // 1) Application auf 'accepted' setzen (Trigger feuert die
     //    application_accepted-Notification automatisch).
@@ -134,6 +142,9 @@ export default function ApplicationsList({
       .eq("id", app.id);
     if (updErr) {
       console.error("[applications] accept update failed:", updErr);
+      setApplications((prev) =>
+        prev.map((a) => (a.id === app.id ? { ...a, status: prevStatus } : a)),
+      );
       setActionError(`Annehmen fehlgeschlagen: ${updErr.message}`);
       setPendingActionId(null);
       return;
@@ -141,7 +152,9 @@ export default function ApplicationsList({
 
     // 2) Connection (Owner ↔ Applicant) als accepted aufrufen — der
     //    messages-RLS-Check verlangt eine accepted-Connection in
-    //    irgendeiner Richtung. upsert ist atomisch.
+    //    irgendeiner Richtung. upsert ist atomisch. Connection-Fehler
+    //    rollt die Bewerbung NICHT zurück — Status ist gesetzt,
+    //    Notification ging raus, fehlende Connection ist Folge-Bug.
     const { error: conErr } = await supabase
       .from("connections")
       .upsert(
@@ -150,20 +163,21 @@ export default function ApplicationsList({
       );
     if (conErr) {
       console.error("[applications] connection upsert failed:", conErr);
-      // Nicht abbrechen — Status ist gesetzt, Notification ging raus.
-      // Connection-Fehler ist Bonus-Bug, wird auch nicht den Accept-Flow
-      // rückgängig machen.
+      setActionError(
+        `Bewerbung angenommen, aber Chat-Verbindung konnte nicht angelegt werden: ${conErr.message}`,
+      );
     }
 
-    setApplications((prev) =>
-      prev.map((a) => (a.id === app.id ? { ...a, status: "accepted" } : a)),
-    );
     setPendingActionId(null);
   };
 
   const handleReject = async (app: Application) => {
+    const prevStatus = app.status;
     setPendingActionId(app.id);
     setActionError(null);
+    setApplications((prev) =>
+      prev.map((a) => (a.id === app.id ? { ...a, status: "rejected" } : a)),
+    );
 
     const { error } = await supabase
       .from("applications")
@@ -171,14 +185,14 @@ export default function ApplicationsList({
       .eq("id", app.id);
     if (error) {
       console.error("[applications] reject update failed:", error);
+      setApplications((prev) =>
+        prev.map((a) => (a.id === app.id ? { ...a, status: prevStatus } : a)),
+      );
       setActionError(`Ablehnen fehlgeschlagen: ${error.message}`);
       setPendingActionId(null);
       return;
     }
 
-    setApplications((prev) =>
-      prev.map((a) => (a.id === app.id ? { ...a, status: "rejected" } : a)),
-    );
     setPendingActionId(null);
   };
 
@@ -236,26 +250,32 @@ export default function ApplicationsList({
               transition: "opacity 0.15s",
             }}>
               <div style={{ display: "flex", alignItems: "flex-start", gap: 12, marginBottom: app.message ? 12 : 0 }}>
-                <Avatar
-                  src={applicant.avatar ?? applicant.name.charAt(0)}
-                  color={applicant.color}
-                  size={44}
-                  radius={13}
-                />
-                <div style={{ flex: 1, overflow: "hidden" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                    <span style={{ fontWeight: 700, fontSize: 15 }}>{applicant.name}</span>
-                    <span style={{
-                      fontSize: 11, padding: "2px 8px", borderRadius: 20, fontWeight: 700,
-                      background: ss.bg, border: `1px solid ${ss.border}`, color: ss.color,
-                    }}>
-                      {ss.label}
-                    </span>
+                {/* Avatar + Name → ProfileScreen-Overlay via AppShell-?profile=. */}
+                <Link
+                  href={`/?tab=discover&profile=${applicant.id}`}
+                  style={{ display: "flex", alignItems: "flex-start", gap: 12, flex: 1, textDecoration: "none", color: "inherit", overflow: "hidden" }}
+                >
+                  <Avatar
+                    src={applicant.avatar ?? applicant.name.charAt(0)}
+                    color={applicant.color}
+                    size={44}
+                    radius={13}
+                  />
+                  <div style={{ flex: 1, overflow: "hidden" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                      <span style={{ fontWeight: 700, fontSize: 15 }}>{applicant.name}</span>
+                      <span style={{
+                        fontSize: 11, padding: "2px 8px", borderRadius: 20, fontWeight: 700,
+                        background: ss.bg, border: `1px solid ${ss.border}`, color: ss.color,
+                      }}>
+                        {ss.label}
+                      </span>
+                    </div>
+                    <div style={{ fontSize: 12, color: "rgba(255,255,255,0.4)", marginTop: 2 }}>
+                      {applicant.role ?? "Founder"} · {relativeTime(app.created_at)}
+                    </div>
                   </div>
-                  <div style={{ fontSize: 12, color: "rgba(255,255,255,0.4)", marginTop: 2 }}>
-                    {applicant.role ?? "Founder"} · {relativeTime(app.created_at)}
-                  </div>
-                </div>
+                </Link>
               </div>
 
               {app.message && (

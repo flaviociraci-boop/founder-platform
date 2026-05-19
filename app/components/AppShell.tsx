@@ -36,6 +36,10 @@ type Props = {
   // ProjectBoard ("Chat öffnen"-Button): /?tab=chats&with=<profileId>.
   // Wird zu setChatWith(matchingUser) beim Mount.
   initialChatWithProfileId?: number | null;
+  // Optional deep-link aus ApplicationsList ("Profil ansehen"-Klick auf
+  // Bewerber-Karte): /?tab=discover&profile=<profileId>. Wird zu
+  // setSelectedUser(matchingUser) → ProfileScreen-Overlay.
+  initialSelectedProfileId?: number | null;
 };
 
 const VALID_TABS: Tab[] = ["discover", "match", "chats", "projects", "profile"];
@@ -49,17 +53,43 @@ export default function AppShell({
   currentUserColor,
   initialTab,
   initialChatWithProfileId,
+  initialSelectedProfileId,
 }: Props) {
   const router = useRouter();
   const [tab, setTab] = useState<Tab>(
     VALID_TABS.includes(initialTab as Tab) ? (initialTab as Tab) : "discover"
   );
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [selectedUser, setSelectedUser] = useState<User | null>(() => {
+    if (!initialSelectedProfileId) return null;
+    return initialUsers.find((u) => u.id === initialSelectedProfileId) ?? null;
+  });
   // Initial chatWith aus Deep-Link auflösen (?with=<profileId>).
   const [chatWith, setChatWith] = useState<User | null>(() => {
     if (!initialChatWithProfileId) return null;
     return initialUsers.find((u) => u.id === initialChatWithProfileId) ?? null;
   });
+
+  // Bei Soft-Navigate (router.push) bleibt AppShell mounted, useState-Init
+  // läuft nicht erneut. Dieser Effect synced den State, wenn der Prop sich
+  // ändert. Auslöser z.B. ProjectBoard "Chat öffnen" für Bewerber.
+  useEffect(() => {
+    if (initialChatWithProfileId) {
+      const user = initialUsers.find((u) => u.id === initialChatWithProfileId);
+      if (user) {
+        setChatWith(user);
+        setTab("chats");
+      }
+    }
+  }, [initialChatWithProfileId, initialUsers]);
+
+  // Analog für ?profile= — Bewerber-Karte in ApplicationsList soll Profile-
+  // Overlay öffnen.
+  useEffect(() => {
+    if (initialSelectedProfileId) {
+      const user = initialUsers.find((u) => u.id === initialSelectedProfileId);
+      if (user) setSelectedUser(user);
+    }
+  }, [initialSelectedProfileId, initialUsers]);
   const [followed, setFollowed] = useState<Record<number, boolean>>({});
   const [activeCategory, setActiveCategory] = useState("all");
   const [pendingCount, setPendingCount] = useState(0);
@@ -136,14 +166,24 @@ export default function AppShell({
     // Filter raus (siehe Pending-Channel-Kommentar oben) — wir refetchen
     // bei jeder Notifications-Änderung und filtern serverseitig per
     // recipient_id im loadUnread-Call.
+    // Diagnose-Log eingebaut weil INSERT-Events scheinbar nicht ankommen.
+    // Wenn der Log NIE feuert → notifications fehlt in der
+    // supabase_realtime-Publication (Migration nötig).
     const notifChannel = supabase
       .channel("notif-badge")
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "notifications" },
-        () => loadUnread()
+        (payload) => {
+          console.log("[notif-badge] realtime event", {
+            event: payload.eventType, table: payload.table,
+          });
+          loadUnread();
+        },
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log("[notif-badge] subscribe status:", status);
+      });
 
     return () => { supabase.removeChannel(notifChannel); };
   }, [currentUserId]);
