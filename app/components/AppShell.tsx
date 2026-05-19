@@ -166,9 +166,10 @@ export default function AppShell({
     // Filter raus (siehe Pending-Channel-Kommentar oben) — wir refetchen
     // bei jeder Notifications-Änderung und filtern serverseitig per
     // recipient_id im loadUnread-Call.
-    // Diagnose-Log eingebaut weil INSERT-Events scheinbar nicht ankommen.
-    // Wenn der Log NIE feuert → notifications fehlt in der
-    // supabase_realtime-Publication (Migration nötig).
+    // Diagnose-Log lässt sich im Browser-DevTools beobachten — wenn der
+    // Log bei einem INSERT nie feuert, hat der Realtime-Channel das
+    // Event nicht bekommen (Sub-Status / Publication / RLS-SELECT auf
+    // notifications für authenticated prüfen).
     const notifChannel = supabase
       .channel("notif-badge")
       .on(
