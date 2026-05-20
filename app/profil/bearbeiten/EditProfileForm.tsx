@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { categories, seekingColors } from "@/app/lib/data";
-import { createClient } from "@/utils/supabase/client";
+import { createClient, SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from "@/utils/supabase/client";
 import { Avatar } from "@/app/components/Avatar";
 
 type Form = {
@@ -196,17 +196,31 @@ export default function EditProfileForm() {
         now_unix: nowSec,
         delta_seconds: (session.expires_at ?? 0) - nowSec,
       });
+      console.log("[avatar upload] env check", {
+        has_url: !!SUPABASE_URL,
+        url_tail: SUPABASE_URL.slice(-20),
+        // Beide möglichen Env-Var-Quellen separat loggen, damit beim
+        // nächsten 403 sofort sichtbar ist welche tatsächlich gesetzt
+        // ist und welcher Key (Prefix) am Server ankommt. Erwartet:
+        // sb_publishable_ (neu) oder eyJ... (legacy JWT, falls noch
+        // aktiv im Projekt).
+        publishable_env_set: !!process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
+        anon_env_set: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+        effective_key_prefix: SUPABASE_PUBLISHABLE_KEY.slice(0, 16),
+      });
 
       // Direktfetch statt supabase.storage.from(...).upload() — letzteres
       // hat auf iOS Safari den Bearer nicht zuverlässig mitgeschickt
       // (RLS-Violation trotz frischem Refresh, siehe 20.05. Debug-Round).
       // Hier setzen wir Authorization-Header explizit, deterministisch.
-      const uploadUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/avatars/${user.id}/avatar.jpg`;
+      // SUPABASE_PUBLISHABLE_KEY ist der zentrale Helper mit Fallback
+      // zwischen ANON_KEY und PUBLISHABLE_KEY.
+      const uploadUrl = `${SUPABASE_URL}/storage/v1/object/avatars/${user.id}/avatar.jpg`;
       const res = await fetch(uploadUrl, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${session.access_token}`,
-          apikey: process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+          apikey: SUPABASE_PUBLISHABLE_KEY,
           "Content-Type": "image/jpeg",
           "x-upsert": "true",
           "cache-control": "max-age=0",
