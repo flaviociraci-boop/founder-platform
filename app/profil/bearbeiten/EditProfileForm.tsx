@@ -177,18 +177,47 @@ export default function EditProfileForm() {
     try {
       const user = await ensureFreshAuthUser();
 
+      // Token frisch holen (refresh hat ensureFreshAuthUser bereits gemacht).
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        throw new Error("Session abgelaufen — bitte neu einloggen.");
+      }
+
       const blob = await resizeImage(file);
       const path = `${user.id}/avatar.jpg`;
 
-      console.log("[avatar upload] user.id (auth UUID):", user.id);
-      console.log("[avatar upload] path:", path);
-      console.log("[avatar upload] blob size:", blob.size);
+      const nowSec = Math.floor(Date.now() / 1000);
+      console.log("[avatar upload]", {
+        user_id: user.id,
+        path,
+        blob_size: blob.size,
+        token_tail: session.access_token.slice(-12),
+        expires_at: session.expires_at,
+        now_unix: nowSec,
+        delta_seconds: (session.expires_at ?? 0) - nowSec,
+      });
 
-      const { error: upErr } = await supabase.storage
-        .from("avatars")
-        .upload(path, blob, { contentType: "image/jpeg", upsert: true });
-
-      if (upErr) throw upErr;
+      // Direktfetch statt supabase.storage.from(...).upload() — letzteres
+      // hat auf iOS Safari den Bearer nicht zuverlässig mitgeschickt
+      // (RLS-Violation trotz frischem Refresh, siehe 20.05. Debug-Round).
+      // Hier setzen wir Authorization-Header explizit, deterministisch.
+      const uploadUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/avatars/${user.id}/avatar.jpg`;
+      const res = await fetch(uploadUrl, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+          apikey: process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+          "Content-Type": "image/jpeg",
+          "x-upsert": "true",
+          "cache-control": "max-age=0",
+        },
+        body: blob,
+      });
+      if (!res.ok) {
+        const txt = await res.text();
+        console.error("[avatar upload] failed", { status: res.status, body: txt });
+        throw new Error(`Upload fehlgeschlagen (${res.status}): ${txt}`);
+      }
 
       const { data: { publicUrl } } = supabase.storage
         .from("avatars")
