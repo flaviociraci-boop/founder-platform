@@ -225,9 +225,24 @@ export default function ProjectBoard({ initialProjects, currentUserId, currentUs
       </InfoBox>
 
       <div style={{ padding: "0 20px", display: "flex", flexDirection: "column", gap: 12 }}>
-        {filtered.map((project) => (
+        {filtered.map((project) => {
+          // Owner-Check identisch zur "Dein Projekt"-Kennzeichnung unten
+          // und zum Server-Guard in /projekte/[id]/bewerbungen/page.tsx.
+          // Nur own-Projects öffnen die Bewerbungsübersicht beim Card-Klick;
+          // fremde Cards bleiben click-passiv (User nutzt den Button rechts).
+          const isOwn = project.userId === currentUserId;
+          return (
           <div
             key={project.id}
+            onClick={isOwn ? () => router.push(`/projekte/${project.id}/bewerbungen`) : undefined}
+            role={isOwn ? "button" : undefined}
+            tabIndex={isOwn ? 0 : undefined}
+            onKeyDown={isOwn ? (e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                router.push(`/projekte/${project.id}/bewerbungen`);
+              }
+            } : undefined}
             style={{
               background: "rgba(255,255,255,0.04)",
               border: "1px solid rgba(255,255,255,0.07)",
@@ -235,6 +250,7 @@ export default function ProjectBoard({ initialProjects, currentUserId, currentUs
               padding: 18,
               position: "relative",
               overflow: "hidden",
+              cursor: isOwn ? "pointer" : "default",
             }}
           >
             <div
@@ -342,7 +358,6 @@ export default function ProjectBoard({ initialProjects, currentUserId, currentUs
               </span>
               {(() => {
                 const status = appliedStatus[project.id];
-                const isOwn = project.userId === currentUserId;
                 // Eigene Projekte: kein Bewerben-Button.
                 if (isOwn) {
                   return <span style={{ fontSize: 12, color: "rgba(255,255,255,0.3)" }}>Dein Projekt</span>;
@@ -386,7 +401,8 @@ export default function ProjectBoard({ initialProjects, currentUserId, currentUs
               })()}
             </div>
           </div>
-        ))}
+          );
+        })}
       </div>
 
       {successMessage && (
