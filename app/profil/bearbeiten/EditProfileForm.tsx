@@ -142,6 +142,21 @@ export default function EditProfileForm() {
   };
 
   // ── Avatar upload ──────────────────────────────────────────────────────────
+
+  // Storage-Requests scheitern auf iOS Safari mit RLS-Violation, wenn der
+  // Access-Token abgelaufen ist (Supabase Storage behandelt den Request
+  // dann als anon, auth.uid() ist null → folder-policy false). PostgREST-
+  // Endpoints toleranter, deshalb funktionieren Connect/Apply/Message
+  // ohne Refresh. Vor Storage-Calls immer einmal refresh erzwingen.
+  const ensureFreshAuthUser = async () => {
+    await supabase.auth.refreshSession();
+    const { data: { user }, error } = await supabase.auth.getUser();
+    if (error || !user) {
+      throw new Error("Session abgelaufen — bitte neu einloggen.");
+    }
+    return user;
+  };
+
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !form) return;
@@ -160,9 +175,7 @@ export default function EditProfileForm() {
     setUploadError("");
 
     try {
-      // Always fetch the auth user fresh — never rely on state for the UUID
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Nicht eingeloggt.");
+      const user = await ensureFreshAuthUser();
 
       const blob = await resizeImage(file);
       const path = `${user.id}/avatar.jpg`;
@@ -205,10 +218,11 @@ export default function EditProfileForm() {
     setRemoving(true);
     setUploadError("");
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        await supabase.storage.from("avatars").remove([`${user.id}/avatar.jpg`]);
-      }
+      // ensureFreshAuthUser (s.o.): gleicher Storage-RLS-Stolperstein wie
+      // beim Upload, identische Defensive.
+      const user = await ensureFreshAuthUser();
+      await supabase.storage.from("avatars").remove([`${user.id}/avatar.jpg`]);
+
       const initials = form.name.trim()
         .split(" ").map((w) => w[0] ?? "").join("").toUpperCase().slice(0, 2) || "?";
       await supabase.from("profiles").update({ avatar: initials }).eq("id", form.id);
