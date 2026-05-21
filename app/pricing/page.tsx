@@ -7,8 +7,8 @@ export const metadata: Metadata = {
   description: "Connectyfind Pro — Das Founder-Netzwerk für den DACH-Raum.",
 };
 
-const MONTHLY_URL = "https://whop.com/checkout/plan_guzJNAzucfCXz";
-const YEARLY_URL = "https://whop.com/checkout/plan_x7IVn5qGLXsfM";
+const MONTHLY_URL = "https://whop.com/checkout/plan_ljHXNq8tR3c16";
+const YEARLY_URL = "https://whop.com/checkout/plan_ySEzdrSdKbbcV";
 
 const features = [
   "Unbegrenzte Connect-Anfragen",
@@ -66,7 +66,7 @@ export default function PricingPage() {
                 Monatlich
               </div>
               <div style={{ display: "flex", alignItems: "baseline", gap: 4 }}>
-                <span style={{ fontSize: 36, fontWeight: 800, letterSpacing: -1 }}>$29</span>
+                <span style={{ fontSize: 36, fontWeight: 800, letterSpacing: -1 }}>€29</span>
                 <span style={{ fontSize: 14, color: "rgba(255,255,255,0.4)" }}>/Monat</span>
               </div>
             </div>
@@ -117,10 +117,10 @@ export default function PricingPage() {
                 Jährlich
               </div>
               <div style={{ display: "flex", alignItems: "baseline", gap: 4 }}>
-                <span style={{ fontSize: 36, fontWeight: 800, letterSpacing: -1 }}>$249</span>
+                <span style={{ fontSize: 36, fontWeight: 800, letterSpacing: -1 }}>€249</span>
                 <span style={{ fontSize: 14, color: "rgba(255,255,255,0.4)" }}>/Jahr</span>
               </div>
-              <div style={{ fontSize: 13, color: "rgba(255,255,255,0.35)", marginTop: 2 }}>≈ $20.75/Monat</div>
+              <div style={{ fontSize: 13, color: "rgba(255,255,255,0.35)", marginTop: 2 }}>≈ €20.75/Monat</div>
             </div>
 
             <ul style={{ listStyle: "none", padding: 0, margin: "0 0 24px", display: "flex", flexDirection: "column", gap: 10 }}>

@@ -92,4 +92,4 @@ export function timeAgo(dateStr: string): string {
 // starten (Whops nativer Schutz greift nicht zuverlässig, verifiziert
 // 21.05.2026 mit Naomi). Standard-Pricing-Page (/pricing) zeigt weiterhin
 // den Plan MIT Trial für Neukunden.
-export const WHOP_REACTIVATE_URL = "https://whop.com/checkout/plan_4cVSKdpzAJc81";
+export const WHOP_REACTIVATE_URL = "https://whop.com/checkout/plan_aENAJmBQQKMri";
