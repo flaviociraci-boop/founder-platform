@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Mail } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
+import { WHOP_REACTIVATE_URL } from "@/app/lib/data";
 
 // Reason-Codes kommen entweder via Middleware (proxy.ts bei In-Session-
 // Expiry) oder direkt aus dem Login-Versuch unten, wenn ein User mit
@@ -192,7 +193,9 @@ export default function LoginPage() {
             <div>{banner.message}</div>
             {REACTIVATE_REASONS.has(banner.reason) && (
               <a
-                href="/pricing"
+                href={WHOP_REACTIVATE_URL}
+                target="_blank"
+                rel="noopener noreferrer"
                 style={{
                   display: "inline-block", marginTop: 8,
                   color: "#a78bfa", fontWeight: 600, fontSize: 13,

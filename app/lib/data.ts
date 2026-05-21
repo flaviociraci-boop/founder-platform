@@ -85,3 +85,11 @@ export function timeAgo(dateStr: string): string {
   if (h < 24) return `vor ${h}h`;
   return `vor ${d}d`;
 }
+
+// ── Whop-URLs ─────────────────────────────────────────────────────────────
+// Reaktivierungs-Plan (versteckt im Whop-Shop) ohne Trial-Option — verhindert
+// dass Ex-Abonnenten mit gleicher Email + Karte erneut einen 3-Tage-Trial
+// starten (Whops nativer Schutz greift nicht zuverlässig, verifiziert
+// 21.05.2026 mit Naomi). Standard-Pricing-Page (/pricing) zeigt weiterhin
+// den Plan MIT Trial für Neukunden.
+export const WHOP_REACTIVATE_URL = "https://whop.com/checkout/plan_4cVSKdpzAJc81";
