@@ -182,7 +182,7 @@ export default function LandingPage() {
             marginLeft: "auto",
             marginRight: "auto",
           }}>
-            Die exklusive Founder-Community für den DACH-Raum. Bald live.
+            Die exklusive Founder-App für den DACH-Raum. Bald live.
           </p>
 
           {/* Waitlist form */}
