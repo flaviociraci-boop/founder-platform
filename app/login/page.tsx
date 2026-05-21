@@ -1,10 +1,27 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Mail } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
+
+// Reason-Codes kommen entweder via Middleware (proxy.ts bei In-Session-
+// Expiry) oder direkt aus dem Login-Versuch unten, wenn ein User mit
+// existierendem Account aber inaktiver Sub einloggen will.
+const ERROR_MESSAGES: Record<string, string> = {
+  expired: "Dein Connectyfind-Pro-Abo ist nicht mehr aktiv. Reaktiviere es, um wieder Zugriff zu bekommen.",
+  canceled: "Dein Connectyfind-Pro-Abo ist nicht mehr aktiv. Reaktiviere es, um wieder Zugriff zu bekommen.",
+  no_subscription: "Anmeldung fehlgeschlagen. Bitte prüfe dein Abo.",
+  inactive: "Anmeldung fehlgeschlagen. Bitte prüfe dein Abo.",
+  auth_failed: "Anmeldung fehlgeschlagen. Bitte versuche es erneut.",
+  auth: "Anmeldung fehlgeschlagen. Bitte versuche es erneut.",
+  verify: "Email-Bestätigung fehlgeschlagen. Bitte versuche es erneut.",
+  missing_params: "Ungültiger Anmelde-Link.",
+};
+const REACTIVATE_REASONS = new Set(["expired", "canceled"]);
+
+const PASS_STATUSES = ["active", "trial", "trialing"];
 
 type Mode = "login" | "forgot" | "forgot-sent";
 
@@ -50,21 +67,60 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  // Banner aus URL-Param ?error=... — kommt entweder aus der Middleware
+  // (In-Session-Expiry) oder aus dem Login-Sub-Check unten.
+  const [banner, setBanner] = useState<{ message: string; reason: string } | null>(null);
 
   const supabase = createClient();
+
+  useEffect(() => {
+    // window.location statt useSearchParams um Suspense-Boundary-Stress zu
+    // vermeiden — Login-Page ist eh client-only.
+    if (typeof window === "undefined") return;
+    const reason = new URLSearchParams(window.location.search).get("error");
+    if (!reason) return;
+    const message = ERROR_MESSAGES[reason] ?? ERROR_MESSAGES.auth_failed;
+    setBanner({ message, reason });
+  }, []);
 
   const handleLogin = async () => {
     if (!email || !password) { setError("Bitte alle Felder ausfüllen."); return; }
     setLoading(true);
     setError("");
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) {
+    const { error: signInErr } = await supabase.auth.signInWithPassword({ email, password });
+    if (signInErr) {
       setError("E-Mail oder Passwort falsch.");
-    } else {
-      router.push("/");
-      router.refresh();
+      setLoading(false);
+      return;
     }
-    setLoading(false);
+
+    // Sub-Check direkt nach erfolgreichem Login. Wenn nicht active/trial/
+    // trialing → ausloggen + Banner zeigen. Gleiches Reason-Mapping wie
+    // Middleware-Pfad. Bei DB-Fehler durchlassen (defensive Linie).
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      const { data: sub, error: subErr } = await supabase
+        .from("subscriptions")
+        .select("status")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (subErr) {
+        console.error("[login] subscription check failed:", subErr);
+      } else if (!sub || !PASS_STATUSES.includes(sub.status)) {
+        const reason = !sub
+          ? "no_subscription"
+          : sub.status === "expired" ? "expired"
+          : sub.status === "canceled" ? "canceled"
+          : "inactive";
+        await supabase.auth.signOut();
+        setBanner({ message: ERROR_MESSAGES[reason] ?? ERROR_MESSAGES.auth_failed, reason });
+        setLoading(false);
+        return;
+      }
+    }
+
+    router.push("/");
+    router.refresh();
   };
 
   const handleGoogle = async () => {
@@ -117,6 +173,37 @@ export default function LoginPage() {
             Connectyfind
           </h1>
         </div>
+
+        {banner && (
+          <div
+            role="status"
+            style={{
+              marginBottom: 16,
+              background: "rgba(105,76,187,0.08)",
+              border: "1px solid rgba(105,76,187,0.3)",
+              borderLeft: "3px solid #694CBB",
+              borderRadius: 12,
+              padding: "12px 14px",
+              fontSize: 13,
+              lineHeight: 1.5,
+              color: "rgba(255,255,255,0.75)",
+            }}
+          >
+            <div>{banner.message}</div>
+            {REACTIVATE_REASONS.has(banner.reason) && (
+              <a
+                href="/pricing"
+                style={{
+                  display: "inline-block", marginTop: 8,
+                  color: "#a78bfa", fontWeight: 600, fontSize: 13,
+                  textDecoration: "none",
+                }}
+              >
+                Hier reaktivieren →
+              </a>
+            )}
+          </div>
+        )}
 
         <div style={{
           background: "rgba(255,255,255,0.04)",

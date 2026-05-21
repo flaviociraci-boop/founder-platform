@@ -77,6 +77,38 @@ async function linkPendingSubscription(authUserId: string, email: string | null 
   }
 }
 
+const PASS_STATUSES = ["active", "trial", "trialing"];
+
+// Prüft, ob der frisch eingeloggte User eine aktive Subscription hat.
+// Bei fail: signOut + Reason. Bei DB-Fehler: durchlassen (defensive Linie
+// — lieber kurz Zugang als auth-loop, identisch zu proxy.ts).
+// Wichtig: VOR ensureProfile aufrufen, sonst hätten gesperrte User trotz
+// blockiertem Login eine Profile-Row in der DB.
+async function checkSubscriptionOrSignOut(
+  supabase: ReturnType<typeof createClient>,
+  userId: string,
+): Promise<{ ok: true } | { ok: false; reason: string }> {
+  const { data: sub, error } = await supabase
+    .from("subscriptions")
+    .select("status")
+    .eq("user_id", userId)
+    .maybeSingle();
+  if (error) {
+    console.error("[login] subscription check failed:", error);
+    return { ok: true }; // defensive — durchlassen
+  }
+  if (!sub || !PASS_STATUSES.includes(sub.status as string)) {
+    const reason = !sub
+      ? "no_subscription"
+      : sub.status === "expired" ? "expired"
+      : sub.status === "canceled" ? "canceled"
+      : "inactive";
+    await supabase.auth.signOut();
+    return { ok: false, reason };
+  }
+  return { ok: true };
+}
+
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
@@ -92,6 +124,10 @@ export async function GET(request: NextRequest) {
     const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
     if (!error && data.user) {
+      const check = await checkSubscriptionOrSignOut(supabase, data.user.id);
+      if (!check.ok) {
+        return NextResponse.redirect(`${origin}/login?error=${check.reason}`);
+      }
       await ensureProfile(supabase, data.user);
       await linkPendingSubscription(data.user.id, data.user.email);
       return NextResponse.redirect(`${origin}${next}`);
@@ -109,6 +145,10 @@ export async function GET(request: NextRequest) {
     });
 
     if (!error && data.user) {
+      const check = await checkSubscriptionOrSignOut(supabase, data.user.id);
+      if (!check.ok) {
+        return NextResponse.redirect(`${origin}/login?error=${check.reason}`);
+      }
       await ensureProfile(supabase, data.user);
       await linkPendingSubscription(data.user.id, data.user.email);
       return NextResponse.redirect(`${origin}${next}`);

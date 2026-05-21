@@ -73,23 +73,40 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL("/", request.url));
   }
 
-  // Paywall: eingeloggte User ohne aktive/trialing Subscription → /pricing.
+  // Paywall: eingeloggte User ohne aktive/trialing Subscription → signOut
+  // + redirect /login?error=<reason>. Vorher war es ein Redirect zu /pricing
+  // ohne signOut, was zum "Pricing-Käfig" führte (User stuck weil "/" nicht
+  // in der Allowlist + Pricing redirected nicht zurück). Instagram-Logik:
+  // Login-Tür zu, statt App-Käfig.
   // RLS auf subscriptions erlaubt den SELECT auf die eigene Row (auth.uid()
   // = user_id). Bei DB-Fehler durchlassen — lieber kurz Gratis-Zugang als
   // kaputte App. Vercel-Log-Filter: "[paywall]".
   if (user && !isPaywallBypass) {
-    const { data, error } = await supabase
+    const { data: sub, error } = await supabase
       .from("subscriptions")
-      .select("id")
+      .select("status")
       .eq("user_id", user.id)
-      .in("status", PAYWALL_PASS_STATUSES)
-      .limit(1)
       .maybeSingle();
 
     if (error) {
       console.error("[paywall] subscription check failed:", error);
-    } else if (!data) {
-      return NextResponse.redirect(new URL("/pricing", request.url), 307);
+    } else if (!sub || !PAYWALL_PASS_STATUSES.includes(sub.status)) {
+      const reason = !sub
+        ? "no_subscription"
+        : sub.status === "expired" ? "expired"
+        : sub.status === "canceled" ? "canceled"
+        : "inactive";
+      // Session cleren — signOut() ruft setAll, das die Cookies auf
+      // supabaseResponse mit blank values setzt.
+      await supabase.auth.signOut();
+      const redirect = NextResponse.redirect(
+        new URL(`/login?error=${reason}`, request.url),
+        307,
+      );
+      // Cookies vom signOut auf die Redirect-Response übertragen, damit
+      // der Browser sie tatsächlich gelöscht bekommt.
+      supabaseResponse.cookies.getAll().forEach((c) => redirect.cookies.set(c));
+      return redirect;
     }
   }
 
