@@ -43,7 +43,7 @@ const faqs = [
   },
   {
     q: "Was kostet Connectyfind?",
-    a: "In der Early-Access-Phase komplett kostenlos. Später wird es einen Pro-Plan geben — aber Early-Access-Member behalten Zugriff zu Sonderkonditionen.",
+    a: "Es gibt ein Pro-Abo. Die Preise kommunizieren wir zum Launch. Connectyfind ist nicht kostenlos — Early-Access-Member erhalten aber einen Free Trial.",
   },
   {
     q: "Wer kann mitmachen?",

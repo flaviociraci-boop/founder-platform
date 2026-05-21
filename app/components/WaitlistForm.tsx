@@ -182,7 +182,7 @@ export default function WaitlistForm({ compact = false }: { compact?: boolean })
       </button>
 
       <p style={{ textAlign: "center", marginTop: 10, fontSize: 11, color: "rgba(255,255,255,0.3)" }}>
-        Sei einer der ersten. Komplett kostenlos für Early-Access-Member.
+        Sei einer der Ersten. Free Trial für Early-Access-Member.
       </p>
     </div>
   );
