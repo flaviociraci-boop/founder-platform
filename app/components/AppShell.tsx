@@ -268,7 +268,7 @@ export default function AppShell({
           ──────────────────────────────────────────────────────────────── */}
       <aside className="hidden lg:flex lg:flex-col w-80 h-screen sticky top-0 bg-[#0a0a0f] border-r border-white/10 z-30">
         {/* Logo */}
-        <div className="px-8 py-7">
+        <div className="px-10 py-8">
           <Image
             src="/connectyfind-logo-light.svg"
             alt="Connectyfind"
@@ -282,7 +282,7 @@ export default function AppShell({
         {/* Nav-Items — Brevo-Style Pillen (rounded-full, kein Akzent-Balken).
             Einstellungen/Abmelden sind im Profil-Tab erreichbar — kein
             Avatar-Block unten. */}
-        <nav className="flex flex-col gap-1.5 px-5 mt-2">
+        <nav className="flex flex-col gap-3 px-4 py-2">
           {sidebarNavItems.map((item) => {
             const active = tab === item.id && !selectedUser && !chatWith;
             const Icon = item.icon;
@@ -296,8 +296,8 @@ export default function AppShell({
                 onClick={() => goToTab(item.id)}
                 className={
                   active
-                    ? "rounded-full px-5 py-3.5 flex items-center gap-3.5 transition-colors text-white bg-[#401586]/25 font-semibold"
-                    : "rounded-full px-5 py-3.5 flex items-center gap-3.5 transition-colors text-white/70 hover:text-white hover:bg-white/5 font-medium"
+                    ? "rounded-full px-6 py-3.5 flex items-center gap-4 transition-colors text-white bg-[#401586]/20 font-semibold"
+                    : "rounded-full px-6 py-3.5 flex items-center gap-4 transition-colors text-white/70 hover:text-white hover:bg-white/5 font-medium"
                 }
               >
                 <Icon size={22} />
