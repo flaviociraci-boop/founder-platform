@@ -1,11 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Search, Users, MessageCircle, Folder, User as UserIcon } from "lucide-react";
+import { Briefcase, ChevronUp, Folder, MessageCircle, Search, Users, User as UserIcon } from "lucide-react";
 import { User, Project } from "@/app/lib/data";
 import { createClient } from "@/utils/supabase/client";
 import { unlockAudio } from "@/app/lib/audio";
+import { Avatar } from "@/app/components/Avatar";
+import NotificationBell from "@/app/components/NotificationBell";
 import DiscoverScreen from "@/app/components/DiscoverScreen";
 import MatchScreen from "@/app/components/MatchScreen";
 import ProjectBoard from "@/app/components/ProjectBoard";
@@ -16,12 +19,23 @@ import ProfileDashboard from "@/app/components/ProfileDashboard";
 
 type Tab = "discover" | "match" | "chats" | "projects" | "profile";
 
+// Mobile Bottom-Tab — 5 Items inkl. Entdecken, unverändert.
 const navItems: { icon: React.ElementType; label: string; id: Tab }[] = [
   { icon: Search, label: "Entdecken", id: "discover" },
   { icon: Users, label: "Connect", id: "match" },
   { icon: MessageCircle, label: "Chats", id: "chats" },
   { icon: Folder, label: "Projekte", id: "projects" },
   { icon: UserIcon, label: "Profil", id: "profile" },
+];
+
+// Desktop-Sidebar — 4 Items per Spec (Profil, Connect, Chats, Projekte),
+// "Entdecken" absichtlich nicht enthalten. Briefcase statt Folder für
+// Projekte (Spec-konvention).
+const sidebarNavItems: { icon: React.ElementType; label: string; id: Tab }[] = [
+  { icon: UserIcon, label: "Profil", id: "profile" },
+  { icon: Users, label: "Connect", id: "match" },
+  { icon: MessageCircle, label: "Chats", id: "chats" },
+  { icon: Briefcase, label: "Projekte", id: "projects" },
 ];
 
 type Props = {
@@ -94,6 +108,12 @@ export default function AppShell({
   const [activeCategory, setActiveCategory] = useState("all");
   const [pendingCount, setPendingCount] = useState(0);
   const [unreadCount, setUnreadCount] = useState(0);
+  // Subset von unreadCount — nur new_message-Notifications, für das
+  // Chats-Badge in der Desktop-Sidebar.
+  const [unreadChatsCount, setUnreadChatsCount] = useState(0);
+  // Avatar-Dropdown (Desktop-Sidebar). Wird per Click-outside geschlossen.
+  const [avatarMenuOpen, setAvatarMenuOpen] = useState(false);
+  const avatarMenuRef = useRef<HTMLDivElement>(null);
 
   // iOS Safari: AudioContext startet 'suspended' und wird nur durch ein
   // User-Gesture entsperrt. Beim ersten Touch/Click irgendwo in der App
@@ -153,12 +173,16 @@ export default function AppShell({
     const loadUnread = async () => {
       // Counter aus Liste abgeleitet (statt head:true count) — robuster
       // gegen Replica-Identity-Defaults beim Mark-as-Read-UPDATE.
+      // Plus: type mit selecten, damit wir den Chats-Subset (new_message)
+      // im gleichen Roundtrip ableiten können statt zweiten Query.
       const { data } = await supabase
         .from("notifications")
-        .select("id")
+        .select("id, type")
         .eq("recipient_id", currentUserId)
         .eq("is_read", false);
-      setUnreadCount(data?.length ?? 0);
+      const list = data ?? [];
+      setUnreadCount(list.length);
+      setUnreadChatsCount(list.filter((n) => n.type === "new_message").length);
     };
 
     loadUnread();
@@ -205,6 +229,26 @@ export default function AppShell({
     }
   };
 
+  // Click outside Avatar-Dropdown schließen.
+  useEffect(() => {
+    if (!avatarMenuOpen) return;
+    const onClick = (e: MouseEvent) => {
+      if (avatarMenuRef.current && !avatarMenuRef.current.contains(e.target as Node)) {
+        setAvatarMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", onClick);
+    return () => document.removeEventListener("mousedown", onClick);
+  }, [avatarMenuOpen]);
+
+  // Tab-Wechsel mit Reset von Overlays — wiederverwendet für Mobile-Bottom-
+  // Nav und Desktop-Sidebar.
+  const goToTab = (id: Tab) => {
+    setSelectedUser(null);
+    setChatWith(null);
+    setTab(id);
+  };
+
   const handleLogout = async () => {
     const supabase = createClient();
     await supabase.auth.signOut();
@@ -213,16 +257,16 @@ export default function AppShell({
   };
 
   return (
-    <div style={{
-      fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif",
-      background: "#0a0a0f",
-      minHeight: "100vh",
-      color: "#fff",
-      maxWidth: 430,
-      margin: "0 auto",
-      position: "relative",
-    }}>
-      {/* Background glows */}
+    <div
+      className="lg:flex"
+      style={{
+        fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif",
+        background: "#0a0a0f",
+        minHeight: "100vh",
+        color: "#fff",
+      }}
+    >
+      {/* Background glows — position:fixed, gelten egal ob mobile oder desktop layout */}
       <div style={{
         position: "fixed", top: -100, left: -100, width: 400, height: 400,
         background: "radial-gradient(circle, rgba(99,102,241,0.15) 0%, transparent 70%)",
@@ -234,9 +278,130 @@ export default function AppShell({
         pointerEvents: "none", zIndex: 0,
       }} />
 
-      {/* Main content */}
-      <div style={{ position: "relative", zIndex: 1 }}>
-        {selectedUser ? (
+      {/* ════════════════════════════════════════════════════════════════
+          DESKTOP SIDEBAR (lg+ only)
+          ──────────────────────────────────────────────────────────────── */}
+      <aside className="hidden lg:flex lg:flex-col w-64 h-screen sticky top-0 bg-[#0a0a0f] border-r border-white/10 z-30">
+        {/* Logo */}
+        <div className="p-6">
+          <Image
+            src="/connectyfind-logo-light.svg"
+            alt="Connectyfind"
+            width={140}
+            height={36}
+            priority
+            style={{ height: 36, width: "auto" }}
+          />
+        </div>
+
+        {/* Nav-Items */}
+        <nav className="flex flex-col gap-1 px-3">
+          {sidebarNavItems.map((item) => {
+            const active = tab === item.id && !selectedUser && !chatWith;
+            const Icon = item.icon;
+            const badge =
+              item.id === "match" ? pendingCount :
+              item.id === "chats" ? unreadChatsCount :
+              0;
+            return (
+              <button
+                key={item.id}
+                onClick={() => goToTab(item.id)}
+                className={
+                  active
+                    ? "rounded-lg py-3 pl-[13px] pr-4 flex items-center gap-3 transition-colors text-white bg-[#401586]/30 border-l-[3px] border-[#694CBB]"
+                    : "rounded-lg px-4 py-3 flex items-center gap-3 transition-colors text-white/70 hover:text-white hover:bg-white/5"
+                }
+              >
+                <Icon size={20} />
+                <span className="text-sm font-medium flex-1 text-left">{item.label}</span>
+                {badge > 0 && (
+                  <span style={{
+                    minWidth: 20, height: 20, borderRadius: 10,
+                    background: "#ef4444",
+                    fontSize: 11, fontWeight: 700, color: "#fff",
+                    display: "inline-flex", alignItems: "center", justifyContent: "center",
+                    padding: "0 6px",
+                  }}>
+                    {badge > 9 ? "9+" : badge}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </nav>
+
+        <div className="flex-1" />
+
+        {/* Avatar-Dropdown unten */}
+        <div className="mt-auto p-3 border-t border-white/10 relative" ref={avatarMenuRef}>
+          <button
+            onClick={() => setAvatarMenuOpen((v) => !v)}
+            className="w-full flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-white/5 transition-colors"
+          >
+            <Avatar
+              src={currentUserAvatar ?? (currentUserName?.charAt(0) ?? "?")}
+              color={currentUserColor ?? "#6366f1"}
+              size={32}
+              radius={16}
+            />
+            <span className="flex-1 text-left text-sm font-medium text-white truncate">
+              {currentUserName ?? "Nutzer"}
+            </span>
+            <ChevronUp
+              size={16}
+              className="text-white/40 transition-transform"
+              style={{ transform: avatarMenuOpen ? "rotate(180deg)" : "rotate(0)" }}
+            />
+          </button>
+          {avatarMenuOpen && (
+            <div
+              className="absolute left-3 right-3 bottom-full mb-2 overflow-hidden"
+              style={{
+                background: "#13131a",
+                border: "1px solid rgba(255,255,255,0.1)",
+                borderRadius: 12,
+                boxShadow: "0 8px 24px rgba(0,0,0,0.4)",
+              }}
+            >
+              <button
+                onClick={() => {
+                  setAvatarMenuOpen(false);
+                  // /einstellungen-Index-Route existiert nicht — wir landen
+                  // auf der ersten realen Sub-Route. TODO: dedizierte
+                  // Settings-Übersicht in einem späteren Schritt.
+                  router.push("/einstellungen/abo");
+                }}
+                className="w-full text-left px-4 py-3 text-sm text-white hover:bg-white/5 transition-colors"
+              >
+                Einstellungen
+              </button>
+              <button
+                onClick={() => {
+                  setAvatarMenuOpen(false);
+                  handleLogout();
+                }}
+                className="w-full text-left px-4 py-3 text-sm text-white hover:bg-white/5 transition-colors border-t border-white/5"
+              >
+                Abmelden
+              </button>
+            </div>
+          )}
+        </div>
+      </aside>
+
+      {/* ════════════════════════════════════════════════════════════════
+          MAIN COLUMN (auf Desktop rechts neben Sidebar, auf Mobile alles)
+          ──────────────────────────────────────────────────────────────── */}
+      <div className="relative mx-auto w-full max-w-[430px] lg:max-w-none lg:flex-1 lg:flex lg:flex-col lg:min-w-0">
+        {/* Desktop Top-Bar */}
+        <header className="hidden lg:flex h-16 sticky top-0 border-b border-white/10 items-center justify-end px-8 z-20" style={{ background: "rgba(10,10,15,0.95)", backdropFilter: "blur(20px)" }}>
+          <NotificationBell unreadCount={unreadCount} onClick={() => router.push("/mitteilungen")} />
+        </header>
+
+        {/* Main content — Mobile full-width im 430-Wrapper, Desktop max-w-1280 zentriert */}
+        <div className="relative z-[1] lg:max-w-[1280px] lg:mx-auto lg:px-8 lg:py-6 lg:w-full">
+          {selectedUser ? (
           <ProfileScreen
             user={selectedUser}
             onBack={() => setSelectedUser(null)}
@@ -282,27 +447,27 @@ export default function AppShell({
             onOpenChat={openChat}
           />
         )}
+        </div>
       </div>
 
-      {/* Bottom nav */}
-      <nav style={{
-        position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)",
-        width: "100%", maxWidth: 430,
-        background: "rgba(10,10,15,0.95)",
-        backdropFilter: "blur(20px)",
-        borderTop: "1px solid rgba(255,255,255,0.07)",
-        padding: "10px 0 20px",
-        display: "flex", justifyContent: "space-around",
-        zIndex: 100,
-      }}>
+      {/* Mobile Bottom-Nav — lg:hidden, sonst exakt wie vorher */}
+      <nav
+        className="lg:hidden"
+        style={{
+          position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)",
+          width: "100%", maxWidth: 430,
+          background: "rgba(10,10,15,0.95)",
+          backdropFilter: "blur(20px)",
+          borderTop: "1px solid rgba(255,255,255,0.07)",
+          padding: "10px 0 20px",
+          display: "flex", justifyContent: "space-around",
+          zIndex: 100,
+        }}
+      >
         {navItems.map((item) => (
           <button
             key={item.id}
-            onClick={() => {
-              setSelectedUser(null);
-              setChatWith(null);
-              setTab(item.id);
-            }}
+            onClick={() => goToTab(item.id)}
             style={{
               background: "none", border: "none", cursor: "pointer",
               display: "flex", flexDirection: "column", alignItems: "center", gap: 3,
