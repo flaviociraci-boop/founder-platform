@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Briefcase, ChevronUp, Folder, MessageCircle, Search, Users, User as UserIcon } from "lucide-react";
+import { ChevronUp, Folder, MessageCircle, Search, Users, User as UserIcon } from "lucide-react";
 import { User, Project } from "@/app/lib/data";
 import { createClient } from "@/utils/supabase/client";
 import { unlockAudio } from "@/app/lib/audio";
@@ -28,15 +28,15 @@ const navItems: { icon: React.ElementType; label: string; id: Tab }[] = [
   { icon: UserIcon, label: "Profil", id: "profile" },
 ];
 
-// Desktop-Sidebar — paritätisch zur Mobile-Bottom-Nav (5 Items). Reihenfolge
-// per Nachtrag-Spec: Entdecken, Profil, Connect, Chats, Projekte. Briefcase
-// statt Folder für Projekte (Spec-konvention).
+// Desktop-Sidebar — paritätisch zur Mobile-Bottom-Nav (5 Items, identische
+// Glyphen). Reihenfolge per Nachtrag-Spec: Entdecken, Profil, Connect,
+// Chats, Projekte.
 const sidebarNavItems: { icon: React.ElementType; label: string; id: Tab }[] = [
   { icon: Search, label: "Entdecken", id: "discover" },
   { icon: UserIcon, label: "Profil", id: "profile" },
   { icon: Users, label: "Connect", id: "match" },
   { icon: MessageCircle, label: "Chats", id: "chats" },
-  { icon: Briefcase, label: "Projekte", id: "projects" },
+  { icon: Folder, label: "Projekte", id: "projects" },
 ];
 
 type Props = {
@@ -282,21 +282,21 @@ export default function AppShell({
       {/* ════════════════════════════════════════════════════════════════
           DESKTOP SIDEBAR (lg+ only)
           ──────────────────────────────────────────────────────────────── */}
-      <aside className="hidden lg:flex lg:flex-col w-64 h-screen sticky top-0 bg-[#0a0a0f] border-r border-white/10 z-30">
+      <aside className="hidden lg:flex lg:flex-col w-72 h-screen sticky top-0 bg-[#0a0a0f] border-r border-white/10 z-30">
         {/* Logo */}
         <div className="p-6">
           <Image
             src="/connectyfind-logo-light.svg"
             alt="Connectyfind"
-            width={140}
-            height={36}
+            width={160}
+            height={40}
             priority
-            style={{ height: 36, width: "auto" }}
+            style={{ height: 40, width: "auto" }}
           />
         </div>
 
         {/* Nav-Items */}
-        <nav className="flex flex-col gap-1 px-3">
+        <nav className="flex flex-col gap-1.5 px-4">
           {sidebarNavItems.map((item) => {
             const active = tab === item.id && !selectedUser && !chatWith;
             const Icon = item.icon;
@@ -310,12 +310,12 @@ export default function AppShell({
                 onClick={() => goToTab(item.id)}
                 className={
                   active
-                    ? "rounded-lg py-3 pl-[13px] pr-4 flex items-center gap-3 transition-colors text-white bg-[#401586]/30 border-l-[3px] border-[#694CBB]"
-                    : "rounded-lg px-4 py-3 flex items-center gap-3 transition-colors text-white/70 hover:text-white hover:bg-white/5"
+                    ? "rounded-lg py-3.5 pl-[13px] pr-4 flex items-center gap-3.5 transition-colors text-white bg-[#401586]/30 border-l-[3px] border-[#694CBB]"
+                    : "rounded-lg px-4 py-3.5 flex items-center gap-3.5 transition-colors text-white/70 hover:text-white hover:bg-white/5"
                 }
               >
-                <Icon size={20} />
-                <span className="text-sm font-medium flex-1 text-left">{item.label}</span>
+                <Icon size={22} />
+                <span className="text-[15px] font-medium flex-1 text-left">{item.label}</span>
                 {badge > 0 && (
                   <span style={{
                     minWidth: 20, height: 20, borderRadius: 10,
@@ -338,15 +338,15 @@ export default function AppShell({
         <div className="mt-auto p-3 border-t border-white/10 relative" ref={avatarMenuRef}>
           <button
             onClick={() => setAvatarMenuOpen((v) => !v)}
-            className="w-full flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-white/5 transition-colors"
+            className="w-full flex items-center gap-3 px-3 py-3.5 rounded-lg hover:bg-white/5 transition-colors"
           >
             <Avatar
               src={currentUserAvatar ?? (currentUserName?.charAt(0) ?? "?")}
               color={currentUserColor ?? "#6366f1"}
-              size={32}
-              radius={16}
+              size={36}
+              radius={18}
             />
-            <span className="flex-1 text-left text-sm font-medium text-white truncate">
+            <span className="flex-1 text-left text-[15px] font-medium text-white truncate">
               {currentUserName ?? "Nutzer"}
             </span>
             <ChevronUp
@@ -451,9 +451,12 @@ export default function AppShell({
         </div>
       </div>
 
-      {/* Mobile Bottom-Nav — lg:hidden, sonst exakt wie vorher */}
+      {/* Mobile Bottom-Nav — lg:hidden, sonst exakt wie vorher.
+          display via Tailwind-Klassen (flex lg:hidden), nicht inline,
+          sonst überschreibt das inline-display:flex die lg:hidden-Klasse
+          und die Bar bleibt auf Desktop sichtbar. */}
       <nav
-        className="lg:hidden"
+        className="flex lg:hidden"
         style={{
           position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)",
           width: "100%", maxWidth: 430,
@@ -461,7 +464,7 @@ export default function AppShell({
           backdropFilter: "blur(20px)",
           borderTop: "1px solid rgba(255,255,255,0.07)",
           padding: "10px 0 20px",
-          display: "flex", justifyContent: "space-around",
+          justifyContent: "space-around",
           zIndex: 100,
         }}
       >
