@@ -266,23 +266,23 @@ export default function AppShell({
       {/* ════════════════════════════════════════════════════════════════
           DESKTOP SIDEBAR (lg+ only)
           ──────────────────────────────────────────────────────────────── */}
-      <aside className="hidden lg:flex lg:flex-col w-[420px] h-screen sticky top-0 bg-[#0a0a0f] border-r border-white/10 z-30">
+      <aside className="hidden lg:flex lg:flex-col w-80 h-screen sticky top-0 bg-[#0a0a0f] border-r border-white/10 z-30">
         {/* Logo */}
-        <div className="px-12 py-8">
+        <div className="px-10 py-8">
           <Image
             src="/connectyfind-logo-light.svg"
             alt="Connectyfind"
-            width={220}
-            height={56}
+            width={180}
+            height={48}
             priority
-            style={{ height: 56, width: "auto" }}
+            style={{ height: 48, width: "auto" }}
           />
         </div>
 
         {/* Nav-Items — Brevo-Style Pillen (rounded-full, kein Akzent-Balken).
             Einstellungen/Abmelden sind im Profil-Tab erreichbar — kein
             Avatar-Block unten. */}
-        <nav className="flex flex-col gap-3 px-8 py-2">
+        <nav className="flex flex-col gap-3 px-10 py-2">
           {sidebarNavItems.map((item) => {
             const active = tab === item.id && !selectedUser && !chatWith;
             const Icon = item.icon;
@@ -296,11 +296,11 @@ export default function AppShell({
                 onClick={() => goToTab(item.id)}
                 className={
                   active
-                    ? "rounded-full px-5 py-4 flex items-center gap-4 transition-colors text-white bg-[#401586]/20 font-semibold text-base"
-                    : "rounded-full px-5 py-4 flex items-center gap-4 transition-colors text-white/70 hover:text-white hover:bg-white/5 font-medium text-base"
+                    ? "rounded-full px-4 py-4 flex items-center gap-4 transition-colors text-white bg-[#401586]/20 font-semibold text-base"
+                    : "rounded-full px-4 py-4 flex items-center gap-4 transition-colors text-white/70 hover:text-white hover:bg-white/5 font-medium text-base"
                 }
               >
-                <Icon size={26} />
+                <Icon size={24} />
                 <span className="flex-1 text-left">{item.label}</span>
                 {badge > 0 && (
                   <span style={{
