@@ -1,13 +1,12 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { ChevronUp, Folder, MessageCircle, Search, Users, User as UserIcon } from "lucide-react";
+import { Folder, MessageCircle, Search, Users, User as UserIcon } from "lucide-react";
 import { User, Project } from "@/app/lib/data";
 import { createClient } from "@/utils/supabase/client";
 import { unlockAudio } from "@/app/lib/audio";
-import { Avatar } from "@/app/components/Avatar";
 import NotificationBell from "@/app/components/NotificationBell";
 import DiscoverScreen from "@/app/components/DiscoverScreen";
 import MatchScreen from "@/app/components/MatchScreen";
@@ -112,9 +111,6 @@ export default function AppShell({
   // Subset von unreadCount — nur new_message-Notifications, für das
   // Chats-Badge in der Desktop-Sidebar.
   const [unreadChatsCount, setUnreadChatsCount] = useState(0);
-  // Avatar-Dropdown (Desktop-Sidebar). Wird per Click-outside geschlossen.
-  const [avatarMenuOpen, setAvatarMenuOpen] = useState(false);
-  const avatarMenuRef = useRef<HTMLDivElement>(null);
 
   // iOS Safari: AudioContext startet 'suspended' und wird nur durch ein
   // User-Gesture entsperrt. Beim ersten Touch/Click irgendwo in der App
@@ -230,18 +226,6 @@ export default function AppShell({
     }
   };
 
-  // Click outside Avatar-Dropdown schließen.
-  useEffect(() => {
-    if (!avatarMenuOpen) return;
-    const onClick = (e: MouseEvent) => {
-      if (avatarMenuRef.current && !avatarMenuRef.current.contains(e.target as Node)) {
-        setAvatarMenuOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", onClick);
-    return () => document.removeEventListener("mousedown", onClick);
-  }, [avatarMenuOpen]);
-
   // Tab-Wechsel mit Reset von Overlays — wiederverwendet für Mobile-Bottom-
   // Nav und Desktop-Sidebar.
   const goToTab = (id: Tab) => {
@@ -282,21 +266,23 @@ export default function AppShell({
       {/* ════════════════════════════════════════════════════════════════
           DESKTOP SIDEBAR (lg+ only)
           ──────────────────────────────────────────────────────────────── */}
-      <aside className="hidden lg:flex lg:flex-col w-72 h-screen sticky top-0 bg-[#0a0a0f] border-r border-white/10 z-30">
+      <aside className="hidden lg:flex lg:flex-col w-80 h-screen sticky top-0 bg-[#0a0a0f] border-r border-white/10 z-30">
         {/* Logo */}
-        <div className="px-7 py-6">
+        <div className="px-8 py-7">
           <Image
             src="/connectyfind-logo-light.svg"
             alt="Connectyfind"
             width={160}
-            height={40}
+            height={44}
             priority
-            style={{ height: 40, width: "auto" }}
+            style={{ height: 44, width: "auto" }}
           />
         </div>
 
-        {/* Nav-Items */}
-        <nav className="flex flex-col gap-2 px-7">
+        {/* Nav-Items — Brevo-Style Pillen (rounded-full, kein Akzent-Balken).
+            Einstellungen/Abmelden sind im Profil-Tab erreichbar — kein
+            Avatar-Block unten. */}
+        <nav className="flex flex-col gap-1.5 px-5 mt-2">
           {sidebarNavItems.map((item) => {
             const active = tab === item.id && !selectedUser && !chatWith;
             const Icon = item.icon;
@@ -310,12 +296,12 @@ export default function AppShell({
                 onClick={() => goToTab(item.id)}
                 className={
                   active
-                    ? "rounded-lg py-3.5 pl-[13px] pr-4 flex items-center gap-3.5 transition-colors text-white bg-[#401586]/30 border-l-[3px] border-[#694CBB]"
-                    : "rounded-lg px-4 py-3.5 flex items-center gap-3.5 transition-colors text-white/70 hover:text-white hover:bg-white/5"
+                    ? "rounded-full px-5 py-3.5 flex items-center gap-3.5 transition-colors text-white bg-[#401586]/25 font-semibold"
+                    : "rounded-full px-5 py-3.5 flex items-center gap-3.5 transition-colors text-white/70 hover:text-white hover:bg-white/5 font-medium"
                 }
               >
                 <Icon size={22} />
-                <span className="text-[15px] font-medium flex-1 text-left">{item.label}</span>
+                <span className="text-[15px] flex-1 text-left">{item.label}</span>
                 {badge > 0 && (
                   <span style={{
                     minWidth: 20, height: 20, borderRadius: 10,
@@ -331,68 +317,6 @@ export default function AppShell({
             );
           })}
         </nav>
-
-        <div className="flex-1" />
-
-        {/* Eingerückter Separator (statt border-t am Avatar-Container,
-            damit die Linie nicht von Sidebar-Rand zu Sidebar-Rand läuft). */}
-        <div className="mx-7 border-t border-white/10" />
-
-        {/* Avatar-Dropdown unten */}
-        <div className="mt-auto px-7 pt-5 pb-5 relative" ref={avatarMenuRef}>
-          <button
-            onClick={() => setAvatarMenuOpen((v) => !v)}
-            className="w-full flex items-center gap-3.5 px-4 py-3.5 rounded-lg hover:bg-white/5 transition-colors"
-          >
-            <Avatar
-              src={currentUserAvatar ?? (currentUserName?.charAt(0) ?? "?")}
-              color={currentUserColor ?? "#6366f1"}
-              size={36}
-              radius={18}
-            />
-            <span className="flex-1 text-left text-[15px] font-medium text-white truncate">
-              {currentUserName ?? "Nutzer"}
-            </span>
-            <ChevronUp
-              size={16}
-              className="text-white/40 transition-transform"
-              style={{ transform: avatarMenuOpen ? "rotate(180deg)" : "rotate(0)" }}
-            />
-          </button>
-          {avatarMenuOpen && (
-            <div
-              className="absolute left-7 right-7 bottom-full mb-2 overflow-hidden"
-              style={{
-                background: "#13131a",
-                border: "1px solid rgba(255,255,255,0.1)",
-                borderRadius: 12,
-                boxShadow: "0 8px 24px rgba(0,0,0,0.4)",
-              }}
-            >
-              <button
-                onClick={() => {
-                  setAvatarMenuOpen(false);
-                  // /einstellungen-Index-Route existiert nicht — wir landen
-                  // auf der ersten realen Sub-Route. TODO: dedizierte
-                  // Settings-Übersicht in einem späteren Schritt.
-                  router.push("/einstellungen/abo");
-                }}
-                className="w-full text-left px-4 py-3 text-sm text-white hover:bg-white/5 transition-colors"
-              >
-                Einstellungen
-              </button>
-              <button
-                onClick={() => {
-                  setAvatarMenuOpen(false);
-                  handleLogout();
-                }}
-                className="w-full text-left px-4 py-3 text-sm text-white hover:bg-white/5 transition-colors border-t border-white/5"
-              >
-                Abmelden
-              </button>
-            </div>
-          )}
-        </div>
       </aside>
 
       {/* ════════════════════════════════════════════════════════════════
@@ -400,7 +324,7 @@ export default function AppShell({
           ──────────────────────────────────────────────────────────────── */}
       <div className="relative mx-auto w-full max-w-[430px] lg:max-w-none lg:flex-1 lg:flex lg:flex-col lg:min-w-0">
         {/* Desktop Top-Bar */}
-        <header className="hidden lg:flex h-16 sticky top-0 border-b border-white/10 items-center justify-end px-7 z-20" style={{ background: "rgba(10,10,15,0.95)", backdropFilter: "blur(20px)" }}>
+        <header className="hidden lg:flex h-16 sticky top-0 border-b border-white/10 items-center justify-end px-8 z-20" style={{ background: "rgba(10,10,15,0.95)", backdropFilter: "blur(20px)" }}>
           <NotificationBell unreadCount={unreadCount} onClick={() => router.push("/mitteilungen")} />
         </header>
 
