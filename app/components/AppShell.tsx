@@ -284,7 +284,7 @@ export default function AppShell({
           ──────────────────────────────────────────────────────────────── */}
       <aside className="hidden lg:flex lg:flex-col w-72 h-screen sticky top-0 bg-[#0a0a0f] border-r border-white/10 z-30">
         {/* Logo */}
-        <div className="p-6">
+        <div className="px-7 py-6">
           <Image
             src="/connectyfind-logo-light.svg"
             alt="Connectyfind"
@@ -296,7 +296,7 @@ export default function AppShell({
         </div>
 
         {/* Nav-Items */}
-        <nav className="flex flex-col gap-1.5 px-5">
+        <nav className="flex flex-col gap-2 px-7">
           {sidebarNavItems.map((item) => {
             const active = tab === item.id && !selectedUser && !chatWith;
             const Icon = item.icon;
@@ -334,8 +334,12 @@ export default function AppShell({
 
         <div className="flex-1" />
 
+        {/* Eingerückter Separator (statt border-t am Avatar-Container,
+            damit die Linie nicht von Sidebar-Rand zu Sidebar-Rand läuft). */}
+        <div className="mx-7 border-t border-white/10" />
+
         {/* Avatar-Dropdown unten */}
-        <div className="mt-auto px-5 py-4 border-t border-white/10 relative" ref={avatarMenuRef}>
+        <div className="mt-auto px-7 pt-5 pb-5 relative" ref={avatarMenuRef}>
           <button
             onClick={() => setAvatarMenuOpen((v) => !v)}
             className="w-full flex items-center gap-3.5 px-4 py-3.5 rounded-lg hover:bg-white/5 transition-colors"
@@ -357,7 +361,7 @@ export default function AppShell({
           </button>
           {avatarMenuOpen && (
             <div
-              className="absolute left-5 right-5 bottom-full mb-2 overflow-hidden"
+              className="absolute left-7 right-7 bottom-full mb-2 overflow-hidden"
               style={{
                 background: "#13131a",
                 border: "1px solid rgba(255,255,255,0.1)",
@@ -396,7 +400,7 @@ export default function AppShell({
           ──────────────────────────────────────────────────────────────── */}
       <div className="relative mx-auto w-full max-w-[430px] lg:max-w-none lg:flex-1 lg:flex lg:flex-col lg:min-w-0">
         {/* Desktop Top-Bar */}
-        <header className="hidden lg:flex h-16 sticky top-0 border-b border-white/10 items-center justify-end px-8 z-20" style={{ background: "rgba(10,10,15,0.95)", backdropFilter: "blur(20px)" }}>
+        <header className="hidden lg:flex h-16 sticky top-0 border-b border-white/10 items-center justify-end px-7 z-20" style={{ background: "rgba(10,10,15,0.95)", backdropFilter: "blur(20px)" }}>
           <NotificationBell unreadCount={unreadCount} onClick={() => router.push("/mitteilungen")} />
         </header>
 
