@@ -28,10 +28,11 @@ const navItems: { icon: React.ElementType; label: string; id: Tab }[] = [
   { icon: UserIcon, label: "Profil", id: "profile" },
 ];
 
-// Desktop-Sidebar — 4 Items per Spec (Profil, Connect, Chats, Projekte),
-// "Entdecken" absichtlich nicht enthalten. Briefcase statt Folder für
-// Projekte (Spec-konvention).
+// Desktop-Sidebar — paritätisch zur Mobile-Bottom-Nav (5 Items). Reihenfolge
+// per Nachtrag-Spec: Entdecken, Profil, Connect, Chats, Projekte. Briefcase
+// statt Folder für Projekte (Spec-konvention).
 const sidebarNavItems: { icon: React.ElementType; label: string; id: Tab }[] = [
+  { icon: Search, label: "Entdecken", id: "discover" },
   { icon: UserIcon, label: "Profil", id: "profile" },
   { icon: Users, label: "Connect", id: "match" },
   { icon: MessageCircle, label: "Chats", id: "chats" },
