@@ -296,7 +296,7 @@ export default function AppShell({
         </div>
 
         {/* Nav-Items */}
-        <nav className="flex flex-col gap-1.5 px-4">
+        <nav className="flex flex-col gap-1.5 px-5">
           {sidebarNavItems.map((item) => {
             const active = tab === item.id && !selectedUser && !chatWith;
             const Icon = item.icon;
@@ -335,10 +335,10 @@ export default function AppShell({
         <div className="flex-1" />
 
         {/* Avatar-Dropdown unten */}
-        <div className="mt-auto p-3 border-t border-white/10 relative" ref={avatarMenuRef}>
+        <div className="mt-auto px-5 py-4 border-t border-white/10 relative" ref={avatarMenuRef}>
           <button
             onClick={() => setAvatarMenuOpen((v) => !v)}
-            className="w-full flex items-center gap-3 px-3 py-3.5 rounded-lg hover:bg-white/5 transition-colors"
+            className="w-full flex items-center gap-3.5 px-4 py-3.5 rounded-lg hover:bg-white/5 transition-colors"
           >
             <Avatar
               src={currentUserAvatar ?? (currentUserName?.charAt(0) ?? "?")}
@@ -357,7 +357,7 @@ export default function AppShell({
           </button>
           {avatarMenuOpen && (
             <div
-              className="absolute left-3 right-3 bottom-full mb-2 overflow-hidden"
+              className="absolute left-5 right-5 bottom-full mb-2 overflow-hidden"
               style={{
                 background: "#13131a",
                 border: "1px solid rgba(255,255,255,0.1)",
