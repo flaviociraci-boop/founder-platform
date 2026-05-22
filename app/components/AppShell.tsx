@@ -266,16 +266,16 @@ export default function AppShell({
       {/* ════════════════════════════════════════════════════════════════
           DESKTOP SIDEBAR (lg+ only)
           ──────────────────────────────────────────────────────────────── */}
-      <aside className="hidden lg:flex lg:flex-col w-80 h-screen sticky top-0 bg-[#0a0a0f] border-r border-white/10 z-30">
+      <aside className="hidden lg:flex lg:flex-col w-[420px] h-screen sticky top-0 bg-[#0a0a0f] border-r border-white/10 z-30">
         {/* Logo */}
         <div className="px-12 py-8">
           <Image
             src="/connectyfind-logo-light.svg"
             alt="Connectyfind"
-            width={160}
-            height={44}
+            width={220}
+            height={56}
             priority
-            style={{ height: 44, width: "auto" }}
+            style={{ height: 56, width: "auto" }}
           />
         </div>
 
@@ -296,12 +296,12 @@ export default function AppShell({
                 onClick={() => goToTab(item.id)}
                 className={
                   active
-                    ? "rounded-full px-4 py-3.5 flex items-center gap-4 transition-colors text-white bg-[#401586]/20 font-semibold"
-                    : "rounded-full px-4 py-3.5 flex items-center gap-4 transition-colors text-white/70 hover:text-white hover:bg-white/5 font-medium"
+                    ? "rounded-full px-5 py-4 flex items-center gap-4 transition-colors text-white bg-[#401586]/20 font-semibold text-base"
+                    : "rounded-full px-5 py-4 flex items-center gap-4 transition-colors text-white/70 hover:text-white hover:bg-white/5 font-medium text-base"
                 }
               >
-                <Icon size={22} />
-                <span className="text-[15px] flex-1 text-left">{item.label}</span>
+                <Icon size={26} />
+                <span className="flex-1 text-left">{item.label}</span>
                 {badge > 0 && (
                   <span style={{
                     minWidth: 20, height: 20, borderRadius: 10,
