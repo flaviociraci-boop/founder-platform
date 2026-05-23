@@ -417,7 +417,7 @@ export default function MatchScreen({ users, currentUserId, onOpenChat }: Props)
         andere Person deine Anfrage annimmt → Match! Erst dann wird der Chat freigeschaltet.
       </InfoBox>
 
-      <div style={{ padding: "0 20px", display: "flex", flexDirection: "column", gap: 12 }}>
+      <div className="px-5 grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3 lg:gap-5">
         {users.filter((u) => {
           const q = query.trim().toLowerCase();
           return !q ||
