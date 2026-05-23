@@ -315,21 +315,20 @@ export default function AppShell({
           className="hidden lg:block sticky top-0 border-b border-white/10 z-20"
           style={{ background: "rgba(10,10,15,0.95)", backdropFilter: "blur(20px)" }}
         >
-          <div className="max-w-[1440px] mx-auto h-20 px-8 grid grid-cols-3 items-center">
-            {/* Logo — linke Spalte */}
-            <div className="flex items-center">
-              <Image
-                src="/connectyfind-logo-light.svg"
-                alt="Connectyfind"
-                width={160}
-                height={40}
-                priority
-                style={{ height: 40, width: "auto" }}
-              />
-            </div>
+          <div className="max-w-[1440px] mx-auto h-20 px-8 flex items-center gap-12">
+            {/* Logo */}
+            <Image
+              src="/connectyfind-logo-light.svg"
+              alt="Connectyfind"
+              width={160}
+              height={40}
+              priority
+              style={{ height: 40, width: "auto" }}
+            />
 
-            {/* Nav — mittlere Spalte, zentriert */}
-            <nav className="flex items-center justify-center gap-8">
+            {/* Nav direkt nach Logo, mit 48 px Atem dazwischen (gap-12 am
+                äußeren flex). Items selbst untereinander mit gap-8. */}
+            <nav className="flex items-center gap-8">
               {sidebarNavItems.map((item) => {
                 const active = tab === item.id && !selectedUser && !chatWith;
                 const Icon = item.icon;
@@ -365,8 +364,9 @@ export default function AppShell({
               })}
             </nav>
 
-            {/* Glocke — rechte Spalte, rechtsbündig */}
-            <div className="flex items-center justify-end">
+            {/* Glocke ganz rechts — ml-auto schiebt sie an den Rand,
+                statt eine eigene Grid-Spalte zu beanspruchen. */}
+            <div className="ml-auto">
               <NotificationBell unreadCount={unreadCount} onClick={() => router.push("/mitteilungen")} />
             </div>
           </div>
