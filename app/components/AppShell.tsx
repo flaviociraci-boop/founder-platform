@@ -243,7 +243,6 @@ export default function AppShell({
 
   return (
     <div
-      className="lg:flex"
       style={{
         fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif",
         background: "#0a0a0f",
@@ -264,68 +263,67 @@ export default function AppShell({
       }} />
 
       {/* ════════════════════════════════════════════════════════════════
-          DESKTOP SIDEBAR (lg+ only)
+          MAIN COLUMN — auf Desktop Top-Bar + Full-Width-Content,
+          auf Mobile 430er-Wrapper wie vorher.
           ──────────────────────────────────────────────────────────────── */}
-      <aside className="hidden lg:flex lg:flex-col w-60 h-screen sticky top-0 bg-[#0a0a0f] border-r border-white/10 z-30">
-        {/* Logo */}
-        <div className="px-6" style={{ paddingTop: '32px', paddingBottom: '48px' }}>
+      <div className="relative mx-auto w-full max-w-[430px] lg:max-w-none lg:w-full">
+        {/* Desktop Top-Bar — Logo links, Nav-Items horizontal in der Mitte,
+            Glocke rechts. Auf Mobile hidden, dort übernimmt die Bottom-Nav. */}
+        <header
+          className="hidden lg:flex h-20 sticky top-0 border-b border-white/10 items-center px-8 z-20 gap-8"
+          style={{ background: "rgba(10,10,15,0.95)", backdropFilter: "blur(20px)" }}
+        >
+          {/* Logo links */}
           <Image
             src="/connectyfind-logo-light.svg"
             alt="Connectyfind"
             width={160}
-            height={44}
+            height={40}
             priority
-            style={{ height: 44, width: "auto" }}
+            style={{ height: 40, width: "auto" }}
           />
-        </div>
 
-        {/* Nav-Items — Brevo-Style Pillen (rounded-full, kein Akzent-Balken).
-            Einstellungen/Abmelden sind im Profil-Tab erreichbar — kein
-            Avatar-Block unten. */}
-        <nav className="flex flex-col gap-3 px-6 pb-2" style={{ paddingTop: '96px' }}>
-          {sidebarNavItems.map((item) => {
-            const active = tab === item.id && !selectedUser && !chatWith;
-            const Icon = item.icon;
-            const badge =
-              item.id === "match" ? pendingCount :
-              item.id === "chats" ? unreadChatsCount :
-              0;
-            return (
-              <button
-                key={item.id}
-                onClick={() => goToTab(item.id)}
-                className={
-                  active
-                    ? "rounded-full px-4 py-4 flex items-center gap-3 transition-colors text-white bg-[#401586]/20 font-semibold text-base"
-                    : "rounded-full px-4 py-4 flex items-center gap-3 transition-colors text-white/70 hover:text-white hover:bg-white/5 font-medium text-base"
-                }
-              >
-                <Icon size={24} />
-                <span className="flex-1 text-left">{item.label}</span>
-                {badge > 0 && (
-                  <span style={{
-                    minWidth: 20, height: 20, borderRadius: 10,
-                    background: "#ef4444",
-                    fontSize: 11, fontWeight: 700, color: "#fff",
-                    display: "inline-flex", alignItems: "center", justifyContent: "center",
-                    padding: "0 6px",
-                  }}>
-                    {badge > 9 ? "9+" : badge}
-                  </span>
-                )}
-              </button>
-            );
-          })}
-        </nav>
-      </aside>
+          {/* Nav-Items horizontal */}
+          <nav className="flex items-center gap-2">
+            {sidebarNavItems.map((item) => {
+              const active = tab === item.id && !selectedUser && !chatWith;
+              const Icon = item.icon;
+              const badge =
+                item.id === "match" ? pendingCount :
+                item.id === "chats" ? unreadChatsCount :
+                0;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => goToTab(item.id)}
+                  className={
+                    active
+                      ? "rounded-full px-5 py-2.5 flex items-center gap-2.5 transition-colors text-white bg-[#401586]/20 font-semibold text-sm"
+                      : "rounded-full px-5 py-2.5 flex items-center gap-2.5 transition-colors text-white/70 hover:text-white hover:bg-white/5 font-medium text-sm"
+                  }
+                >
+                  <Icon size={20} />
+                  <span>{item.label}</span>
+                  {badge > 0 && (
+                    <span style={{
+                      minWidth: 20, height: 20, borderRadius: 10,
+                      background: "#ef4444",
+                      fontSize: 11, fontWeight: 700, color: "#fff",
+                      display: "inline-flex", alignItems: "center", justifyContent: "center",
+                      padding: "0 6px",
+                    }}>
+                      {badge > 9 ? "9+" : badge}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </nav>
 
-      {/* ════════════════════════════════════════════════════════════════
-          MAIN COLUMN (auf Desktop rechts neben Sidebar, auf Mobile alles)
-          ──────────────────────────────────────────────────────────────── */}
-      <div className="relative mx-auto w-full max-w-[430px] lg:max-w-none lg:flex-1 lg:flex lg:flex-col lg:min-w-0">
-        {/* Desktop Top-Bar */}
-        <header className="hidden lg:flex h-16 sticky top-0 border-b border-white/10 items-center justify-end px-8 z-20" style={{ background: "rgba(10,10,15,0.95)", backdropFilter: "blur(20px)" }}>
-          <NotificationBell unreadCount={unreadCount} onClick={() => router.push("/mitteilungen")} />
+          {/* Glocke ganz rechts */}
+          <div className="ml-auto">
+            <NotificationBell unreadCount={unreadCount} onClick={() => router.push("/mitteilungen")} />
+          </div>
         </header>
 
         {/* Main content — Mobile full-width im 430-Wrapper, Desktop max-w-1280 zentriert */}
