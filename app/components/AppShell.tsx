@@ -268,7 +268,7 @@ export default function AppShell({
           ──────────────────────────────────────────────────────────────── */}
       <aside className="hidden lg:flex lg:flex-col w-60 h-screen sticky top-0 bg-[#0a0a0f] border-r border-white/10 z-30">
         {/* Logo */}
-        <div className="px-6 py-8">
+        <div className="px-6" style={{ paddingTop: '32px', paddingBottom: '48px' }}>
           <Image
             src="/connectyfind-logo-light.svg"
             alt="Connectyfind"
@@ -282,7 +282,7 @@ export default function AppShell({
         {/* Nav-Items — Brevo-Style Pillen (rounded-full, kein Akzent-Balken).
             Einstellungen/Abmelden sind im Profil-Tab erreichbar — kein
             Avatar-Block unten. */}
-        <nav className="flex flex-col gap-3 px-6 pt-12 pb-2">
+        <nav className="flex flex-col gap-3 px-6 pb-2" style={{ paddingTop: '96px' }}>
           {sidebarNavItems.map((item) => {
             const active = tab === item.id && !selectedUser && !chatWith;
             const Icon = item.icon;
