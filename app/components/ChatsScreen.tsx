@@ -132,48 +132,56 @@ export default function ChatsScreen({ currentUserId, onOpenChat }: Props) {
   return (
     <div style={{ paddingBottom: 100 }}>
       <div style={{ padding: "28px 20px 16px" }}>
-        <h1 style={{
-          margin: 0,
-          fontSize: 26,
-          fontWeight: 800,
-          letterSpacing: -0.5,
-          background: "linear-gradient(135deg, #fff 0%, rgba(255,255,255,0.6) 100%)",
-          WebkitBackgroundClip: "text",
-          WebkitTextFillColor: "transparent",
-        }}>
-          Chats
-        </h1>
-        <p style={{ margin: "4px 0 0", fontSize: 14, color: "rgba(255,255,255,0.35)" }}>
-          {loading ? "Lade…" : `${chats.length} ${chats.length === 1 ? "Match" : "Matches"}`}
-        </p>
-
-        {/* Search bar */}
-        {!loading && chats.length > 0 && (
-          <div style={{ position: "relative", marginTop: 16 }}>
-            <Search
-              size={16}
-              strokeWidth={2}
-              style={{
-                position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)",
-                color: "#fff", opacity: 0.5, pointerEvents: "none",
-              }}
-            />
-            <input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Chats durchsuchen…"
-              style={{
-                width: "100%", boxSizing: "border-box",
-                background: "rgba(255,255,255,0.06)",
-                border: `1px solid ${query ? "rgba(99,102,241,0.5)" : "rgba(255,255,255,0.1)"}`,
-                borderRadius: 14, padding: "12px 14px 12px 40px",
-                color: "#fff", fontSize: 15, outline: "none",
-                fontFamily: "'DM Sans', sans-serif",
-                transition: "border-color 0.15s",
-              }}
-            />
+        {/* Desktop: Titel-Block links, Suchleiste rechts (max-w-md).
+            Mobile: vertikal gestapelt. Suchleiste nur sichtbar wenn es
+            mind. einen Chat gibt — auf Desktop bleibt die Row dann mit
+            einem Element, was visuell unauffällig ist. */}
+        <div className="lg:flex lg:items-end lg:justify-between lg:gap-8">
+          <div>
+            <h1 style={{
+              margin: 0,
+              fontSize: 26,
+              fontWeight: 800,
+              letterSpacing: -0.5,
+              background: "linear-gradient(135deg, #fff 0%, rgba(255,255,255,0.6) 100%)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+            }}>
+              Chats
+            </h1>
+            <p style={{ margin: "4px 0 0", fontSize: 14, color: "rgba(255,255,255,0.35)" }}>
+              {loading ? "Lade…" : `${chats.length} ${chats.length === 1 ? "Match" : "Matches"}`}
+            </p>
           </div>
-        )}
+
+          {/* Search bar */}
+          {!loading && chats.length > 0 && (
+            <div className="mt-4 lg:mt-0 lg:max-w-md lg:w-full lg:flex-shrink-0" style={{ position: "relative" }}>
+              <Search
+                size={16}
+                strokeWidth={2}
+                style={{
+                  position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)",
+                  color: "#fff", opacity: 0.5, pointerEvents: "none",
+                }}
+              />
+              <input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Chats durchsuchen…"
+                style={{
+                  width: "100%", boxSizing: "border-box",
+                  background: "rgba(255,255,255,0.06)",
+                  border: `1px solid ${query ? "rgba(99,102,241,0.5)" : "rgba(255,255,255,0.1)"}`,
+                  borderRadius: 14, padding: "12px 14px 12px 40px",
+                  color: "#fff", fontSize: 15, outline: "none",
+                  fontFamily: "'DM Sans', sans-serif",
+                  transition: "border-color 0.15s",
+                }}
+              />
+            </div>
+          )}
+        </div>
       </div>
 
       {!loading && chats.length === 0 && (
