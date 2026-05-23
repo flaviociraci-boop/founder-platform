@@ -282,7 +282,7 @@ export default function AppShell({
         {/* Nav-Items — Brevo-Style Pillen (rounded-full, kein Akzent-Balken).
             Einstellungen/Abmelden sind im Profil-Tab erreichbar — kein
             Avatar-Block unten. */}
-        <nav className="flex flex-col gap-3 px-6 py-2">
+        <nav className="flex flex-col gap-3 px-6 pt-12 pb-2">
           {sidebarNavItems.map((item) => {
             const active = tab === item.id && !selectedUser && !chatWith;
             const Icon = item.icon;
