@@ -267,62 +267,68 @@ export default function AppShell({
           auf Mobile 430er-Wrapper wie vorher.
           ──────────────────────────────────────────────────────────────── */}
       <div className="relative mx-auto w-full max-w-[430px] lg:max-w-none lg:w-full">
-        {/* Desktop Top-Bar — Logo links, Nav-Items horizontal in der Mitte,
-            Glocke rechts. Auf Mobile hidden, dort übernimmt die Bottom-Nav. */}
+        {/* Desktop Top-Bar — 3-Spalten-Grid (Logo / Nav / Glocke) in einem
+            max-w-1440 Container, damit der Inhalt auf großen Monitoren
+            mittig bleibt statt linksbündig zu kleben. Auf Mobile hidden,
+            dort übernimmt die Bottom-Nav. */}
         <header
-          className="hidden lg:flex h-20 sticky top-0 border-b border-white/10 items-center px-8 z-20 gap-8"
+          className="hidden lg:block sticky top-0 border-b border-white/10 z-20"
           style={{ background: "rgba(10,10,15,0.95)", backdropFilter: "blur(20px)" }}
         >
-          {/* Logo links */}
-          <Image
-            src="/connectyfind-logo-light.svg"
-            alt="Connectyfind"
-            width={160}
-            height={40}
-            priority
-            style={{ height: 40, width: "auto" }}
-          />
+          <div className="max-w-[1440px] mx-auto h-20 px-8 grid grid-cols-3 items-center">
+            {/* Logo — linke Spalte */}
+            <div className="flex items-center">
+              <Image
+                src="/connectyfind-logo-light.svg"
+                alt="Connectyfind"
+                width={160}
+                height={40}
+                priority
+                style={{ height: 40, width: "auto" }}
+              />
+            </div>
 
-          {/* Nav-Items horizontal */}
-          <nav className="flex items-center gap-8">
-            {sidebarNavItems.map((item) => {
-              const active = tab === item.id && !selectedUser && !chatWith;
-              const Icon = item.icon;
-              const badge =
-                item.id === "match" ? pendingCount :
-                item.id === "chats" ? unreadChatsCount :
-                0;
-              return (
-                <button
-                  key={item.id}
-                  onClick={() => goToTab(item.id)}
-                  className={
-                    active
-                      ? "rounded-full px-5 py-2.5 flex items-center gap-2.5 transition-colors text-white bg-[#401586]/20 font-semibold text-sm"
-                      : "rounded-full px-5 py-2.5 flex items-center gap-2.5 transition-colors text-white/70 hover:text-white hover:bg-white/5 font-medium text-sm"
-                  }
-                >
-                  <Icon size={20} />
-                  <span>{item.label}</span>
-                  {badge > 0 && (
-                    <span style={{
-                      minWidth: 20, height: 20, borderRadius: 10,
-                      background: "#ef4444",
-                      fontSize: 11, fontWeight: 700, color: "#fff",
-                      display: "inline-flex", alignItems: "center", justifyContent: "center",
-                      padding: "0 6px",
-                    }}>
-                      {badge > 9 ? "9+" : badge}
-                    </span>
-                  )}
-                </button>
-              );
-            })}
-          </nav>
+            {/* Nav — mittlere Spalte, zentriert */}
+            <nav className="flex items-center justify-center gap-8">
+              {sidebarNavItems.map((item) => {
+                const active = tab === item.id && !selectedUser && !chatWith;
+                const Icon = item.icon;
+                const badge =
+                  item.id === "match" ? pendingCount :
+                  item.id === "chats" ? unreadChatsCount :
+                  0;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => goToTab(item.id)}
+                    className={
+                      active
+                        ? "rounded-full px-5 py-2.5 flex items-center gap-2.5 transition-colors text-white bg-[#401586]/20 font-semibold text-sm"
+                        : "rounded-full px-5 py-2.5 flex items-center gap-2.5 transition-colors text-white/70 hover:text-white hover:bg-white/5 font-medium text-sm"
+                    }
+                  >
+                    <Icon size={20} />
+                    <span>{item.label}</span>
+                    {badge > 0 && (
+                      <span style={{
+                        minWidth: 20, height: 20, borderRadius: 10,
+                        background: "#ef4444",
+                        fontSize: 11, fontWeight: 700, color: "#fff",
+                        display: "inline-flex", alignItems: "center", justifyContent: "center",
+                        padding: "0 6px",
+                      }}>
+                        {badge > 9 ? "9+" : badge}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </nav>
 
-          {/* Glocke ganz rechts */}
-          <div className="ml-auto">
-            <NotificationBell unreadCount={unreadCount} onClick={() => router.push("/mitteilungen")} />
+            {/* Glocke — rechte Spalte, rechtsbündig */}
+            <div className="flex items-center justify-end">
+              <NotificationBell unreadCount={unreadCount} onClick={() => router.push("/mitteilungen")} />
+            </div>
           </div>
         </header>
 
