@@ -27,15 +27,15 @@ const navItems: { icon: React.ElementType; label: string; id: Tab }[] = [
   { icon: UserIcon, label: "Profil", id: "profile" },
 ];
 
-// Desktop-Sidebar — paritätisch zur Mobile-Bottom-Nav (5 Items, identische
-// Glyphen). Reihenfolge per Nachtrag-Spec: Entdecken, Profil, Connect,
-// Chats, Projekte.
+// Desktop-Header-Nav — paritätisch zur Mobile-Bottom-Nav (5 Items,
+// identische Glyphen, identische Reihenfolge: Entdecken, Connect, Chats,
+// Projekte, Profil).
 const sidebarNavItems: { icon: React.ElementType; label: string; id: Tab }[] = [
   { icon: Search, label: "Entdecken", id: "discover" },
-  { icon: UserIcon, label: "Profil", id: "profile" },
   { icon: Users, label: "Connect", id: "match" },
   { icon: MessageCircle, label: "Chats", id: "chats" },
   { icon: Folder, label: "Projekte", id: "projects" },
+  { icon: UserIcon, label: "Profil", id: "profile" },
 ];
 
 type Props = {
@@ -284,7 +284,7 @@ export default function AppShell({
           />
 
           {/* Nav-Items horizontal */}
-          <nav className="flex items-center gap-2">
+          <nav className="flex items-center gap-8">
             {sidebarNavItems.map((item) => {
               const active = tab === item.id && !selectedUser && !chatWith;
               const Icon = item.icon;
