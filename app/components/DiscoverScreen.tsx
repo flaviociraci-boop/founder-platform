@@ -45,7 +45,7 @@ export default function DiscoverScreen({
       <div style={{ padding: "28px 20px 16px" }}>
         {/* Desktop: Titel-Block links, Suchleiste rechts (max-w-md) in einer Row.
             Mobile: vertikal gestapelt — Titel+Bell oben, Suchleiste darunter. */}
-        <div className="lg:flex lg:items-end lg:justify-between lg:gap-8">
+        <div className="lg:flex lg:items-end lg:gap-12">
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
             <div>
               <h1

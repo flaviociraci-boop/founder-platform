@@ -136,7 +136,7 @@ export default function ChatsScreen({ currentUserId, onOpenChat }: Props) {
             Mobile: vertikal gestapelt. Suchleiste nur sichtbar wenn es
             mind. einen Chat gibt — auf Desktop bleibt die Row dann mit
             einem Element, was visuell unauffällig ist. */}
-        <div className="lg:flex lg:items-end lg:justify-between lg:gap-8">
+        <div className="lg:flex lg:items-end lg:gap-12">
           <div>
             <h1 style={{
               margin: 0,

@@ -263,7 +263,7 @@ export default function MatchScreen({ users, currentUserId, onOpenChat }: Props)
       <div style={{ padding: "28px 20px 16px" }}>
         {/* Desktop: Titel-Block links, Suchleiste rechts (max-w-md).
             Mobile: vertikal gestapelt — Layout-Wechsel via lg:flex. */}
-        <div className="lg:flex lg:items-end lg:justify-between lg:gap-8">
+        <div className="lg:flex lg:items-end lg:gap-12">
           <div>
             <h1
               style={{
