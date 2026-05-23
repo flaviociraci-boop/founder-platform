@@ -112,6 +112,28 @@ export default function AppShell({
   // Chats-Badge in der Desktop-Sidebar.
   const [unreadChatsCount, setUnreadChatsCount] = useState(0);
 
+  // Viewport-Tracking für Master-Detail im Chat-Tab. Auf Desktop rendert
+  // ChatWindow inline im rechten Pane, auf Mobile als fixed-overlay (wie
+  // gehabt). Beide JSX-Pfade gibt es — isDesktop entscheidet, welcher
+  // *tatsächlich gemountet* wird, sodass Realtime-Subs, mark-as-read
+  // und der Send-Sound nicht doppelt feuern.
+  //
+  // mounted-Gate ist nötig, weil SSR und Erst-Hydrate isDesktop=false
+  // sehen — bei einem Desktop-Deep-Link (?tab=chats&with=5) würde sonst
+  // der Mobile-Overlay 1 Frame lang aufploppen, ChatWindow mounten, dann
+  // im Master-Detail-Pane re-mounten. mounted=true erst nach useEffect,
+  // d.h. zur Zeit, wo isDesktop bereits korrekt gesetzt ist.
+  const [isDesktop, setIsDesktop] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 1024px)");
+    const update = () => setIsDesktop(mq.matches);
+    update();
+    setMounted(true);
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
+
   // iOS Safari: AudioContext startet 'suspended' und wird nur durch ein
   // User-Gesture entsperrt. Beim ersten Touch/Click irgendwo in der App
   // ctx.resume() rufen — danach spielt auch der Receive-Sound aus dem
@@ -209,9 +231,27 @@ export default function AppShell({
 
     return () => { supabase.removeChannel(notifChannel); };
   }, [currentUserId]);
+  // URL-Sync für das Chat-Auswahl-State. Damit Reload und Notification-
+  // Deep-Links den richtigen Chat öffnen. Bewusst window.history statt
+  // router.replace — letzteres würde page.tsx neu rendern und die große
+  // profiles-Query erneut feuern. Trade-off: Browser-Back von einem
+  // offenen Chat geht nicht zurück auf /?tab=chats (kein history-entry
+  // gepusht), sondern auf die vorherige Seite.
+  const updateChatUrl = (partnerId: number | null) => {
+    if (typeof window === "undefined") return;
+    const url = partnerId ? `/?tab=chats&with=${partnerId}` : `/?tab=chats`;
+    window.history.replaceState({}, "", url);
+  };
+
   const openChat = (user: User) => {
     setChatWith(user);
     setTab("chats");
+    updateChatUrl(user.id);
+  };
+
+  const closeChat = () => {
+    setChatWith(null);
+    updateChatUrl(null);
   };
 
   const toggleFollow = async (id: number) => {
@@ -362,10 +402,39 @@ export default function AppShell({
             onOpenChat={openChat}
           />
         ) : tab === "chats" ? (
-          <ChatsScreen
-            currentUserId={currentUserId}
-            onOpenChat={openChat}
-          />
+          // Master-Detail: Liste links (w-80, scrollbar), Detail-Pane rechts.
+          // Auf Mobile: lg:* greift nicht → Container kollabiert zu einem
+          // einfachen Block (nur Liste sichtbar). ChatWindow rendert dann
+          // weiter unten als fixed-overlay. Auf Desktop: Liste + Detail-
+          // Pane nebeneinander, ChatWindow inline im Pane.
+          //
+          // Höhe: 100dvh - 80px (sticky Header) - 48px (py-6 des äußeren
+          // Wrappers) = 100dvh - 128px. Damit füllen Liste und Detail-Pane
+          // exakt den verbleibenden Viewport, jeweils mit eigenem Scroll.
+          <div className="lg:flex lg:gap-6 lg:h-[calc(100dvh-128px)]">
+            <div className="lg:w-80 lg:flex-shrink-0 lg:border-r lg:border-white/10 lg:overflow-y-auto lg:h-full">
+              <ChatsScreen
+                currentUserId={currentUserId}
+                onOpenChat={openChat}
+                selectedChatId={chatWith?.id ?? null}
+              />
+            </div>
+            <div className="hidden lg:block lg:flex-1 lg:min-w-0 lg:h-full">
+              {mounted && isDesktop && chatWith && currentUserId ? (
+                <ChatWindow
+                  key={chatWith.id}
+                  partner={chatWith}
+                  currentUserId={currentUserId}
+                  onBack={closeChat}
+                />
+              ) : (
+                <div className="flex flex-col items-center justify-center h-full text-white/40">
+                  <MessageCircle size={48} className="mb-4 opacity-30" />
+                  <p className="text-base">Wähle einen Chat aus der Liste</p>
+                </div>
+              )}
+            </div>
+          </div>
         ) : tab === "projects" ? (
           <ProjectBoard
             initialProjects={initialProjects}
@@ -435,8 +504,11 @@ export default function AppShell({
         ))}
       </nav>
 
-      {/* Chat window — full-screen overlay */}
-      {chatWith && currentUserId && (
+      {/* Chat window — Mobile-only fixed-overlay. Auf Desktop rendert
+          ChatWindow inline im Master-Detail-Pane (siehe tab === "chats"
+          oben). !isDesktop gate verhindert Doppel-Mount von ChatWindow
+          mit den Realtime-Subs und mark-as-read-Side-Effects. */}
+      {mounted && !isDesktop && chatWith && currentUserId && (
         <div style={{
           position: "fixed", top: 0,
           height: "100dvh",          /* shrinks with keyboard on iOS 16+ */
@@ -448,7 +520,7 @@ export default function AppShell({
           <ChatWindow
             partner={chatWith}
             currentUserId={currentUserId}
-            onBack={() => setChatWith(null)}
+            onBack={closeChat}
           />
         </div>
       )}

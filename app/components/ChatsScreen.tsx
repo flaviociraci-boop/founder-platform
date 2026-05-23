@@ -14,9 +14,14 @@ type ChatPreview = User & {
 type Props = {
   currentUserId: number | null;
   onOpenChat: (user: User) => void;
+  // Auf Desktop hervorhebt das gerade im Detail-Pane offene Chat-Item.
+  // Auf Mobile wird die Prop trotzdem gesetzt (chatWith?.id), die
+  // visuelle Hervorhebung sieht der User aber nicht, weil das Mobile-
+  // Overlay über der Liste liegt.
+  selectedChatId?: number | null;
 };
 
-export default function ChatsScreen({ currentUserId, onOpenChat }: Props) {
+export default function ChatsScreen({ currentUserId, onOpenChat, selectedChatId = null }: Props) {
   const [chats, setChats] = useState<ChatPreview[]>([]);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
@@ -132,56 +137,55 @@ export default function ChatsScreen({ currentUserId, onOpenChat }: Props) {
   return (
     <div style={{ paddingBottom: 100 }}>
       <div style={{ padding: "28px 20px 16px" }}>
-        {/* Desktop: Titel-Block links, Suchleiste rechts (max-w-md).
-            Mobile: vertikal gestapelt. Suchleiste nur sichtbar wenn es
-            mind. einen Chat gibt — auf Desktop bleibt die Row dann mit
-            einem Element, was visuell unauffällig ist. */}
-        <div className="lg:flex lg:items-end lg:gap-12">
-          <div>
-            <h1 style={{
-              margin: 0,
-              fontSize: 26,
-              fontWeight: 800,
-              letterSpacing: -0.5,
-              background: "linear-gradient(135deg, #fff 0%, rgba(255,255,255,0.6) 100%)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-            }}>
-              Chats
-            </h1>
-            <p style={{ margin: "4px 0 0", fontSize: 14, color: "rgba(255,255,255,0.35)" }}>
-              {loading ? "Lade…" : `${chats.length} ${chats.length === 1 ? "Match" : "Matches"}`}
-            </p>
-          </div>
-
-          {/* Search bar */}
-          {!loading && chats.length > 0 && (
-            <div className="mt-4 lg:mt-0 lg:max-w-md lg:w-full lg:flex-shrink-0" style={{ position: "relative" }}>
-              <Search
-                size={16}
-                strokeWidth={2}
-                style={{
-                  position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)",
-                  color: "#fff", opacity: 0.5, pointerEvents: "none",
-                }}
-              />
-              <input
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Chats durchsuchen…"
-                style={{
-                  width: "100%", boxSizing: "border-box",
-                  background: "rgba(255,255,255,0.06)",
-                  border: `1px solid ${query ? "rgba(99,102,241,0.5)" : "rgba(255,255,255,0.1)"}`,
-                  borderRadius: 14, padding: "12px 14px 12px 40px",
-                  color: "#fff", fontSize: 15, outline: "none",
-                  fontFamily: "'DM Sans', sans-serif",
-                  transition: "border-color 0.15s",
-                }}
-              />
-            </div>
-          )}
+        {/* ChatsScreen rendert auf Desktop in einer schmalen 320px-Pane
+            (Master-Detail), auf Mobile full-width. In beiden Fällen
+            Toolbar vertikal gestapelt — Title oben, Search darunter.
+            Kein lg:flex-Row, weil die Search in einer 320px-Pane sonst
+            mit dem Title kollidiert. */}
+        <div>
+          <h1 style={{
+            margin: 0,
+            fontSize: 26,
+            fontWeight: 800,
+            letterSpacing: -0.5,
+            background: "linear-gradient(135deg, #fff 0%, rgba(255,255,255,0.6) 100%)",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+          }}>
+            Chats
+          </h1>
+          <p style={{ margin: "4px 0 0", fontSize: 14, color: "rgba(255,255,255,0.35)" }}>
+            {loading ? "Lade…" : `${chats.length} ${chats.length === 1 ? "Match" : "Matches"}`}
+          </p>
         </div>
+
+        {/* Search bar */}
+        {!loading && chats.length > 0 && (
+          <div style={{ position: "relative", marginTop: 16 }}>
+            <Search
+              size={16}
+              strokeWidth={2}
+              style={{
+                position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)",
+                color: "#fff", opacity: 0.5, pointerEvents: "none",
+              }}
+            />
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Chats durchsuchen…"
+              style={{
+                width: "100%", boxSizing: "border-box",
+                background: "rgba(255,255,255,0.06)",
+                border: `1px solid ${query ? "rgba(99,102,241,0.5)" : "rgba(255,255,255,0.1)"}`,
+                borderRadius: 14, padding: "12px 14px 12px 40px",
+                color: "#fff", fontSize: 15, outline: "none",
+                fontFamily: "'DM Sans', sans-serif",
+                transition: "border-color 0.15s",
+              }}
+            />
+          </div>
+        )}
       </div>
 
       {!loading && chats.length === 0 && (
@@ -209,7 +213,7 @@ export default function ChatsScreen({ currentUserId, onOpenChat }: Props) {
                 alignItems: "center",
                 gap: 14,
                 padding: "14px 0",
-                background: "none",
+                background: selectedChatId === chat.id ? "rgba(64,21,134,0.22)" : "none",
                 border: "none",
                 borderBottom: "1px solid rgba(255,255,255,0.05)",
                 cursor: "pointer",
