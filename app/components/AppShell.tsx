@@ -332,8 +332,9 @@ export default function AppShell({
           </div>
         </header>
 
-        {/* Main content — Mobile full-width im 430-Wrapper, Desktop max-w-1280 zentriert */}
-        <div className="relative z-[1] lg:max-w-[1280px] lg:mx-auto lg:px-8 lg:py-6 lg:w-full">
+        {/* Main content — Mobile full-width im 430-Wrapper, Desktop max-w-1440
+            zentriert, gleicher Korridor wie der Header-Container darüber. */}
+        <div className="relative z-[1] lg:max-w-[1440px] lg:mx-auto lg:px-8 lg:py-6 lg:w-full">
           {selectedUser ? (
           <ProfileScreen
             user={selectedUser}
