@@ -250,8 +250,14 @@ export default function ChatWindow({ partner, currentUserId, onBack }: Props) {
         borderBottom: "1px solid rgba(255,255,255,0.07)",
         flexShrink: 0,
       }}>
+        {/* Back-Button — Mobile only. Auf Desktop sitzt die Chat-Liste
+            sowieso links daneben im Master-Detail-Pane; ein Zurück-Pfeil
+            wäre da semantisch unsinnig. display:flex bewusst als Tailwind-
+            Klasse (nicht inline), sonst überschreibt die Inline-Style
+            die lg:hidden-Klasse. */}
         <button
           onClick={onBack}
+          className="flex lg:hidden"
           style={{
             background: "rgba(255,255,255,0.06)",
             border: "1px solid rgba(255,255,255,0.08)",
@@ -260,7 +266,6 @@ export default function ChatWindow({ partner, currentUserId, onBack }: Props) {
             color: "#fff",
             cursor: "pointer",
             fontSize: 18,
-            display: "flex",
             alignItems: "center",
             justifyContent: "center",
             flexShrink: 0,

@@ -242,7 +242,17 @@ export default function ProfileDashboard({ currentUserId, onLogout, onOpenChat }
         pointerEvents: "none",
       }} />
 
-      {/* ── Header ── */}
+      {/* ════════════════════════════════════════════════════════════════
+          Desktop: 2-Spalter — Profilkarte sticky links (w-80), Tabs +
+          Tab-Content rechts (flex-1). Auf Mobile greift kein lg:*, alles
+          stacked vertikal wie vorher. lg:items-start ist Pflicht damit
+          die linke Spalte sticky funktionieren kann (sonst stretcht
+          align-items:stretch die Spalten auf gleiche Höhe und sticky
+          wäre wirkungslos).
+          ──────────────────────────────────────────────────────────────── */}
+      <div className="lg:flex lg:gap-8 lg:items-start">
+        <aside className="lg:w-80 lg:flex-shrink-0 lg:sticky lg:top-24">
+          {/* ── Header ── */}
       <div style={{
         background: "linear-gradient(160deg, rgba(99,102,241,0.1) 0%, transparent 60%)",
         padding: "32px 20px 24px",
@@ -315,9 +325,11 @@ export default function ProfileDashboard({ currentUserId, onLogout, onOpenChat }
             </div>
           ))}
         </div>
-      </div>
+          </div>
+        </aside>
 
-      {/* ── Tabs ── */}
+        <main className="lg:flex-1 lg:min-w-0">
+          {/* ── Tabs ── */}
       <div style={{ display: "flex", borderBottom: "1px solid rgba(255,255,255,0.07)", padding: "0 20px" }}>
         {(["Profil", "Netzwerk", "Einstellungen"] as ActiveTab[]).map((tab) => (
           <button key={tab} onClick={() => setActiveTab(tab)} style={{
@@ -615,6 +627,8 @@ export default function ProfileDashboard({ currentUserId, onLogout, onOpenChat }
           >{loggingOut ? "Abmelden…" : "Abmelden"}</button>
         </div>
       )}
+        </main>
+      </div>
     </div>
   );
 }

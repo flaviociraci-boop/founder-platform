@@ -124,69 +124,73 @@ export default function ProjectBoard({ initialProjects, currentUserId, currentUs
     <div style={{ paddingBottom: 100 }}>
 
       <div style={{ padding: "28px 20px 16px" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-          <div>
-            <h1
+        {/* Desktop: [Titel + Neu-Button] links, Suchleiste rechts (max-w-md).
+            Mobile: Titel + Neu in einer Row oben, Suchleiste darunter. */}
+        <div className="lg:flex lg:items-end lg:gap-12">
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+            <div>
+              <h1
+                style={{
+                  margin: 0,
+                  fontSize: 26,
+                  fontWeight: 800,
+                  letterSpacing: -0.5,
+                  background: "linear-gradient(135deg, #fff 0%, rgba(255,255,255,0.6) 100%)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                }}
+              >
+                Projekte
+              </h1>
+              <p style={{ margin: "4px 0 0", fontSize: 14, color: "rgba(255,255,255,0.35)" }}>
+                {filtered.length} offene Ausschreibungen
+              </p>
+            </div>
+            <button
+              onClick={() => router.push("/projekte/neu")}
               style={{
-                margin: 0,
-                fontSize: 26,
-                fontWeight: 800,
-                letterSpacing: -0.5,
-                background: "linear-gradient(135deg, #fff 0%, rgba(255,255,255,0.6) 100%)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
+                padding: "10px 16px",
+                borderRadius: 14,
+                background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
+                border: "none",
+                color: "#fff",
+                fontWeight: 700,
+                fontSize: 13,
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
               }}
             >
-              Projekte
-            </h1>
-            <p style={{ margin: "4px 0 0", fontSize: 14, color: "rgba(255,255,255,0.35)" }}>
-              {filtered.length} offene Ausschreibungen
-            </p>
+              Neu
+            </button>
           </div>
-          <button
-            onClick={() => router.push("/projekte/neu")}
-            style={{
-              padding: "10px 16px",
-              borderRadius: 14,
-              background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
-              border: "none",
-              color: "#fff",
-              fontWeight: 700,
-              fontSize: 13,
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              gap: 6,
-            }}
-          >
-            Neu
-          </button>
-        </div>
 
-        {/* Search bar */}
-        <div style={{ position: "relative", marginTop: 16 }}>
-          <Search
-            size={16}
-            strokeWidth={2}
-            style={{
-              position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)",
-              color: "#fff", opacity: 0.5, pointerEvents: "none",
-            }}
-          />
-          <input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Projekte suchen…"
-            style={{
-              width: "100%", boxSizing: "border-box",
-              background: "rgba(255,255,255,0.06)",
-              border: `1px solid ${query ? "rgba(99,102,241,0.5)" : "rgba(255,255,255,0.1)"}`,
-              borderRadius: 14, padding: "12px 14px 12px 40px",
-              color: "#fff", fontSize: 15, outline: "none",
-              fontFamily: "'DM Sans', sans-serif",
-              transition: "border-color 0.15s",
-            }}
-          />
+          {/* Search bar */}
+          <div className="mt-4 lg:mt-0 lg:max-w-md lg:w-full lg:flex-shrink-0" style={{ position: "relative" }}>
+            <Search
+              size={16}
+              strokeWidth={2}
+              style={{
+                position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)",
+                color: "#fff", opacity: 0.5, pointerEvents: "none",
+              }}
+            />
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Projekte suchen…"
+              style={{
+                width: "100%", boxSizing: "border-box",
+                background: "rgba(255,255,255,0.06)",
+                border: `1px solid ${query ? "rgba(99,102,241,0.5)" : "rgba(255,255,255,0.1)"}`,
+                borderRadius: 14, padding: "12px 14px 12px 40px",
+                color: "#fff", fontSize: 15, outline: "none",
+                fontFamily: "'DM Sans', sans-serif",
+                transition: "border-color 0.15s",
+              }}
+            />
+          </div>
         </div>
       </div>
 
@@ -224,7 +228,7 @@ export default function ProjectBoard({ initialProjects, currentUserId, currentUs
         meldet sich die jeweils andere Seite direkt bei dir, und ihr findet als Partner zusammen.
       </InfoBox>
 
-      <div style={{ padding: "0 20px", display: "flex", flexDirection: "column", gap: 12 }}>
+      <div className="px-5 grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3 lg:gap-5">
         {filtered.map((project) => {
           // Owner-Check identisch zur "Dein Projekt"-Kennzeichnung unten
           // und zum Server-Guard in /projekte/[id]/bewerbungen/page.tsx.
