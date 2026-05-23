@@ -350,7 +350,7 @@ export default function EditProfileForm() {
         }}>{saving ? "…" : saved ? "Gespeichert" : "Speichern"}</button>
       </div>
 
-      <div style={{ padding: "28px 20px 80px" }}>
+      <div className="lg:max-w-3xl lg:mx-auto" style={{ padding: "28px 20px 80px" }}>
         {/* ── Avatar upload ── */}
         <div style={{ textAlign: "center", marginBottom: 32 }}>
           {/* Hidden file input */}
@@ -423,18 +423,24 @@ export default function EditProfileForm() {
           )}
         </div>
 
-        {/* Name */}
-        <div style={{ marginBottom: 20 }}>
-          <label style={lbl}>Name</label>
-          <input value={form.name} onChange={(e) => set("name", e.target.value)} placeholder="Dein vollständiger Name" style={inp} />
-        </div>
+        {/* Name + Username — auf Desktop paarweise nebeneinander
+            (lg:grid-cols-2), auf Mobile gestapelt wie vorher (kein
+            lg:-Prefix). gap-4 nur auf Desktop; das marginBottom: 20
+            der inneren Divs greift weiter auf beiden Viewports. */}
+        <div className="lg:grid lg:grid-cols-2 lg:gap-4">
+          {/* Name */}
+          <div style={{ marginBottom: 20 }}>
+            <label style={lbl}>Name</label>
+            <input value={form.name} onChange={(e) => set("name", e.target.value)} placeholder="Dein vollständiger Name" style={inp} />
+          </div>
 
-        {/* Username */}
-        <div style={{ marginBottom: 20 }}>
-          <label style={lbl}>Benutzername</label>
-          <div style={{ position: "relative" }}>
-            <span style={{ position: "absolute", left: 16, top: "50%", transform: "translateY(-50%)", color: "rgba(255,255,255,0.35)", fontSize: 15, pointerEvents: "none" }}>@</span>
-            <input value={form.username} onChange={(e) => set("username", e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ""))} placeholder="benutzername" style={{ ...inp, paddingLeft: 32 }} />
+          {/* Username */}
+          <div style={{ marginBottom: 20 }}>
+            <label style={lbl}>Benutzername</label>
+            <div style={{ position: "relative" }}>
+              <span style={{ position: "absolute", left: 16, top: "50%", transform: "translateY(-50%)", color: "rgba(255,255,255,0.35)", fontSize: 15, pointerEvents: "none" }}>@</span>
+              <input value={form.username} onChange={(e) => set("username", e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ""))} placeholder="benutzername" style={{ ...inp, paddingLeft: 32 }} />
+            </div>
           </div>
         </div>
 
