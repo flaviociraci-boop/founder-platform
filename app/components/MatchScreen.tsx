@@ -261,52 +261,46 @@ export default function MatchScreen({ users, currentUserId, onOpenChat }: Props)
       )}
 
       <div style={{ padding: "28px 20px 16px" }}>
-        {/* Desktop: Titel-Block links, Suchleiste rechts (max-w-md).
-            Mobile: vertikal gestapelt — Layout-Wechsel via lg:flex. */}
-        <div className="lg:flex lg:items-end lg:gap-12">
-          <div>
-            <h1
-              style={{
-                margin: 0,
-                fontSize: 26,
-                fontWeight: 800,
-                letterSpacing: -0.5,
-                background: "linear-gradient(135deg, #fff 0%, rgba(255,255,255,0.6) 100%)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-              }}
-            >
-              Connect
-            </h1>
-            <p style={{ margin: "4px 0 0", fontSize: 14, color: "rgba(255,255,255,0.35)" }}>
-              Sende eine Anfrage — bei Annahme öffnet sich der Chat
-            </p>
-          </div>
+        <h1
+          style={{
+            margin: 0,
+            fontSize: 26,
+            fontWeight: 800,
+            letterSpacing: -0.5,
+            background: "linear-gradient(135deg, #fff 0%, rgba(255,255,255,0.6) 100%)",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+          }}
+        >
+          Connect
+        </h1>
+        <p style={{ margin: "4px 0 0", fontSize: 14, color: "rgba(255,255,255,0.35)" }}>
+          Sende eine Anfrage — bei Annahme öffnet sich der Chat
+        </p>
 
-          <div className="mt-4 lg:mt-0 lg:max-w-md lg:w-full lg:flex-shrink-0" style={{ position: "relative" }}>
-            <Search
-              size={16}
-              strokeWidth={2}
-              style={{
-                position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)",
-                color: "#fff", opacity: 0.5, pointerEvents: "none",
-              }}
-            />
-            <input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Name, Skills oder Kategorie…"
-              style={{
-                width: "100%", boxSizing: "border-box",
-                background: "rgba(255,255,255,0.06)",
-                border: `1px solid ${query ? "rgba(99,102,241,0.5)" : "rgba(255,255,255,0.1)"}`,
-                borderRadius: 14, padding: "12px 14px 12px 40px",
-                color: "#fff", fontSize: 15, outline: "none",
-                fontFamily: "'DM Sans', sans-serif",
-                transition: "border-color 0.15s",
-              }}
-            />
-          </div>
+        <div style={{ position: "relative", marginTop: 16 }}>
+          <Search
+            size={16}
+            strokeWidth={2}
+            style={{
+              position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)",
+              color: "#fff", opacity: 0.5, pointerEvents: "none",
+            }}
+          />
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Name, Skills oder Kategorie…"
+            style={{
+              width: "100%", boxSizing: "border-box",
+              background: "rgba(255,255,255,0.06)",
+              border: `1px solid ${query ? "rgba(99,102,241,0.5)" : "rgba(255,255,255,0.1)"}`,
+              borderRadius: 14, padding: "12px 14px 12px 40px",
+              color: "#fff", fontSize: 15, outline: "none",
+              fontFamily: "'DM Sans', sans-serif",
+              transition: "border-color 0.15s",
+            }}
+          />
         </div>
       </div>
 
@@ -417,7 +411,7 @@ export default function MatchScreen({ users, currentUserId, onOpenChat }: Props)
         andere Person deine Anfrage annimmt → Match! Erst dann wird der Chat freigeschaltet.
       </InfoBox>
 
-      <div className="px-5 grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3 lg:gap-5">
+      <div style={{ padding: "0 20px", display: "flex", flexDirection: "column", gap: 12 }}>
         {users.filter((u) => {
           const q = query.trim().toLowerCase();
           return !q ||

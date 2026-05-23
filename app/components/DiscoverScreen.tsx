@@ -1,8 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Search } from "lucide-react";
-import NotificationBell from "@/app/components/NotificationBell";
+import { Bell, Search } from "lucide-react";
 import { categories, seekingColors, User } from "@/app/lib/data";
 import { Avatar } from "@/app/components/Avatar";
 
@@ -43,62 +42,82 @@ export default function DiscoverScreen({
   return (
     <div style={{ paddingBottom: 100 }}>
       <div style={{ padding: "28px 20px 16px" }}>
-        {/* Desktop: Titel-Block links, Suchleiste rechts (max-w-md) in einer Row.
-            Mobile: vertikal gestapelt — Titel+Bell oben, Suchleiste darunter. */}
-        <div className="lg:flex lg:items-end lg:gap-12">
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-            <div>
-              <h1
-                style={{
-                  margin: 0,
-                  fontSize: 26,
-                  fontWeight: 800,
-                  letterSpacing: -0.5,
-                  background: "linear-gradient(135deg, #fff 0%, rgba(255,255,255,0.6) 100%)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                }}
-              >
-                Entdecken
-              </h1>
-              <p style={{ margin: "4px 0 0", fontSize: 14, color: "rgba(255,255,255,0.35)" }}>
-                {filtered.length} Unternehmer gefunden
-              </p>
-            </div>
-            {/* Mobile-only — auf Desktop sitzt die Glocke in der AppShell-
-                Top-Bar (gleiche Komponente, nur anderer Wrapper). */}
-            <div className="lg:hidden">
-              <NotificationBell unreadCount={unreadCount} onClick={onOpenNotifications} />
-            </div>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+          <div>
+            <h1
+              style={{
+                margin: 0,
+                fontSize: 26,
+                fontWeight: 800,
+                letterSpacing: -0.5,
+                background: "linear-gradient(135deg, #fff 0%, rgba(255,255,255,0.6) 100%)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+              }}
+            >
+              Entdecken
+            </h1>
+            <p style={{ margin: "4px 0 0", fontSize: 14, color: "rgba(255,255,255,0.35)" }}>
+              {filtered.length} Unternehmer gefunden
+            </p>
           </div>
+          <button
+            onClick={onOpenNotifications}
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: 12,
+              background: "rgba(255,255,255,0.08)",
+              border: "none",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              cursor: "pointer",
+              position: "relative",
+              flexShrink: 0,
+              color: "rgba(255,255,255,0.7)",
+            }}
+          >
+            <Bell size={18} />
+            {unreadCount > 0 && (
+              <span style={{
+                position: "absolute", top: -4, right: -4,
+                minWidth: 16, height: 16, borderRadius: 8,
+                background: "#ef4444",
+                fontSize: 9, fontWeight: 700, color: "#fff",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                padding: "0 3px", boxSizing: "border-box",
+              }}>
+                {unreadCount > 9 ? "9+" : unreadCount}
+              </span>
+            )}
+          </button>
+        </div>
 
-          {/* Search bar — mt-4 auf Mobile (war marginTop:16 inline),
-              auf Desktop mt-0 + max-w-md + flex-shrink-0, sodass die Bar
-              rechtsbündig sitzt und der Titel den Rest des Platzes füllt. */}
-          <div className="mt-4 lg:mt-0 lg:max-w-md lg:w-full lg:flex-shrink-0" style={{ position: "relative" }}>
-            <Search
-              size={16}
-              strokeWidth={2}
-              style={{
-                position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)",
-                color: "#fff", opacity: 0.5, pointerEvents: "none",
-              }}
-            />
-            <input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Name, Skills oder Kategorie…"
-              style={{
-                width: "100%", boxSizing: "border-box",
-                background: "rgba(255,255,255,0.06)",
-                border: `1px solid ${query ? "rgba(99,102,241,0.5)" : "rgba(255,255,255,0.1)"}`,
-                borderRadius: 14, padding: "12px 14px 12px 40px",
-                color: "#fff", fontSize: 15, outline: "none",
-                fontFamily: "'DM Sans', sans-serif",
-                transition: "border-color 0.15s",
-              }}
-            />
-          </div>
+        {/* Search bar */}
+        <div style={{ position: "relative", marginTop: 16 }}>
+          <Search
+            size={16}
+            strokeWidth={2}
+            style={{
+              position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)",
+              color: "#fff", opacity: 0.5, pointerEvents: "none",
+            }}
+          />
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Name, Skills oder Kategorie…"
+            style={{
+              width: "100%", boxSizing: "border-box",
+              background: "rgba(255,255,255,0.06)",
+              border: `1px solid ${query ? "rgba(99,102,241,0.5)" : "rgba(255,255,255,0.1)"}`,
+              borderRadius: 14, padding: "12px 14px 12px 40px",
+              color: "#fff", fontSize: 15, outline: "none",
+              fontFamily: "'DM Sans', sans-serif",
+              transition: "border-color 0.15s",
+            }}
+          />
         </div>
       </div>
 
@@ -131,7 +150,7 @@ export default function DiscoverScreen({
         ))}
       </div>
 
-      <div className="px-5 grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3 lg:gap-5">
+      <div style={{ padding: "0 20px", display: "flex", flexDirection: "column", gap: 12 }}>
         {filtered.map((user) => {
           const catColor = categories.find((c) => c.id === user.category)?.color ?? "#fff";
           return (
