@@ -228,7 +228,7 @@ export default function ProjectBoard({ initialProjects, currentUserId, currentUs
         meldet sich die jeweils andere Seite direkt bei dir, und ihr findet als Partner zusammen.
       </InfoBox>
 
-      <div className="px-5 flex flex-col gap-3 lg:grid lg:grid-cols-2 xl:grid-cols-3 lg:gap-5">
+      <div className="px-5 grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3 lg:gap-5">
         {filtered.map((project) => {
           // Owner-Check identisch zur "Dein Projekt"-Kennzeichnung unten
           // und zum Server-Guard in /projekte/[id]/bewerbungen/page.tsx.
