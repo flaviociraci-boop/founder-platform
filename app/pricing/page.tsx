@@ -13,7 +13,7 @@ const YEARLY_URL = "https://whop.com/checkout/plan_ySEzdrSdKbbcV";
 const features = [
   "Unbegrenzte Connect-Anfragen",
   "Echtzeit-Chat mit Connections",
-  "Projekte veröffentlichen & bewerben",
+  "Projekte veröffentlichen, pitchen & Bewerbungen empfangen",
   "Vollständiges Matching-System",
   "Profil mit Kategorien & Tags",
 ];
