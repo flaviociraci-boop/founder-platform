@@ -3,8 +3,21 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { Rocket, Users, MessageCircle, TrendingUp, ChevronDown } from "lucide-react";
+import { Rocket, Users, MessageCircle, TrendingUp, ChevronDown, Check, ArrowRight } from "lucide-react";
 import WaitlistForm from "@/app/components/WaitlistForm";
+
+// Single Source of Truth bleibt /pricing — hier nur eine Spiegelung
+// derselben Werte für die Landingpage-Pricing-Section.
+const MONTHLY_URL = "https://whop.com/checkout/plan_1qOApZltlPrlj";
+const YEARLY_URL = "https://whop.com/checkout/plan_TGM0i6yvIQXsW";
+
+const pricingBullets = [
+  "Unbegrenzte Connect-Anfragen",
+  "Echtzeit-Chat mit Connections",
+  "Projekte veröffentlichen, pitchen & Bewerbungen empfangen",
+  "Vollständiges Matching-System",
+  "Profil mit Kategorien & Tags",
+];
 
 function useMediaQuery(query: string) {
   const [matches, setMatches] = useState(false);
@@ -38,12 +51,12 @@ const features = [
 
 const faqs = [
   {
-    q: "Wann startet Connectyfind?",
-    a: "Wir launchen in Kürze. Trag dich ein, dann bist du der erste der Bescheid weiß.",
+    q: "Wie kann ich starten?",
+    a: "Connectyfind ist seit dem 29.05.2026 live. Wähle einen Plan, schließe den Checkout ab, und du bist sofort drin.",
   },
   {
     q: "Was kostet Connectyfind?",
-    a: "Es gibt ein Pro-Abo. Die Preise kommunizieren wir zum Launch. Connectyfind ist nicht kostenlos — Early-Access-Member erhalten aber ein exklusives Early-Access-Angebot.",
+    a: "€19.90 pro Monat oder €179 pro Jahr — mit dem Jahresplan sparst du 25 %. Beide Pläne enthalten alle Features, jederzeit kündbar.",
   },
   {
     q: "Wer kann mitmachen?",
@@ -121,12 +134,15 @@ export default function LandingPage() {
                 <div style={{
                   display: "flex", alignItems: "center", gap: 6,
                   padding: "5px 12px",
-                  background: "rgba(99,102,241,0.1)", border: "1px solid rgba(99,102,241,0.25)",
+                  background: "rgba(16,185,129,0.1)", border: "1px solid rgba(16,185,129,0.3)",
                   borderRadius: 20,
-                  fontSize: 12, fontWeight: 600, color: "#6366f1",
+                  fontSize: 12, fontWeight: 600, color: "#10b981",
                 }}>
-                  <Rocket size={12} />
-                  Early Access
+                  <span style={{
+                    width: 7, height: 7, borderRadius: "50%",
+                    background: "#10b981", boxShadow: "0 0 6px #10b981",
+                  }} />
+                  Live
                 </div>
               )}
             </div>
@@ -144,11 +160,11 @@ export default function LandingPage() {
           <div style={{
             display: "inline-flex", alignItems: "center", gap: 7,
             padding: "6px 14px", marginBottom: 28,
-            background: "rgba(99,102,241,0.1)", border: "1px solid rgba(99,102,241,0.3)",
-            borderRadius: 20, fontSize: 12, fontWeight: 600, color: "#6366f1",
+            background: "rgba(16,185,129,0.1)", border: "1px solid rgba(16,185,129,0.3)",
+            borderRadius: 20, fontSize: 12, fontWeight: 600, color: "#10b981",
           }}>
             <Rocket size={13} />
-            Early Access — Bald verfügbar
+            Jetzt live
           </div>
 
           {/* Headline */}
@@ -182,20 +198,26 @@ export default function LandingPage() {
             marginLeft: "auto",
             marginRight: "auto",
           }}>
-            Die exklusive Founder-App für den DACH-Raum. Bald live.
+            Die exklusive Founder-App für den DACH-Raum. Jetzt live.
           </p>
 
-          {/* Waitlist form */}
-          <div
-            id="waitlist"
+          {/* Hero CTA — scrollt zur Pricing-Section, damit der User Monthly
+              vs Yearly wählen kann bevor er ins Whop-Checkout geht. */}
+          <a
+            href="#pricing"
             style={{
-              maxWidth: isDesktop ? 480 : undefined,
-              margin: "0 auto",
-              textAlign: "left",
+              display: "inline-flex", alignItems: "center", gap: 8,
+              padding: "15px 28px",
+              background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
+              borderRadius: 14,
+              color: "#fff", fontWeight: 700, fontSize: 15,
+              textDecoration: "none",
+              boxShadow: "0 8px 24px rgba(99,102,241,0.4)",
             }}
           >
-            <WaitlistForm />
-          </div>
+            Abonnieren
+            <ArrowRight size={16} strokeWidth={2.5} />
+          </a>
         </div>
       </section>
 
@@ -239,6 +261,141 @@ export default function LandingPage() {
               );
             })}
           </div>
+        </div>
+      </section>
+
+      {/* PRICING — anchor #pricing für Hero-CTA und ggf. Nav-Link.
+          Single Source of Truth ist /pricing — hier eine kompakte
+          Spiegelung derselben Cards mit identischen Preisen, Bullets
+          und Whop-URLs (Konstanten oben in dieser Datei). */}
+      <section
+        id="pricing"
+        style={{ padding: isDesktop ? "72px 0" : "48px 0", position: "relative", zIndex: 1 }}
+      >
+        <div style={inner}>
+          <div style={{ textAlign: "center", marginBottom: isDesktop ? 40 : 28 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: "#6366f1", letterSpacing: 2, marginBottom: 10 }}>
+              PRICING
+            </div>
+            <h2 style={{
+              fontSize: isDesktop ? 40 : 26, fontWeight: 800, margin: "0 0 10px",
+              lineHeight: 1.2, letterSpacing: -0.3,
+            }}>
+              Wähle deinen Plan
+            </h2>
+            <p style={{ margin: 0, fontSize: 15, color: "rgba(255,255,255,0.45)", lineHeight: 1.6 }}>
+              Direkt loslegen · Jederzeit kündbar
+            </p>
+          </div>
+
+          <div style={{
+            display: isDesktop ? "grid" : "flex",
+            flexDirection: isDesktop ? undefined : "column",
+            gridTemplateColumns: isDesktop ? "1fr 1fr" : undefined,
+            gap: isDesktop ? 20 : 16,
+            maxWidth: isDesktop ? 800 : undefined,
+            margin: "0 auto",
+          }}>
+            {/* Monthly */}
+            <div style={{
+              background: "rgba(255,255,255,0.04)",
+              border: "1px solid rgba(255,255,255,0.08)",
+              borderRadius: 20,
+              padding: 24,
+            }}>
+              <div style={{ marginBottom: 20 }}>
+                <div style={{ fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,0.4)", textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>
+                  Monatlich
+                </div>
+                <div style={{ display: "flex", alignItems: "baseline", gap: 4 }}>
+                  <span style={{ fontSize: 36, fontWeight: 800, letterSpacing: -1 }}>€19.90</span>
+                  <span style={{ fontSize: 14, color: "rgba(255,255,255,0.4)" }}>/Monat</span>
+                </div>
+              </div>
+
+              <ul style={{ listStyle: "none", padding: 0, margin: "0 0 24px", display: "flex", flexDirection: "column", gap: 10 }}>
+                {pricingBullets.map((f) => (
+                  <li key={f} style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 14, color: "rgba(255,255,255,0.7)" }}>
+                    <Check size={15} color="#10b981" strokeWidth={2.5} style={{ flexShrink: 0 }} />
+                    {f}
+                  </li>
+                ))}
+              </ul>
+
+              <a
+                href={MONTHLY_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: "block", padding: "15px 0", borderRadius: 14,
+                  background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)",
+                  color: "#fff", fontWeight: 700, fontSize: 15, textAlign: "center",
+                  textDecoration: "none",
+                }}
+              >
+                Abonnieren
+              </a>
+            </div>
+
+            {/* Yearly */}
+            <div style={{
+              background: "rgba(99,102,241,0.08)",
+              border: "1px solid rgba(99,102,241,0.3)",
+              borderRadius: 20,
+              padding: 24,
+              position: "relative",
+            }}>
+              <div style={{
+                position: "absolute", top: -12, right: 20,
+                background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
+                color: "#fff", fontSize: 11, fontWeight: 700,
+                padding: "4px 12px", borderRadius: 20, letterSpacing: 0.5,
+              }}>
+                SPARE 25%
+              </div>
+
+              <div style={{ marginBottom: 20 }}>
+                <div style={{ fontSize: 12, fontWeight: 600, color: "#6366f1", textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>
+                  Jährlich
+                </div>
+                <div style={{ display: "flex", alignItems: "baseline", gap: 4 }}>
+                  <span style={{ fontSize: 36, fontWeight: 800, letterSpacing: -1 }}>€179</span>
+                  <span style={{ fontSize: 14, color: "rgba(255,255,255,0.4)" }}>/Jahr</span>
+                </div>
+                <div style={{ fontSize: 13, color: "rgba(255,255,255,0.35)", marginTop: 2 }}>≈ €14.92/Monat</div>
+              </div>
+
+              <ul style={{ listStyle: "none", padding: 0, margin: "0 0 24px", display: "flex", flexDirection: "column", gap: 10 }}>
+                {pricingBullets.map((f) => (
+                  <li key={f} style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 14, color: "rgba(255,255,255,0.7)" }}>
+                    <Check size={15} color="#10b981" strokeWidth={2.5} style={{ flexShrink: 0 }} />
+                    {f}
+                  </li>
+                ))}
+              </ul>
+
+              <a
+                href={YEARLY_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: "block", padding: "15px 0", borderRadius: 14,
+                  background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
+                  color: "#fff", fontWeight: 700, fontSize: 15, textAlign: "center",
+                  textDecoration: "none",
+                  boxShadow: "0 4px 20px rgba(99,102,241,0.35)",
+                }}
+              >
+                Abonnieren
+              </a>
+            </div>
+          </div>
+
+          <p style={{ textAlign: "center", marginTop: 24, fontSize: 13, color: "rgba(255,255,255,0.35)" }}>
+            <a href="/pricing" style={{ color: "rgba(255,255,255,0.5)", textDecoration: "underline" }}>
+              Alle Details auf /pricing →
+            </a>
+          </p>
         </div>
       </section>
 
@@ -306,17 +463,31 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* SECOND CTA */}
-      <section style={{ padding: isDesktop ? "72px 0 96px" : "48px 0 72px", position: "relative", zIndex: 1 }}>
+      {/* NEWSLETTER — anchor #newsletter. Brevo-DOI-Flow unverändert
+          (POST /api/subscribe → Bestätigungsmail → /willkommen). Nur
+          das Frontend-Wording wurde von Waitlist auf Newsletter
+          umgestellt; die WaitlistForm-Komponente selbst wurde in-
+          place aktualisiert. */}
+      <section
+        id="newsletter"
+        style={{ padding: isDesktop ? "72px 0 96px" : "48px 0 72px", position: "relative", zIndex: 1 }}
+      >
         <div style={inner}>
           <div style={{ maxWidth: isDesktop ? 480 : undefined, margin: "0 auto" }}>
             <h2 style={{
               fontSize: isDesktop ? 28 : 22,
-              fontWeight: 800, margin: "0 0 28px", lineHeight: 1.25,
+              fontWeight: 800, margin: "0 0 10px", lineHeight: 1.25,
               textAlign: "center", letterSpacing: -0.3,
             }}>
-              Sei dabei wenn wir starten.
+              Bleib auf dem Laufenden
             </h2>
+            <p style={{
+              margin: "0 0 24px", fontSize: 14,
+              color: "rgba(255,255,255,0.5)", lineHeight: 1.6,
+              textAlign: "center",
+            }}>
+              Updates zu neuen Features und Funktionen — direkt in dein Postfach.
+            </p>
             <WaitlistForm />
           </div>
         </div>

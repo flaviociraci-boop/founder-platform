@@ -53,11 +53,10 @@ export default function WaitlistForm({ compact = false }: { compact?: boolean })
         {state === "already" ? (
           <>
             <p style={{ fontWeight: 700, fontSize: 17, margin: "0 0 8px", color: "#fff" }}>
-              Du bist bereits dabei!
+              Du bist bereits angemeldet!
             </p>
             <p style={{ fontSize: 14, color: "rgba(255,255,255,0.6)", margin: 0, lineHeight: 1.6 }}>
-              <strong style={{ color: "#fff" }}>{email}</strong> ist bereits auf der Early-Access-Liste.
-              Wir melden uns sobald wir live gehen.
+              <strong style={{ color: "#fff" }}>{email}</strong> erhält bereits unsere Updates.
             </p>
           </>
         ) : (
@@ -173,16 +172,16 @@ export default function WaitlistForm({ compact = false }: { compact?: boolean })
           fontFamily: "'DM Sans', sans-serif",
         }}
       >
-        {state === "loading" ? "Wird eingetragen…" : (
+        {state === "loading" ? "Wird angemeldet…" : (
           <>
-            Auf die Waitlist
+            Anmelden
             <ArrowRight size={16} strokeWidth={2.5} />
           </>
         )}
       </button>
 
       <p style={{ textAlign: "center", marginTop: 10, fontSize: 11, color: "rgba(255,255,255,0.3)" }}>
-        Sei einer der Ersten. Exklusives Angebot für Early-Access-Member.
+        Updates ca. 1× pro Monat · Jederzeit abmeldbar
       </p>
     </div>
   );
