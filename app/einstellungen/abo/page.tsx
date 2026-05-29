@@ -62,9 +62,9 @@ export default function AboPage() {
   }, [router]);
 
   const planLabel = sub?.plan_type === "monthly"
-    ? "Pro Monatlich — €29/Monat"
+    ? "Pro Monatlich — €19.90/Monat"
     : sub?.plan_type === "yearly"
-    ? "Pro Jährlich — €249/Jahr"
+    ? "Pro Jährlich — €179/Jahr"
     : "–";
 
   const nextDateLabel = () => {

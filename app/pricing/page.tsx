@@ -7,8 +7,8 @@ export const metadata: Metadata = {
   description: "Connectyfind Pro — Das Founder-Netzwerk für den DACH-Raum.",
 };
 
-const MONTHLY_URL = "https://whop.com/checkout/plan_ljHXNq8tR3c16";
-const YEARLY_URL = "https://whop.com/checkout/plan_ySEzdrSdKbbcV";
+const MONTHLY_URL = "https://whop.com/checkout/plan_1qOApZltlPrlj";
+const YEARLY_URL = "https://whop.com/checkout/plan_TGM0i6yvIQXsW";
 
 const features = [
   "Unbegrenzte Connect-Anfragen",
@@ -47,7 +47,7 @@ export default function PricingPage() {
             Wähle deinen Plan
           </h1>
           <p style={{ margin: 0, fontSize: 15, color: "rgba(255,255,255,0.45)", lineHeight: 1.6 }}>
-            3 Tage kostenlos testen — kein Risiko
+            Direkt loslegen · Jederzeit kündbar
           </p>
         </div>
 
@@ -66,7 +66,7 @@ export default function PricingPage() {
                 Monatlich
               </div>
               <div style={{ display: "flex", alignItems: "baseline", gap: 4 }}>
-                <span style={{ fontSize: 36, fontWeight: 800, letterSpacing: -1 }}>€29</span>
+                <span style={{ fontSize: 36, fontWeight: 800, letterSpacing: -1 }}>€19.90</span>
                 <span style={{ fontSize: 14, color: "rgba(255,255,255,0.4)" }}>/Monat</span>
               </div>
             </div>
@@ -91,7 +91,7 @@ export default function PricingPage() {
                 textDecoration: "none",
               }}
             >
-              3 Tage gratis starten
+              Jetzt Pro werden
             </a>
           </div>
 
@@ -109,7 +109,7 @@ export default function PricingPage() {
               color: "#fff", fontSize: 11, fontWeight: 700,
               padding: "4px 12px", borderRadius: 20, letterSpacing: 0.5,
             }}>
-              SPARE 28%
+              SPARE 25%
             </div>
 
             <div style={{ marginBottom: 20 }}>
@@ -117,10 +117,10 @@ export default function PricingPage() {
                 Jährlich
               </div>
               <div style={{ display: "flex", alignItems: "baseline", gap: 4 }}>
-                <span style={{ fontSize: 36, fontWeight: 800, letterSpacing: -1 }}>€249</span>
+                <span style={{ fontSize: 36, fontWeight: 800, letterSpacing: -1 }}>€179</span>
                 <span style={{ fontSize: 14, color: "rgba(255,255,255,0.4)" }}>/Jahr</span>
               </div>
-              <div style={{ fontSize: 13, color: "rgba(255,255,255,0.35)", marginTop: 2 }}>≈ €20.75/Monat</div>
+              <div style={{ fontSize: 13, color: "rgba(255,255,255,0.35)", marginTop: 2 }}>≈ €14.92/Monat</div>
             </div>
 
             <ul style={{ listStyle: "none", padding: 0, margin: "0 0 24px", display: "flex", flexDirection: "column", gap: 10 }}>
@@ -144,7 +144,7 @@ export default function PricingPage() {
                 boxShadow: "0 4px 20px rgba(99,102,241,0.35)",
               }}
             >
-              3 Tage gratis starten
+              Jetzt Pro werden
             </a>
           </div>
         </div>

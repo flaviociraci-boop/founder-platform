@@ -124,7 +124,7 @@ export default function LandingPage() {
             border: "none", color: "#fff", borderRadius: 14,
             fontSize: 15, fontWeight: 700, cursor: "pointer",
             boxShadow: "0 8px 24px rgba(99,102,241,0.4)",
-          }}>Jetzt 3 Tage kostenlos starten</button>
+          }}>Jetzt Pro werden</button>
 
           <p style={{ marginTop: 12, fontSize: 12, color: "rgba(255,255,255,0.4)" }}>Kreditkarte erforderlich · Jederzeit kündbar</p>
         </div>
@@ -372,7 +372,7 @@ export default function LandingPage() {
             border: "none", color: "#fff", borderRadius: 14,
             fontSize: 14, fontWeight: 700, cursor: "pointer",
             boxShadow: "0 8px 20px rgba(99,102,241,0.4)",
-          }}>Jetzt 3 Tage kostenlos starten</button>
+          }}>Jetzt Pro werden</button>
         </div>
       </section>
 
