@@ -152,19 +152,18 @@ export default function LandingPage() {
               <a
                 href="/login"
                 style={{
-                  display: "inline-flex", alignItems: "center",
-                  padding: isDesktop ? "7px 16px" : "6px 14px",
-                  background: "#401586",
-                  border: "1px solid #694CBB",
-                  borderRadius: 20,
+                  display: "inline-flex", alignItems: "center", gap: 6,
+                  padding: isDesktop ? "8px 18px" : "7px 14px",
+                  background: "#694CBB",
+                  borderRadius: 14,
                   fontSize: isDesktop ? 13 : 12,
                   fontWeight: 700,
                   color: "#fff",
                   textDecoration: "none",
-                  letterSpacing: 0.2,
                 }}
               >
                 Anmelden
+                <ArrowRight size={14} strokeWidth={2.5} />
               </a>
             </div>
           </div>
@@ -229,11 +228,11 @@ export default function LandingPage() {
             style={{
               display: "inline-flex", alignItems: "center", gap: 8,
               padding: "15px 28px",
-              background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
+              background: "#694CBB",
               borderRadius: 14,
               color: "#fff", fontWeight: 700, fontSize: 15,
               textDecoration: "none",
-              boxShadow: "0 8px 24px rgba(99,102,241,0.4)",
+              boxShadow: "0 8px 24px rgba(105,76,187,0.4)",
             }}
           >
             Abonnieren

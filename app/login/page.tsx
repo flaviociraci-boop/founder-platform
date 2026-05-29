@@ -265,9 +265,9 @@ export default function LoginPage() {
               */}
 
               <p style={{ textAlign: "center", marginTop: 20, fontSize: 14, color: "rgba(255,255,255,0.4)" }}>
-                Noch kein Zugang?{" "}
-                <a href="/#waitlist" style={{ color: "#6366f1", fontWeight: 600, textDecoration: "none" }}>
-                  Trag dich auf die Waitlist ein →
+                Noch kein Konto?{" "}
+                <a href="/pricing" style={{ color: "#694CBB", fontWeight: 600, textDecoration: "none" }}>
+                  Wähle dein Abo aus →
                 </a>
               </p>
             </div>
