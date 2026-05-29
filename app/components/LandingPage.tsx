@@ -128,7 +128,11 @@ export default function LandingPage() {
               <span style={{ fontWeight: 800, fontSize: 15, letterSpacing: -0.3 }}>Connectyfind</span>
             </div>
 
-            {/* Right side */}
+            {/* Right side — Live-Badge nur Desktop, Anmelden-Link
+                immer sichtbar. Anmelden ist der einzige Weg für
+                Bestandskunden (z.B. Whop-Käufer) zurück in die App;
+                /login hat selbst den Subscription-Check, hier nur
+                Routing-Anker. */}
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
               {isDesktop && (
                 <div style={{
@@ -145,6 +149,23 @@ export default function LandingPage() {
                   Live
                 </div>
               )}
+              <a
+                href="/login"
+                style={{
+                  display: "inline-flex", alignItems: "center",
+                  padding: isDesktop ? "7px 16px" : "6px 14px",
+                  background: "#401586",
+                  border: "1px solid #694CBB",
+                  borderRadius: 20,
+                  fontSize: isDesktop ? 13 : 12,
+                  fontWeight: 700,
+                  color: "#fff",
+                  textDecoration: "none",
+                  letterSpacing: 0.2,
+                }}
+              >
+                Anmelden
+              </a>
             </div>
           </div>
         </div>
