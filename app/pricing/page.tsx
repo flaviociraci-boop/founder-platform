@@ -91,7 +91,7 @@ export default function PricingPage() {
                 textDecoration: "none",
               }}
             >
-              Jetzt Pro werden
+              Abonnieren
             </a>
           </div>
 
@@ -144,7 +144,7 @@ export default function PricingPage() {
                 boxShadow: "0 4px 20px rgba(99,102,241,0.35)",
               }}
             >
-              Jetzt Pro werden
+              Abonnieren
             </a>
           </div>
         </div>
