@@ -4,14 +4,13 @@ import { NextResponse, type NextRequest } from "next/server";
 const AUTH_PATHS = ["/login", "/register", "/auth"];
 
 // Routen, die für anonyme Besucher erreichbar sind (kein /login-Redirect).
+// Seit Juni 2026 ist Connectyfind kostenlos — kein Paywall-Check mehr,
+// nur noch reines Auth-Routing.
 const PUBLIC_PATHS = [
   "/",
   "/api/subscribe",
   "/willkommen",
-  "/pricing",
   "/welcome-pro",
-  "/api/whop/webhook",
-  "/api/whop/check-subscription",
   "/monitoring",
   "/impressum",
   "/datenschutz",
@@ -19,18 +18,6 @@ const PUBLIC_PATHS = [
   "/kontakt",
   "/cookie-richtlinie",
 ];
-
-// Routen, bei denen für eingeloggte User der Subscription-Check entfällt.
-// = PUBLIC_PATHS ohne "/", weil "/" für eingeloggte User die AppShell
-// rendert — die soll nur mit aktiver Sub sichtbar sein.
-const PAYWALL_BYPASS_PATHS = PUBLIC_PATHS.filter((p) => p !== "/");
-const PAYWALL_BYPASS_PREFIXES = ["/auth/", "/api/whop/", "/api/auth/"];
-
-// Subscription-Status, die App-Zugang geben. Whop's eigener Wert ist
-// "trialing", unser Webhook-Handler mappt das aktuell aber auf "trial"
-// (siehe handleMembershipActivated). Wir akzeptieren beide, damit
-// Phase 4 unabhängig vom Status-Mapping funktioniert.
-const PAYWALL_PASS_STATUSES = ["active", "trial", "trialing"];
 
 export async function proxy(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
@@ -58,56 +45,15 @@ export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const isAuthPath = AUTH_PATHS.some((p) => pathname.startsWith(p));
   const isPublicPath = PUBLIC_PATHS.includes(pathname);
-  const isPaywallBypass =
-    isAuthPath ||
-    PAYWALL_BYPASS_PATHS.includes(pathname) ||
-    PAYWALL_BYPASS_PREFIXES.some((p) => pathname.startsWith(p));
 
-  // Redirect unauthenticated users to login (but not from landing page or auth pages)
+  // Anonyme User auf geschützten Pfaden → /login.
   if (!user && !isAuthPath && !isPublicPath) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
-  // Redirect logged-in users away from login/register
+  // Eingeloggte User auf /login oder /register → /.
   if (user && (pathname === "/login" || pathname === "/register")) {
     return NextResponse.redirect(new URL("/", request.url));
-  }
-
-  // Paywall: eingeloggte User ohne aktive/trialing Subscription → signOut
-  // + redirect /login?error=<reason>. Vorher war es ein Redirect zu /pricing
-  // ohne signOut, was zum "Pricing-Käfig" führte (User stuck weil "/" nicht
-  // in der Allowlist + Pricing redirected nicht zurück). Instagram-Logik:
-  // Login-Tür zu, statt App-Käfig.
-  // RLS auf subscriptions erlaubt den SELECT auf die eigene Row (auth.uid()
-  // = user_id). Bei DB-Fehler durchlassen — lieber kurz Gratis-Zugang als
-  // kaputte App. Vercel-Log-Filter: "[paywall]".
-  if (user && !isPaywallBypass) {
-    const { data: sub, error } = await supabase
-      .from("subscriptions")
-      .select("status")
-      .eq("user_id", user.id)
-      .maybeSingle();
-
-    if (error) {
-      console.error("[paywall] subscription check failed:", error);
-    } else if (!sub || !PAYWALL_PASS_STATUSES.includes(sub.status)) {
-      const reason = !sub
-        ? "no_subscription"
-        : sub.status === "expired" ? "expired"
-        : sub.status === "canceled" ? "canceled"
-        : "inactive";
-      // Session cleren — signOut() ruft setAll, das die Cookies auf
-      // supabaseResponse mit blank values setzt.
-      await supabase.auth.signOut();
-      const redirect = NextResponse.redirect(
-        new URL(`/login?error=${reason}`, request.url),
-        307,
-      );
-      // Cookies vom signOut auf die Redirect-Response übertragen, damit
-      // der Browser sie tatsächlich gelöscht bekommt.
-      supabaseResponse.cookies.getAll().forEach((c) => redirect.cookies.set(c));
-      return redirect;
-    }
   }
 
   return supabaseResponse;

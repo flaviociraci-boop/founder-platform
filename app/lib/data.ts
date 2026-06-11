@@ -86,10 +86,3 @@ export function timeAgo(dateStr: string): string {
   return `vor ${d}d`;
 }
 
-// ── Whop-URLs ─────────────────────────────────────────────────────────────
-// Reaktivierung zeigt auf den normalen Monatsplan, da seit dem Launch
-// (29.05.2026) kein Trial mehr existiert. Der frühere separate
-// Reactivation-Plan (plan_aENAJmBQQKMri) sollte verhindern, dass
-// Ex-Abonnenten mit gleicher Email/Karte erneut einen 3-Tage-Trial
-// starten — ohne Trial ist dieser Schutz obsolet.
-export const WHOP_REACTIVATE_URL = "https://whop.com/checkout/plan_1qOApZltlPrlj";

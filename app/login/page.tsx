@@ -5,24 +5,13 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Mail } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
-import { WHOP_REACTIVATE_URL } from "@/app/lib/data";
 
-// Reason-Codes kommen entweder via Middleware (proxy.ts bei In-Session-
-// Expiry) oder direkt aus dem Login-Versuch unten, wenn ein User mit
-// existierendem Account aber inaktiver Sub einloggen will.
 const ERROR_MESSAGES: Record<string, string> = {
-  expired: "Dein Connectyfind-Pro-Abo ist nicht mehr aktiv. Reaktiviere es, um wieder Zugriff zu bekommen.",
-  canceled: "Dein Connectyfind-Pro-Abo ist nicht mehr aktiv. Reaktiviere es, um wieder Zugriff zu bekommen.",
-  no_subscription: "Anmeldung fehlgeschlagen. Bitte prüfe dein Abo.",
-  inactive: "Anmeldung fehlgeschlagen. Bitte prüfe dein Abo.",
   auth_failed: "Anmeldung fehlgeschlagen. Bitte versuche es erneut.",
   auth: "Anmeldung fehlgeschlagen. Bitte versuche es erneut.",
   verify: "Email-Bestätigung fehlgeschlagen. Bitte versuche es erneut.",
   missing_params: "Ungültiger Anmelde-Link.",
 };
-const REACTIVATE_REASONS = new Set(["expired", "canceled"]);
-
-const PASS_STATUSES = ["active", "trial", "trialing"];
 
 type Mode = "login" | "forgot" | "forgot-sent";
 
@@ -68,9 +57,9 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  // Banner aus URL-Param ?error=... — kommt entweder aus der Middleware
-  // (In-Session-Expiry) oder aus dem Login-Sub-Check unten.
-  const [banner, setBanner] = useState<{ message: string; reason: string } | null>(null);
+  // Banner aus URL-Param ?error=... — Auth-Probleme aus /auth/callback
+  // (auth/verify/missing_params). Kein Sub-Status mehr seit Paywall raus.
+  const [banner, setBanner] = useState<string | null>(null);
 
   const supabase = createClient();
 
@@ -80,8 +69,7 @@ export default function LoginPage() {
     if (typeof window === "undefined") return;
     const reason = new URLSearchParams(window.location.search).get("error");
     if (!reason) return;
-    const message = ERROR_MESSAGES[reason] ?? ERROR_MESSAGES.auth_failed;
-    setBanner({ message, reason });
+    setBanner(ERROR_MESSAGES[reason] ?? ERROR_MESSAGES.auth_failed);
   }, []);
 
   const handleLogin = async () => {
@@ -93,31 +81,6 @@ export default function LoginPage() {
       setError("E-Mail oder Passwort falsch.");
       setLoading(false);
       return;
-    }
-
-    // Sub-Check direkt nach erfolgreichem Login. Wenn nicht active/trial/
-    // trialing → ausloggen + Banner zeigen. Gleiches Reason-Mapping wie
-    // Middleware-Pfad. Bei DB-Fehler durchlassen (defensive Linie).
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
-      const { data: sub, error: subErr } = await supabase
-        .from("subscriptions")
-        .select("status")
-        .eq("user_id", user.id)
-        .maybeSingle();
-      if (subErr) {
-        console.error("[login] subscription check failed:", subErr);
-      } else if (!sub || !PASS_STATUSES.includes(sub.status)) {
-        const reason = !sub
-          ? "no_subscription"
-          : sub.status === "expired" ? "expired"
-          : sub.status === "canceled" ? "canceled"
-          : "inactive";
-        await supabase.auth.signOut();
-        setBanner({ message: ERROR_MESSAGES[reason] ?? ERROR_MESSAGES.auth_failed, reason });
-        setLoading(false);
-        return;
-      }
     }
 
     router.push("/");
@@ -190,21 +153,7 @@ export default function LoginPage() {
               color: "rgba(255,255,255,0.75)",
             }}
           >
-            <div>{banner.message}</div>
-            {REACTIVATE_REASONS.has(banner.reason) && (
-              <a
-                href={WHOP_REACTIVATE_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{
-                  display: "inline-block", marginTop: 8,
-                  color: "#a78bfa", fontWeight: 600, fontSize: 13,
-                  textDecoration: "none",
-                }}
-              >
-                Hier reaktivieren →
-              </a>
-            )}
+            {banner}
           </div>
         )}
 
@@ -266,8 +215,8 @@ export default function LoginPage() {
 
               <p style={{ textAlign: "center", marginTop: 20, fontSize: 14, color: "rgba(255,255,255,0.4)" }}>
                 Noch kein Konto?{" "}
-                <a href="/pricing" style={{ color: "#694CBB", fontWeight: 600, textDecoration: "none" }}>
-                  Wähle dein Abo aus →
+                <a href="/register" style={{ color: "#694CBB", fontWeight: 600, textDecoration: "none" }}>
+                  Jetzt registrieren →
                 </a>
               </p>
             </div>
