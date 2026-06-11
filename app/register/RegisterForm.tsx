@@ -60,7 +60,6 @@ const label: React.CSSProperties = {
 type Props = { prefilledEmail?: string };
 
 export default function RegisterForm({ prefilledEmail = "" }: Props) {
-  const emailLocked = !!prefilledEmail;
   const [step, setStep] = useState(1);
   const [form, setForm] = useState({
     name: "", email: prefilledEmail, password: "", age: "",
@@ -68,6 +67,10 @@ export default function RegisterForm({ prefilledEmail = "" }: Props) {
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  // done = Email-DOI-Bestätigung wurde verschickt; UI wechselt auf
+  // "Schau in dein Postfach"-Karte. Der User aktiviert seinen Account
+  // erst durch den Klick auf den Link in der Bestätigungsmail.
+  const [done, setDone] = useState(false);
 
   const setField = (key: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setForm((p) => ({ ...p, [key]: e.target.value }));
@@ -98,9 +101,10 @@ export default function RegisterForm({ prefilledEmail = "" }: Props) {
     setLoading(true);
     setError("");
 
-    // Server-Action validiert Subscription, legt User via Admin-API an,
-    // verknüpft Sub + Profile, setzt Session, redirected auf "/".
-    // Bei Erfolg kommt der Code hierhin nicht zurück.
+    // Server-Action ruft supabase.auth.signUp(), das schickt eine
+    // Bestätigungsmail. user_metadata enthält die Profil-Felder;
+    // ensureProfile() in /auth/callback erstellt die profiles-Row
+    // nach Klick auf den Mail-Link.
     const result = await registerUser({
       email: form.email,
       password: form.password,
@@ -110,10 +114,13 @@ export default function RegisterForm({ prefilledEmail = "" }: Props) {
       seeking: form.seeking,
     });
 
-    if (result?.error) {
+    if ("error" in result) {
       setError(result.error);
       setLoading(false);
+      return;
     }
+    setDone(true);
+    setLoading(false);
   };
 
   const Progress = () => (
@@ -163,7 +170,9 @@ export default function RegisterForm({ prefilledEmail = "" }: Props) {
           <h1 style={{ margin: 0, fontSize: 22, fontWeight: 800, letterSpacing: -0.5, color: "#fff" }}>
             Connectyfind
           </h1>
-          <p style={{ margin: "4px 0 0", fontSize: 14, color: "rgba(255,255,255,0.4)" }}>{stepLabel}</p>
+          <p style={{ margin: "4px 0 0", fontSize: 14, color: "rgba(255,255,255,0.4)" }}>
+            {done ? "Email-Bestätigung steht aus" : stepLabel}
+          </p>
         </div>
 
         <div style={{
@@ -172,46 +181,61 @@ export default function RegisterForm({ prefilledEmail = "" }: Props) {
           borderRadius: 24,
           padding: 28,
         }}>
+          {/* ── DONE: Bestätigungsmail verschickt ── */}
+          {done && (
+            <div style={{ textAlign: "center", padding: "8px 0" }}>
+              <div style={{
+                width: 56, height: 56, borderRadius: "50%", margin: "0 auto 18px",
+                background: "linear-gradient(135deg, #10b981, #06b6d4)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+              }}>
+                <Check size={26} color="#fff" strokeWidth={2.5} />
+              </div>
+              <p style={{ margin: "0 0 8px", fontWeight: 700, fontSize: 17 }}>
+                Fast geschafft!
+              </p>
+              <p style={{ margin: "0 0 16px", fontSize: 14, color: "rgba(255,255,255,0.6)", lineHeight: 1.6 }}>
+                Wir haben dir eine Bestätigungsmail an{" "}
+                <strong style={{ color: "#fff" }}>{form.email}</strong> geschickt.
+                Klicke auf den Link um deinen Account zu aktivieren.
+              </p>
+              <div style={{
+                background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)",
+                borderRadius: 12, padding: "12px 16px",
+                fontSize: 12, color: "rgba(255,255,255,0.45)", lineHeight: 1.5, textAlign: "left",
+              }}>
+                <span style={{ fontWeight: 700, color: "#f59e0b" }}>Wichtig!</span>{" "}
+                Schau auch im{" "}
+                <span style={{ fontWeight: 600, color: "rgba(255,255,255,0.7)" }}>Werbung-Tab</span>{" "}
+                oder im{" "}
+                <span style={{ fontWeight: 600, color: "rgba(255,255,255,0.7)" }}>Spam-Ordner</span>{" "}
+                nach, falls du die Email nicht findest.
+              </div>
+            </div>
+          )}
+
           {/* ── STEP 1: Basics ── */}
-          {step === 1 && (
+          {!done && step === 1 && (
             <div>
               <Progress />
 
               {([
                 { label: "Dein Name",  key: "name"     as const, type: "text",     placeholder: "Max Mustermann" },
-                { label: "Email",      key: "email"    as const, type: "email",    placeholder: "deine@email.com", helper: "Verwende die gleiche Email, mit der du bei Whop bezahlt hast" },
+                { label: "Email",      key: "email"    as const, type: "email",    placeholder: "deine@email.com" },
                 { label: "Passwort",   key: "password" as const, type: "password", placeholder: "••••••••" },
                 { label: "Alter",      key: "age"      as const, type: "number",   placeholder: "23" },
-              ] as Array<{ label: string; key: "name" | "email" | "password" | "age"; type: string; placeholder: string; helper?: string }>).map((f) => {
-                const isLockedEmail = f.key === "email" && emailLocked;
-                return (
-                  <div key={f.key} style={{ marginBottom: 14 }}>
-                    <label style={label}>{f.label}</label>
-                    <input
-                      type={f.type}
-                      placeholder={f.placeholder}
-                      style={{
-                        ...inputStyle,
-                        ...(isLockedEmail
-                          ? { opacity: 0.75, cursor: "not-allowed", color: "rgba(255,255,255,0.75)" }
-                          : {}),
-                      }}
-                      value={form[f.key]}
-                      onChange={setField(f.key)}
-                      disabled={isLockedEmail}
-                    />
-                    {isLockedEmail ? (
-                      <p style={{ margin: "6px 2px 0", fontSize: 12, color: "#10b981", lineHeight: 1.4, display: "flex", alignItems: "center", gap: 4 }}>
-                        <Check size={12} strokeWidth={2.5} aria-hidden /> Verifiziert über Whop
-                      </p>
-                    ) : f.helper ? (
-                      <p style={{ margin: "6px 2px 0", fontSize: 12, color: "rgba(255,255,255,0.5)", lineHeight: 1.4 }}>
-                        {f.helper}
-                      </p>
-                    ) : null}
-                  </div>
-                );
-              })}
+              ] as Array<{ label: string; key: "name" | "email" | "password" | "age"; type: string; placeholder: string }>).map((f) => (
+                <div key={f.key} style={{ marginBottom: 14 }}>
+                  <label style={label}>{f.label}</label>
+                  <input
+                    type={f.type}
+                    placeholder={f.placeholder}
+                    style={inputStyle}
+                    value={form[f.key]}
+                    onChange={setField(f.key)}
+                  />
+                </div>
+              ))}
 
               {error && <p style={{ color: "#f87171", fontSize: 13, marginBottom: 12 }}>{error}</p>}
 
@@ -240,7 +264,7 @@ export default function RegisterForm({ prefilledEmail = "" }: Props) {
           )}
 
           {/* ── STEP 2: Category ── */}
-          {step === 2 && (
+          {!done && step === 2 && (
             <div>
               <Progress />
               <h3 style={{ margin: "0 0 16px", fontSize: 16, fontWeight: 700 }}>Was machst du?</h3>
@@ -271,7 +295,7 @@ export default function RegisterForm({ prefilledEmail = "" }: Props) {
           )}
 
           {/* ── STEP 3: Seeking ── */}
-          {step === 3 && (
+          {!done && step === 3 && (
             <div>
               <Progress />
               <h3 style={{ margin: "0 0 16px", fontSize: 16, fontWeight: 700 }}>Was suchst du?</h3>

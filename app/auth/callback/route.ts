@@ -1,5 +1,4 @@
 import { createClient } from "@/utils/supabase/server";
-import { createServiceRoleClient } from "@/utils/supabase/service-role";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
@@ -9,6 +8,7 @@ const CATEGORY_COLORS: Record<string, string> = Object.fromEntries(
   categories.map((c) => [c.id, c.color])
 );
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function ensureProfile(supabase: any, user: any) {
   const { data: existing } = await supabase
     .from("profiles")
@@ -53,62 +53,6 @@ async function ensureProfile(supabase: any, user: any) {
   }
 }
 
-// Phase 2B: verknüpft eine offene Whop-Subscription (user_id IS NULL)
-// mit dem frisch bestätigten Auth-User. Match läuft über whop_user_email
-// (case-insensitiv normalisiert beim Webhook-Schreiben). Service-role,
-// damit RLS umgangen wird.
-async function linkPendingSubscription(authUserId: string, email: string | null | undefined) {
-  if (!email) return;
-  const admin = createServiceRoleClient();
-  const { data, error } = await admin
-    .from("subscriptions")
-    .update({ user_id: authUserId })
-    .eq("whop_user_email", email.toLowerCase())
-    .is("user_id", null)
-    .select("id");
-  if (error) {
-    console.error("linkPendingSubscription failed:", error);
-    return;
-  }
-  if (!data || data.length === 0) {
-    console.warn(`linkPendingSubscription: no pending subscription for ${email}`);
-  } else {
-    console.log(`linkPendingSubscription: linked ${data.length} subscription(s) to user ${authUserId}`);
-  }
-}
-
-const PASS_STATUSES = ["active", "trial", "trialing"];
-
-// Prüft, ob der frisch eingeloggte User eine aktive Subscription hat.
-// Bei fail: signOut + Reason. Bei DB-Fehler: durchlassen (defensive Linie
-// — lieber kurz Zugang als auth-loop, identisch zu proxy.ts).
-// Wichtig: VOR ensureProfile aufrufen, sonst hätten gesperrte User trotz
-// blockiertem Login eine Profile-Row in der DB.
-async function checkSubscriptionOrSignOut(
-  supabase: ReturnType<typeof createClient>,
-  userId: string,
-): Promise<{ ok: true } | { ok: false; reason: string }> {
-  const { data: sub, error } = await supabase
-    .from("subscriptions")
-    .select("status")
-    .eq("user_id", userId)
-    .maybeSingle();
-  if (error) {
-    console.error("[login] subscription check failed:", error);
-    return { ok: true }; // defensive — durchlassen
-  }
-  if (!sub || !PASS_STATUSES.includes(sub.status as string)) {
-    const reason = !sub
-      ? "no_subscription"
-      : sub.status === "expired" ? "expired"
-      : sub.status === "canceled" ? "canceled"
-      : "inactive";
-    await supabase.auth.signOut();
-    return { ok: false, reason };
-  }
-  return { ok: true };
-}
-
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
@@ -124,12 +68,7 @@ export async function GET(request: NextRequest) {
     const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
     if (!error && data.user) {
-      const check = await checkSubscriptionOrSignOut(supabase, data.user.id);
-      if (!check.ok) {
-        return NextResponse.redirect(`${origin}/login?error=${check.reason}`);
-      }
       await ensureProfile(supabase, data.user);
-      await linkPendingSubscription(data.user.id, data.user.email);
       return NextResponse.redirect(`${origin}${next}`);
     }
 
@@ -140,17 +79,13 @@ export async function GET(request: NextRequest) {
   // Pfad 2: Email-Bestätigung (Token-Hash-Flow)
   if (tokenHash && type) {
     const { data, error } = await supabase.auth.verifyOtp({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       type: type as any,
       token_hash: tokenHash,
     });
 
     if (!error && data.user) {
-      const check = await checkSubscriptionOrSignOut(supabase, data.user.id);
-      if (!check.ok) {
-        return NextResponse.redirect(`${origin}/login?error=${check.reason}`);
-      }
       await ensureProfile(supabase, data.user);
-      await linkPendingSubscription(data.user.id, data.user.email);
       return NextResponse.redirect(`${origin}${next}`);
     }
 

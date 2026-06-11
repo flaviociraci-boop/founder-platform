@@ -77,12 +77,6 @@ const SETTINGS: { title: string; items: SettingsItem[] }[] = [
     ],
   },
   {
-    title: "Abos & Zahlungen",
-    items: [
-      { label: "Mein Abo", desc: "Plan & Abrechnungsstatus", action: "Verwalten", route: "/einstellungen/abo" },
-    ],
-  },
-  {
     title: "Datenschutz",
     items: [
       { label: "Profil Sichtbarkeit", desc: "Öffentlich für alle", action: "Ändern", route: "/einstellungen/sichtbarkeit" },
@@ -333,25 +327,6 @@ export default function ProfileDashboard({ currentUserId, onLogout, onOpenChat }
       {/* ── PROFIL TAB ── */}
       {activeTab === "Profil" && (
         <div style={{ padding: 20 }}>
-          {/* Status-Tag: jeder User in der App ist per Definition Pro (Paywall
-              in proxy.ts lässt nur active/trial/trialing durch). Daher
-              unconditional — kein CTA, kein Upgrade-Wording. */}
-          <div style={{
-            background: "linear-gradient(135deg, rgba(105,76,187,0.12), rgba(64,21,134,0.08))",
-            border: "1px solid rgba(105,76,187,0.3)",
-            borderRadius: 12,
-            padding: "10px 14px",
-            marginBottom: 20,
-            display: "inline-flex",
-            alignItems: "center",
-            fontSize: 13,
-            fontWeight: 600,
-            color: "#a78bfa",
-            letterSpacing: 0.3,
-          }}>
-            Pro-Mitglied
-          </div>
-
           {/* Bio */}
           <div style={{ marginBottom: 20 }}>
             <h3 style={sLabel}>Über mich</h3>
