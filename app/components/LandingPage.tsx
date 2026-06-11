@@ -43,7 +43,7 @@ const faqs = [
   },
   {
     q: "Was kostet Connectyfind?",
-    a: "Nichts. Connectyfind ist seit Juni 2026 komplett kostenlos. Kein Abo, keine Probezeit, keine versteckten Kosten.",
+    a: "Aktuell ist Connectyfind komplett kostenlos — kein Abo, keine Probezeit. Einfach registrieren und loslegen.",
   },
   {
     q: "Wer kann mitmachen?",
@@ -149,7 +149,7 @@ export default function LandingPage() {
                   textDecoration: "none",
                 }}
               >
-                Anmelden
+                Login
                 <ArrowRight size={14} strokeWidth={2.5} />
               </a>
             </div>
