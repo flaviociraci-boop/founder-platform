@@ -8,6 +8,7 @@ import { timeAgo } from "@/app/lib/data";
 import { createClient } from "@/utils/supabase/client";
 import ApplicationModal from "@/app/components/ApplicationModal";
 import InfoBox from "@/app/components/InfoBox";
+import { Avatar } from "@/app/components/Avatar";
 
 type Props = {
   initialProjects: Project[];
@@ -266,22 +267,13 @@ export default function ProjectBoard({ initialProjects, currentUserId, currentUs
             />
 
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
-              <div
-                style={{
-                  width: 36,
-                  height: 36,
-                  borderRadius: 10,
-                  background: `linear-gradient(135deg, ${project.color}, ${project.color}88)`,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontWeight: 700,
-                  fontSize: 13,
-                  flexShrink: 0,
-                }}
-              >
-                {project.avatar}
-              </div>
+              <Avatar
+                src={project.avatar}
+                color={project.color}
+                size={36}
+                radius={10}
+                shadow={false}
+              />
               <div style={{ flex: 1 }}>
                 <div style={{ fontSize: 13, fontWeight: 600 }}>{project.userName}</div>
                 <div style={{ fontSize: 11, color: "rgba(255,255,255,0.3)" }}>{project.timeAgo}</div>
