@@ -193,15 +193,67 @@ export default function AppShell({
     setTab("chats");
   };
 
+  // Beim Mount/currentUserId-change die eigenen Follows aus der DB ziehen
+  // und in den followed-Record schreiben. Vorher blieb der State leer →
+  // jeder Klick auf "Folgen" landete als rohes INSERT auf einer schon
+  // existierenden (follower_id, following_id)-Zeile → 409 Duplicate-Key,
+  // Button sprang zurück. follower_id und following_id sind beide
+  // integer profiles.id (NICHT auth.uid).
+  useEffect(() => {
+    if (!currentUserId) return;
+    const supabase = createClient();
+    (async () => {
+      const { data, error } = await supabase
+        .from("follows")
+        .select("following_id")
+        .eq("follower_id", currentUserId);
+      if (error) {
+        console.error("[follow] initial load failed:", error);
+        return;
+      }
+      const map: Record<number, boolean> = {};
+      for (const row of data ?? []) {
+        map[row.following_id as number] = true;
+      }
+      setFollowed(map);
+    })();
+  }, [currentUserId]);
+
   const toggleFollow = async (id: number) => {
     if (!currentUserId) return;
-    const isFollowed = !!followed[id];
-    setFollowed((prev) => ({ ...prev, [id]: !isFollowed }));
+    // Self-Follow defensiv blockieren — UI rendert den Button bei
+    // Self eh nicht mehr, das hier ist die zweite Verteidigungslinie
+    // (und der CHECK-Constraint in der DB die dritte).
+    if (id === currentUserId) return;
+
+    const wasFollowed = !!followed[id];
+    // Optimistic update
+    setFollowed((prev) => ({ ...prev, [id]: !wasFollowed }));
+
     const supabase = createClient();
-    if (isFollowed) {
-      await supabase.from("follows").delete().eq("follower_id", currentUserId).eq("following_id", id);
+    if (wasFollowed) {
+      const { error } = await supabase
+        .from("follows")
+        .delete()
+        .match({ follower_id: currentUserId, following_id: id });
+      if (error) {
+        console.error("[follow] unfollow failed:", error);
+        setFollowed((prev) => ({ ...prev, [id]: wasFollowed }));
+      }
     } else {
-      await supabase.from("follows").insert({ follower_id: currentUserId, following_id: id });
+      // upsert + ignoreDuplicates: falls eine race-condition oder
+      // Stale-State-Annahme dazu führt dass die Zeile schon existiert,
+      // wird kein 409 mehr geworfen — kein revert nötig.
+      const { error } = await supabase
+        .from("follows")
+        .upsert(
+          { follower_id: currentUserId, following_id: id },
+          { onConflict: "follower_id,following_id", ignoreDuplicates: true },
+        );
+      if (error) {
+        console.error("[follow] follow failed:", error);
+        setFollowed((prev) => ({ ...prev, [id]: wasFollowed }));
+      }
     }
   };
 
@@ -255,6 +307,7 @@ export default function AppShell({
             setActiveCategory={setActiveCategory}
             unreadCount={unreadCount}
             onOpenNotifications={() => router.push("/mitteilungen")}
+            currentUserId={currentUserId}
           />
         ) : tab === "match" ? (
           <MatchScreen

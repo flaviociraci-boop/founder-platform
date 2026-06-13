@@ -14,6 +14,10 @@ type Props = {
   setActiveCategory: (cat: string) => void;
   unreadCount: number;
   onOpenNotifications: () => void;
+  // currentUserId = eigene profiles.id (number) bzw. null wenn nicht
+  // geladen. Wird benötigt um den Folgen-Button auf der eigenen Karte
+  // gar nicht erst zu rendern (Self-Follow-Block).
+  currentUserId: number | null;
 };
 
 export default function DiscoverScreen({
@@ -25,6 +29,7 @@ export default function DiscoverScreen({
   setActiveCategory,
   unreadCount,
   onOpenNotifications,
+  currentUserId,
 }: Props) {
   const [query, setQuery] = useState("");
 
@@ -190,6 +195,7 @@ export default function DiscoverScreen({
                         {user.role} · {user.location}
                       </div>
                     </div>
+                    {user.id !== currentUserId && (
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
@@ -211,6 +217,7 @@ export default function DiscoverScreen({
                     >
                       {followed[user.id] ? "Gefolgt" : "+ Folgen"}
                     </button>
+                    )}
                   </div>
 
                   <p

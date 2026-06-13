@@ -241,6 +241,7 @@ export default function ProfileScreen({ user, onBack, followed, toggleFollow, cu
         </div>
 
         <div style={{ display: "flex", gap: 10, marginTop: 4 }}>
+          {user.id !== currentUserId && (
           <button
             onClick={() => toggleFollow(user.id)}
             style={{
@@ -259,6 +260,7 @@ export default function ProfileScreen({ user, onBack, followed, toggleFollow, cu
           >
             {followed[user.id] ? "Gefolgt" : "Folgen"}
           </button>
+          )}
 
           {connStatus === "pending_received" ? (
             <div style={{ flex: 1, display: "flex", gap: 8 }}>
