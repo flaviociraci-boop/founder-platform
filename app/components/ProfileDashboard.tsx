@@ -81,7 +81,7 @@ const SETTINGS: { title: string; items: SettingsItem[] }[] = [
     items: [
       { label: "Profil Sichtbarkeit", desc: "Öffentlich für alle", action: "Ändern", route: "/einstellungen/sichtbarkeit" },
       { label: "Daten exportieren", desc: "Alle deine Daten herunterladen", action: "Exportieren" },
-      { label: "Account löschen", desc: "Konto permanent löschen", action: "Löschen", danger: true },
+      { label: "Account löschen", desc: "Konto permanent löschen", action: "Löschen", danger: true, route: "/einstellungen/account-loeschen" },
     ],
   },
   {
