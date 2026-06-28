@@ -362,15 +362,12 @@ export default function ChatWindow({ partner, currentUserId, onBack }: Props) {
             >
               <div style={{
                 maxWidth: "72%",
-                padding: "10px 14px",
-                borderRadius: isMine ? "18px 18px 4px 18px" : "18px 18px 18px 4px",
-                background: isMine
-                  ? "linear-gradient(135deg, #6366f1, #8b5cf6)"
-                  : "rgba(255,255,255,0.07)",
-                border: isMine ? "none" : "1px solid rgba(255,255,255,0.08)",
+                padding: "9px 13px",
+                borderRadius: isMine ? "16px 16px 4px 16px" : "16px 16px 16px 4px",
+                background: isMine ? "var(--brand)" : "var(--surface-2)",
+                border: isMine ? "1px solid var(--brand)" : "1px solid var(--border)",
                 fontSize: 14, lineHeight: 1.5, color: "#fff",
                 wordBreak: "break-word",
-                boxShadow: isMine ? "0 4px 12px rgba(99,102,241,0.25)" : "none",
               }}>
                 {msg.content}
               </div>
@@ -385,7 +382,7 @@ export default function ChatWindow({ partner, currentUserId, onBack }: Props) {
         padding: "12px 16px 16px",
         background: "rgba(10,10,15,0.97)",
         backdropFilter: "blur(20px)",
-        borderTop: "1px solid rgba(255,255,255,0.07)",
+        borderTop: "1px solid var(--border)",
         display: "flex",
         gap: 10,
         alignItems: "flex-end",
@@ -409,16 +406,16 @@ export default function ChatWindow({ partner, currentUserId, onBack }: Props) {
           rows={1}
           style={{
             flex: 1,
-            background: "rgba(255,255,255,0.06)",
-            border: "1px solid rgba(255,255,255,0.1)",
-            borderRadius: 16,
-            padding: "12px 16px",
-            color: "#fff",
+            background: "var(--surface-2)",
+            border: "1px solid var(--border)",
+            borderRadius: 12,
+            padding: "11px 14px",
+            color: "var(--foreground)",
             /* 16px prevents iOS Safari from auto-zooming on input focus */
             fontSize: 16,
             outline: "none",
             resize: "none",
-            fontFamily: "'DM Sans', sans-serif",
+            fontFamily: "var(--font-sans)",
             lineHeight: 1.45,
             maxHeight: 120,
             overflowY: "auto",
@@ -429,18 +426,15 @@ export default function ChatWindow({ partner, currentUserId, onBack }: Props) {
           onClick={send}
           disabled={!text.trim() || sending}
           style={{
-            width: 46, height: 46,
-            borderRadius: 14, flexShrink: 0,
-            background: text.trim()
-              ? "linear-gradient(135deg, #6366f1, #8b5cf6)"
-              : "rgba(255,255,255,0.05)",
-            border: text.trim() ? "none" : "1px solid rgba(255,255,255,0.08)",
-            color: text.trim() ? "#fff" : "rgba(255,255,255,0.2)",
+            width: 42, height: 42,
+            borderRadius: "var(--radius-button)", flexShrink: 0,
+            background: text.trim() ? "var(--brand)" : "var(--surface-2)",
+            border: text.trim() ? "1px solid var(--brand)" : "1px solid var(--border)",
+            color: text.trim() ? "#fff" : "var(--text-faint)",
             cursor: text.trim() && !sending ? "pointer" : "default",
-            fontSize: 20,
+            fontSize: 18,
             display: "flex", alignItems: "center", justifyContent: "center",
-            transition: "all 0.15s",
-            boxShadow: text.trim() ? "0 4px 12px rgba(99,102,241,0.35)" : "none",
+            transition: "background 0.12s, border-color 0.12s",
           }}
         >↑</button>
       </div>

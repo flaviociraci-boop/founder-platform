@@ -3,23 +3,25 @@
 import { useState } from "react";
 
 /**
- * Renders a profile avatar.
- * If `src` is a URL (uploaded photo) it shows an <img>.
- * Otherwise it renders the text initials on the colour gradient.
- * Bei Ladefehler des Bildes (z.B. expired Storage-URL) wird der
- * Gradient-Kreis ohne Inhalt gezeigt — damit nie die rohe URL als
- * Text aus dem broken <img> heraussickert.
+ * Profile avatar.
+ * - `src` is a URL → renders <img> with object-cover.
+ * - Otherwise treats `src` as initials text on a neutral dark-gray surface.
+ *
+ * The `color` prop is accepted for backwards compatibility with existing
+ * callsites but is intentionally NOT used to colour the placeholder —
+ * per-user gradients were the biggest "AI-template" tell. All initial
+ * fallbacks now share one neutral surface (--avatar-placeholder).
  */
 export function Avatar({
   src,
-  color,
   size,
   radius,
-  shadow = true,
+  shadow = false,
   style,
 }: {
   src: string;
-  color: string;
+  /** Accepted for backwards compat; ignored — see component docs. */
+  color?: string;
   size: number;
   radius?: number;
   shadow?: boolean;
@@ -36,13 +38,14 @@ export function Avatar({
         width: size,
         height: size,
         borderRadius: r,
-        background: `linear-gradient(135deg, ${color}, ${color}88)`,
+        background: "var(--avatar-placeholder)",
+        border: "1px solid var(--border)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
         overflow: "hidden",
         flexShrink: 0,
-        boxShadow: shadow ? `0 4px 16px ${color}33` : undefined,
+        boxShadow: shadow ? "0 1px 2px rgba(0,0,0,0.4)" : undefined,
         ...style,
       }}
     >
@@ -55,7 +58,14 @@ export function Avatar({
           style={{ width: "100%", height: "100%", objectFit: "cover" }}
         />
       ) : !isUrl ? (
-        <span style={{ fontSize: Math.round(size * 0.35), fontWeight: 700, color: "#fff" }}>
+        <span
+          style={{
+            fontSize: Math.round(size * 0.36),
+            fontWeight: 600,
+            color: "var(--avatar-placeholder-text)",
+            letterSpacing: 0.2,
+          }}
+        >
           {src}
         </span>
       ) : null}

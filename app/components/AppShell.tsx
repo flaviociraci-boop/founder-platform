@@ -274,17 +274,7 @@ export default function AppShell({
       margin: "0 auto",
       position: "relative",
     }}>
-      {/* Background glows */}
-      <div style={{
-        position: "fixed", top: -100, left: -100, width: 400, height: 400,
-        background: "radial-gradient(circle, rgba(99,102,241,0.15) 0%, transparent 70%)",
-        pointerEvents: "none", zIndex: 0,
-      }} />
-      <div style={{
-        position: "fixed", bottom: -100, right: -100, width: 400, height: 400,
-        background: "radial-gradient(circle, rgba(249,115,22,0.1) 0%, transparent 70%)",
-        pointerEvents: "none", zIndex: 0,
-      }} />
+      {/* Background glows entfernt — purer AI-Template-Look. Flat dark background. */}
 
       {/* Main content */}
       <div style={{ position: "relative", zIndex: 1 }}>
@@ -343,7 +333,7 @@ export default function AppShell({
         width: "100%", maxWidth: 430,
         background: "rgba(10,10,15,0.95)",
         backdropFilter: "blur(20px)",
-        borderTop: "1px solid rgba(255,255,255,0.07)",
+        borderTop: "1px solid var(--border)",
         padding: "10px 0 20px",
         display: "flex", justifyContent: "space-around",
         zIndex: 100,
@@ -360,8 +350,8 @@ export default function AppShell({
               background: "none", border: "none", cursor: "pointer",
               display: "flex", flexDirection: "column", alignItems: "center", gap: 3,
               color: tab === item.id && !selectedUser && !chatWith
-                ? "#6366f1"
-                : "rgba(255,255,255,0.3)",
+                ? "var(--brand)"
+                : "var(--text-faint)",
               transition: "color 0.15s",
               padding: "4px 8px",
             }}

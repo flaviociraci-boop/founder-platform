@@ -2,9 +2,10 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { Search, Users } from "lucide-react";
-import { seekingColors, User } from "@/app/lib/data";
+import { User } from "@/app/lib/data";
 import { createClient } from "@/utils/supabase/client";
 import { Avatar } from "@/app/components/Avatar";
+import { Tag } from "@/app/components/Tag";
 import InfoBox from "@/app/components/InfoBox";
 
 type OutgoingStatus = "pending_sent" | "accepted";
@@ -198,22 +199,21 @@ export default function MatchScreen({ users, currentUserId, onOpenChat }: Props)
           <div
             style={{
               background: "#13131a",
-              border: "1px solid rgba(255,255,255,0.1)",
-              borderRadius: 28,
-              padding: 32,
+              border: "1px solid var(--border)",
+              borderRadius: 16,
+              padding: 28,
               textAlign: "center",
               maxWidth: 340,
               width: "100%",
-              boxShadow: `0 0 60px ${showMatchPopup.color}33`,
             }}
           >
             <div style={{ display: "flex", justifyContent: "center", marginBottom: 12 }}>
-              <Users size={48} color="#694CBB" strokeWidth={1.5} />
+              <Users size={40} color="var(--brand)" strokeWidth={1.5} />
             </div>
-            <h2 style={{ margin: "0 0 8px", fontSize: 22, fontWeight: 800 }}>It&#39;s a Match!</h2>
-            <p style={{ margin: "0 0 20px", color: "rgba(255,255,255,0.5)", fontSize: 15 }}>
+            <h2 style={{ margin: "0 0 8px", fontSize: 20, fontWeight: 600 }}>It&#39;s a Match!</h2>
+            <p style={{ margin: "0 0 20px", color: "var(--text-muted)", fontSize: 14 }}>
               Du und{" "}
-              <span style={{ color: showMatchPopup.color, fontWeight: 700 }}>
+              <span style={{ color: "var(--foreground)", fontWeight: 600 }}>
                 {showMatchPopup.name}
               </span>{" "}
               haben sich gegenseitig angenommen — der Chat ist jetzt freigeschaltet!
@@ -223,12 +223,12 @@ export default function MatchScreen({ users, currentUserId, onOpenChat }: Props)
                 onClick={() => setShowMatchPopup(null)}
                 style={{
                   flex: 1,
-                  padding: "12px 0",
-                  borderRadius: 14,
-                  background: "rgba(255,255,255,0.06)",
-                  border: "1px solid rgba(255,255,255,0.1)",
-                  color: "#fff",
-                  fontWeight: 600,
+                  padding: "11px 0",
+                  borderRadius: 10,
+                  background: "transparent",
+                  border: "1px solid var(--border)",
+                  color: "var(--text-muted)",
+                  fontWeight: 500,
                   cursor: "pointer",
                   fontSize: 14,
                 }}
@@ -243,9 +243,9 @@ export default function MatchScreen({ users, currentUserId, onOpenChat }: Props)
                 }}
                 style={{
                   flex: 1,
-                  padding: "12px 0",
-                  borderRadius: 14,
-                  background: `linear-gradient(135deg, ${showMatchPopup.color}, ${showMatchPopup.color}bb)`,
+                  padding: "11px 0",
+                  borderRadius: 10,
+                  background: "var(--brand)",
                   border: "none",
                   color: "#fff",
                   fontWeight: 600,
@@ -264,17 +264,15 @@ export default function MatchScreen({ users, currentUserId, onOpenChat }: Props)
         <h1
           style={{
             margin: 0,
-            fontSize: 26,
-            fontWeight: 800,
-            letterSpacing: -0.5,
-            background: "linear-gradient(135deg, #fff 0%, rgba(255,255,255,0.6) 100%)",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
+            fontSize: 24,
+            fontWeight: 600,
+            letterSpacing: -0.4,
+            color: "var(--foreground)",
           }}
         >
           Connect
         </h1>
-        <p style={{ margin: "4px 0 0", fontSize: 14, color: "rgba(255,255,255,0.35)" }}>
+        <p style={{ margin: "4px 0 0", fontSize: 13, color: "var(--text-dim)" }}>
           Sende eine Anfrage — bei Annahme öffnet sich der Chat
         </p>
 
@@ -284,7 +282,7 @@ export default function MatchScreen({ users, currentUserId, onOpenChat }: Props)
             strokeWidth={2}
             style={{
               position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)",
-              color: "#fff", opacity: 0.5, pointerEvents: "none",
+              color: "var(--text-dim)", pointerEvents: "none",
             }}
           />
           <input
@@ -293,11 +291,11 @@ export default function MatchScreen({ users, currentUserId, onOpenChat }: Props)
             placeholder="Name, Skills oder Kategorie…"
             style={{
               width: "100%", boxSizing: "border-box",
-              background: "rgba(255,255,255,0.06)",
-              border: `1px solid ${query ? "rgba(99,102,241,0.5)" : "rgba(255,255,255,0.1)"}`,
-              borderRadius: 14, padding: "12px 14px 12px 40px",
-              color: "#fff", fontSize: 15, outline: "none",
-              fontFamily: "'DM Sans', sans-serif",
+              background: "var(--surface-2)",
+              border: `1px solid ${query ? "var(--brand-soft)" : "var(--border)"}`,
+              borderRadius: 10, padding: "11px 14px 11px 40px",
+              color: "var(--foreground)", fontSize: 14, outline: "none",
+              fontFamily: "var(--font-sans)",
               transition: "border-color 0.15s",
             }}
           />
@@ -345,8 +343,8 @@ export default function MatchScreen({ users, currentUserId, onOpenChat }: Props)
       {incoming.length > 0 && (
         <div style={{ padding: "0 20px", marginBottom: 8 }}>
           <div style={{
-            fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.4)",
-            letterSpacing: 1.5, marginBottom: 10,
+            fontSize: 11, fontWeight: 600, color: "var(--text-dim)",
+            letterSpacing: 1.4, marginBottom: 10,
           }}>
             ANFRAGEN · {incoming.length}
           </div>
@@ -355,24 +353,27 @@ export default function MatchScreen({ users, currentUserId, onOpenChat }: Props)
               <div
                 key={req.senderId}
                 style={{
-                  background: "rgba(99,102,241,0.06)",
-                  border: "1px solid rgba(99,102,241,0.2)",
-                  borderRadius: 16,
+                  background: "var(--brand-soft)",
+                  border: "1px solid var(--brand)",
+                  borderRadius: "var(--radius-card)",
                   padding: 14,
                 }}
               >
                 <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 10 }}>
-                  <Avatar src={req.user.avatar} color={req.user.color} size={44} radius={13} />
+                  <Avatar src={req.user.avatar} color={req.user.color} size={40} radius={10} shadow={false} />
                   <div style={{ flex: 1, overflow: "hidden" }}>
-                    <div style={{ fontWeight: 700, fontSize: 14 }}>{req.user.name}</div>
-                    <div style={{ fontSize: 12, color: "rgba(255,255,255,0.45)", marginTop: 1 }}>
-                      {req.user.role} · {req.user.location}
-                    </div>
+                    <div style={{ fontWeight: 600, fontSize: 14 }}>{req.user.name}</div>
+                    {(() => {
+                      const sub = [req.user.role, req.user.location].filter(Boolean).join(" · ");
+                      return sub ? (
+                        <div style={{ fontSize: 12, color: "var(--text-dim)", marginTop: 1 }}>{sub}</div>
+                      ) : null;
+                    })()}
                   </div>
                 </div>
                 {req.user.bio && (
                   <div style={{
-                    fontSize: 12, color: "rgba(255,255,255,0.5)", lineHeight: 1.5, marginBottom: 10,
+                    fontSize: 12.5, color: "var(--text-muted)", lineHeight: 1.5, marginBottom: 10,
                   }}>
                     {req.user.bio.length > 100 ? req.user.bio.slice(0, 100) + "…" : req.user.bio}
                   </div>
@@ -381,9 +382,9 @@ export default function MatchScreen({ users, currentUserId, onOpenChat }: Props)
                   <button
                     onClick={() => acceptRequest(req.senderId)}
                     style={{
-                      flex: 1, padding: "9px 0", borderRadius: 12, border: "none",
-                      background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
-                      color: "#fff", fontWeight: 700, fontSize: 13, cursor: "pointer",
+                      flex: 1, padding: "9px 0", borderRadius: "var(--radius-button)", border: "none",
+                      background: "var(--brand)",
+                      color: "#fff", fontWeight: 600, fontSize: 13, cursor: "pointer",
                     }}
                   >
                     Annehmen
@@ -391,10 +392,10 @@ export default function MatchScreen({ users, currentUserId, onOpenChat }: Props)
                   <button
                     onClick={() => rejectRequest(req.senderId)}
                     style={{
-                      flex: 1, padding: "9px 0", borderRadius: 12,
-                      background: "rgba(255,255,255,0.05)",
-                      border: "1px solid rgba(255,255,255,0.1)",
-                      color: "rgba(255,255,255,0.5)", fontWeight: 600, fontSize: 13, cursor: "pointer",
+                      flex: 1, padding: "9px 0", borderRadius: "var(--radius-button)",
+                      background: "transparent",
+                      border: "1px solid var(--border)",
+                      color: "var(--text-muted)", fontWeight: 500, fontSize: 13, cursor: "pointer",
                     }}
                   >
                     Ablehnen
@@ -407,11 +408,11 @@ export default function MatchScreen({ users, currentUserId, onOpenChat }: Props)
       )}
 
       <InfoBox>
-        Drücke <strong style={{ color: "#6366f1" }}>Connect</strong> bei einem Profil. Sobald die
+        Drücke <strong style={{ color: "var(--brand)" }}>Connect</strong> bei einem Profil. Sobald die
         andere Person deine Anfrage annimmt → Match! Erst dann wird der Chat freigeschaltet.
       </InfoBox>
 
-      <div style={{ padding: "0 20px", display: "flex", flexDirection: "column", gap: 12 }}>
+      <div style={{ padding: "0 20px", display: "flex", flexDirection: "column", gap: 10 }}>
         {users.filter((u) => {
           const q = query.trim().toLowerCase();
           return !q ||
@@ -421,49 +422,32 @@ export default function MatchScreen({ users, currentUserId, onOpenChat }: Props)
             (u.tags ?? []).some((t) => (t ?? "").toLowerCase().includes(q));
         }).map((user) => {
           const state = connStates[user.id];
+          const subtitle = [user.role, user.location].filter(Boolean).join(" · ");
           return (
             <div
               key={user.id}
               style={{
-                background: "rgba(255,255,255,0.04)",
-                border: state === "accepted"
-                  ? `1px solid ${user.color}44`
-                  : "1px solid rgba(255,255,255,0.07)",
-                borderRadius: 20,
-                padding: 16,
-                position: "relative",
-                overflow: "hidden",
-                transition: "border 0.3s",
+                background: "var(--surface-1)",
+                border: "1px solid var(--border)",
+                borderRadius: "var(--radius-card)",
+                padding: 14,
               }}
             >
-              {state === "accepted" && (
-                <div
-                  style={{
-                    position: "absolute",
-                    top: 0, left: 0, right: 0, bottom: 0,
-                    background: `radial-gradient(circle at center, ${user.color}08 0%, transparent 70%)`,
-                    pointerEvents: "none",
-                  }}
-                />
-              )}
-
               <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-                <Avatar src={user.avatar} color={user.color} size={52} radius={15} />
+                <Avatar src={user.avatar} color={user.color} size={44} radius={10} shadow={false} />
 
-                <div style={{ flex: 1 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <span style={{ fontWeight: 700, fontSize: 15 }}>{user.name}</span>
-                  </div>
-                  <div style={{ fontSize: 13, color: "rgba(255,255,255,0.45)", marginTop: 1 }}>
-                    {user.role} · {user.location}
-                  </div>
-                  <div style={{
-                    fontSize: 12, marginTop: 4,
-                    color: seekingColors[user.seeking] ?? "rgba(255,255,255,0.4)",
-                    fontWeight: 600,
-                  }}>
-                    Sucht: {user.seeking}
-                  </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontWeight: 600, fontSize: 15, color: "var(--foreground)" }}>{user.name}</div>
+                  {subtitle && (
+                    <div style={{ fontSize: 12.5, color: "var(--text-dim)", marginTop: 2 }}>
+                      {subtitle}
+                    </div>
+                  )}
+                  {user.seeking && (
+                    <div style={{ marginTop: 6 }}>
+                      <Tag>Sucht: {user.seeking}</Tag>
+                    </div>
+                  )}
                 </div>
 
                 <button
@@ -473,28 +457,28 @@ export default function MatchScreen({ users, currentUserId, onOpenChat }: Props)
                   }}
                   disabled={state === "accepted"}
                   style={{
-                    padding: "9px 16px",
-                    borderRadius: 20,
+                    padding: "8px 14px",
+                    borderRadius: "var(--radius-button)",
                     fontSize: 12,
-                    fontWeight: 700,
+                    fontWeight: 600,
                     cursor: state === "accepted" ? "default" : "pointer",
                     flexShrink: 0,
                     border: state === "accepted"
-                      ? `1px solid ${user.color}55`
+                      ? "1px solid var(--border-strong)"
                       : state === "pending_sent"
-                      ? "1px solid rgba(255,255,255,0.15)"
-                      : `1px solid ${user.color}66`,
+                      ? "1px solid var(--border)"
+                      : "1px solid var(--brand)",
                     background: state === "accepted"
-                      ? `${user.color}22`
+                      ? "var(--surface-3)"
                       : state === "pending_sent"
-                      ? "rgba(255,255,255,0.05)"
-                      : `${user.color}18`,
+                      ? "transparent"
+                      : "var(--brand-soft)",
                     color: state === "accepted"
-                      ? user.color
+                      ? "var(--text-muted)"
                       : state === "pending_sent"
-                      ? "rgba(255,255,255,0.3)"
-                      : user.color,
-                    transition: "all 0.2s",
+                      ? "var(--text-dim)"
+                      : "var(--foreground)",
+                    transition: "all 0.15s",
                   }}
                 >
                   {state === "accepted"
@@ -509,8 +493,8 @@ export default function MatchScreen({ users, currentUserId, onOpenChat }: Props)
                 <div
                   style={{
                     marginTop: 12,
-                    paddingTop: 12,
-                    borderTop: "1px solid rgba(255,255,255,0.06)",
+                    paddingTop: 10,
+                    borderTop: "1px solid var(--border)",
                     display: "flex",
                     gap: 8,
                   }}
@@ -519,9 +503,9 @@ export default function MatchScreen({ users, currentUserId, onOpenChat }: Props)
                     onClick={() => onOpenChat(user)}
                     style={{
                       flex: 1,
-                      padding: "10px 0",
-                      borderRadius: 12,
-                      background: `linear-gradient(135deg, ${user.color}, ${user.color}bb)`,
+                      padding: "9px 0",
+                      borderRadius: "var(--radius-button)",
+                      background: "var(--brand)",
                       border: "none",
                       color: "#fff",
                       fontWeight: 600,
@@ -534,12 +518,12 @@ export default function MatchScreen({ users, currentUserId, onOpenChat }: Props)
                   <button
                     style={{
                       flex: 1,
-                      padding: "10px 0",
-                      borderRadius: 12,
-                      background: "rgba(255,255,255,0.06)",
-                      border: "1px solid rgba(255,255,255,0.1)",
-                      color: "rgba(255,255,255,0.6)",
-                      fontWeight: 600,
+                      padding: "9px 0",
+                      borderRadius: "var(--radius-button)",
+                      background: "transparent",
+                      border: "1px solid var(--border)",
+                      color: "var(--text-muted)",
+                      fontWeight: 500,
                       fontSize: 13,
                       cursor: "pointer",
                     }}

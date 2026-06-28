@@ -46,33 +46,40 @@ export type Project = {
   timeAgo: string;
 };
 
+// Single neutral shade for every category/model/seeking pill.
+// Callsites still read `.color` and concat hex-alpha suffixes (`${c}12`,
+// `${c}22`) for tinted backgrounds — those now resolve to ~7–13% of
+// this dark grey, which sits invisibly on the page surface. Effect: the
+// rainbow goes away with one constant, no callsite changes needed.
+const NEUTRAL = "#1e1e26";
+
 export const categories: Category[] = [
-  { id: "all", label: "Alle", icon: "", color: "#ffffff" },
-  { id: "ecommerce", label: "E-Commerce", icon: "", color: "#f97316" },
-  { id: "apps", label: "App Dev", icon: "", color: "#6366f1" },
-  { id: "trading", label: "Trading", icon: "", color: "#10b981" },
-  { id: "freelancer", label: "Freelancer", icon: "", color: "#f59e0b" },
-  { id: "marketing", label: "Marketing", icon: "", color: "#ec4899" },
-  { id: "saas", label: "SaaS", icon: "", color: "#3b82f6" },
-  { id: "coaching", label: "Coaching", icon: "", color: "#8b5cf6" },
-  { id: "ai",      label: "AI",      icon: "", color: "#a855f7" },
-  { id: "agency",  label: "Agency",  icon: "", color: "#06b6d4" },
+  { id: "all", label: "Alle", icon: "", color: NEUTRAL },
+  { id: "ecommerce", label: "E-Commerce", icon: "", color: NEUTRAL },
+  { id: "apps", label: "App Dev", icon: "", color: NEUTRAL },
+  { id: "trading", label: "Trading", icon: "", color: NEUTRAL },
+  { id: "freelancer", label: "Freelancer", icon: "", color: NEUTRAL },
+  { id: "marketing", label: "Marketing", icon: "", color: NEUTRAL },
+  { id: "saas", label: "SaaS", icon: "", color: NEUTRAL },
+  { id: "coaching", label: "Coaching", icon: "", color: NEUTRAL },
+  { id: "ai", label: "AI", icon: "", color: NEUTRAL },
+  { id: "agency", label: "Agency", icon: "", color: NEUTRAL },
 ];
 
 export const modelColors: Record<string, string> = {
-  Umsatzbeteiligung: "#f97316",
-  Equity: "#6366f1",
-  "50/50 Partnerschaft": "#10b981",
-  Provision: "#3b82f6",
-  "Bezahltes Projekt": "#f59e0b",
+  Umsatzbeteiligung: NEUTRAL,
+  Equity: NEUTRAL,
+  "50/50 Partnerschaft": NEUTRAL,
+  Provision: NEUTRAL,
+  "Bezahltes Projekt": NEUTRAL,
 };
 
 export const seekingColors: Record<string, string> = {
-  Investoren: "#f97316",
-  Mitgründer: "#6366f1",
-  Kunden: "#f59e0b",
-  Community: "#10b981",
-  Projektpartner: "#ec4899",
+  Investoren: NEUTRAL,
+  Mitgründer: NEUTRAL,
+  Kunden: NEUTRAL,
+  Community: NEUTRAL,
+  Projektpartner: NEUTRAL,
 };
 
 export function timeAgo(dateStr: string): string {

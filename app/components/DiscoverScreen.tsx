@@ -2,8 +2,10 @@
 
 import { useState } from "react";
 import { Bell, Search } from "lucide-react";
-import { categories, seekingColors, User } from "@/app/lib/data";
+import { categories, User } from "@/app/lib/data";
 import { Avatar } from "@/app/components/Avatar";
+import { Tag } from "@/app/components/Tag";
+import { FollowButton } from "@/app/components/FollowButton";
 
 type Props = {
   users: User[];
@@ -52,17 +54,15 @@ export default function DiscoverScreen({
             <h1
               style={{
                 margin: 0,
-                fontSize: 26,
-                fontWeight: 800,
-                letterSpacing: -0.5,
-                background: "linear-gradient(135deg, #fff 0%, rgba(255,255,255,0.6) 100%)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
+                fontSize: 24,
+                fontWeight: 600,
+                letterSpacing: -0.4,
+                color: "var(--foreground)",
               }}
             >
               Entdecken
             </h1>
-            <p style={{ margin: "4px 0 0", fontSize: 14, color: "rgba(255,255,255,0.35)" }}>
+            <p style={{ margin: "4px 0 0", fontSize: 13, color: "var(--text-dim)" }}>
               {filtered.length} Unternehmer gefunden
             </p>
           </div>
@@ -71,16 +71,16 @@ export default function DiscoverScreen({
             style={{
               width: 40,
               height: 40,
-              borderRadius: 12,
-              background: "rgba(255,255,255,0.08)",
-              border: "none",
+              borderRadius: 10,
+              background: "var(--surface-2)",
+              border: "1px solid var(--border)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               cursor: "pointer",
               position: "relative",
               flexShrink: 0,
-              color: "rgba(255,255,255,0.7)",
+              color: "var(--text-muted)",
             }}
           >
             <Bell size={18} />
@@ -88,7 +88,7 @@ export default function DiscoverScreen({
               <span style={{
                 position: "absolute", top: -4, right: -4,
                 minWidth: 16, height: 16, borderRadius: 8,
-                background: "#ef4444",
+                background: "var(--brand)",
                 fontSize: 9, fontWeight: 700, color: "#fff",
                 display: "flex", alignItems: "center", justifyContent: "center",
                 padding: "0 3px", boxSizing: "border-box",
@@ -115,11 +115,11 @@ export default function DiscoverScreen({
             placeholder="Name, Skills oder Kategorie…"
             style={{
               width: "100%", boxSizing: "border-box",
-              background: "rgba(255,255,255,0.06)",
-              border: `1px solid ${query ? "rgba(99,102,241,0.5)" : "rgba(255,255,255,0.1)"}`,
-              borderRadius: 14, padding: "12px 14px 12px 40px",
-              color: "#fff", fontSize: 15, outline: "none",
-              fontFamily: "'DM Sans', sans-serif",
+              background: "var(--surface-2)",
+              border: `1px solid ${query ? "var(--brand-soft)" : "var(--border)"}`,
+              borderRadius: 10, padding: "11px 14px 11px 40px",
+              color: "var(--foreground)", fontSize: 14, outline: "none",
+              fontFamily: "var(--font-sans)",
               transition: "border-color 0.15s",
             }}
           />
@@ -130,207 +130,129 @@ export default function DiscoverScreen({
         className="hide-scrollbar"
         style={{ display: "flex", gap: 8, padding: "0 20px 16px", overflowX: "auto" }}
       >
-        {categories.map((cat) => (
-          <button
-            key={cat.id}
-            onClick={() => setActiveCategory(cat.id)}
-            style={{
-              flexShrink: 0,
-              padding: "8px 16px",
-              borderRadius: 20,
-              whiteSpace: "nowrap",
-              border:
-                activeCategory === cat.id
-                  ? `1px solid ${cat.color}66`
-                  : "1px solid rgba(255,255,255,0.08)",
-              background: activeCategory === cat.id ? `${cat.color}18` : "rgba(255,255,255,0.04)",
-              color: activeCategory === cat.id ? cat.color : "rgba(255,255,255,0.5)",
-              fontSize: 13,
-              fontWeight: 600,
-              cursor: "pointer",
-            }}
-          >
-            {cat.label}
-          </button>
-        ))}
+        {categories.map((cat) => {
+          const active = activeCategory === cat.id;
+          return (
+            <button
+              key={cat.id}
+              onClick={() => setActiveCategory(cat.id)}
+              style={{
+                flexShrink: 0,
+                padding: "6px 12px",
+                borderRadius: "var(--radius-tag)",
+                whiteSpace: "nowrap",
+                border: `1px solid ${active ? "var(--brand)" : "var(--border)"}`,
+                background: active ? "var(--brand-soft)" : "var(--surface-2)",
+                color: active ? "var(--foreground)" : "var(--text-dim)",
+                fontSize: 12,
+                fontWeight: 500,
+                cursor: "pointer",
+              }}
+            >
+              {cat.label}
+            </button>
+          );
+        })}
       </div>
 
-      <div style={{ padding: "0 20px", display: "flex", flexDirection: "column", gap: 12 }}>
+      <div style={{ padding: "0 20px", display: "flex", flexDirection: "column", gap: 10 }}>
         {filtered.map((user) => {
-          const catColor = categories.find((c) => c.id === user.category)?.color ?? "#fff";
+          const subtitle = [user.role, user.location].filter(Boolean).join(" · ");
+          const activeCompanies = user.companies.filter((c) => c.active).slice(0, 2);
+          const hasStats = user.followers > 0 || user.companies.length > 0;
           return (
             <div
               key={user.id}
               onClick={() => onSelectUser(user)}
               style={{
-                background: "rgba(255,255,255,0.04)",
-                border: "1px solid rgba(255,255,255,0.07)",
-                borderRadius: 20,
-                padding: 16,
+                background: "var(--surface-1)",
+                border: "1px solid var(--border)",
+                borderRadius: "var(--radius-card)",
+                padding: 14,
                 cursor: "pointer",
-                position: "relative",
-                overflow: "hidden",
               }}
             >
-              <div
-                style={{
-                  position: "absolute",
-                  top: 0,
-                  right: 0,
-                  width: 120,
-                  height: 120,
-                  background: `radial-gradient(circle at top right, ${catColor}12 0%, transparent 70%)`,
-                  pointerEvents: "none",
-                }}
-              />
-
               <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
-                <Avatar src={user.avatar} color={user.color} size={50} radius={14} />
+                <Avatar src={user.avatar} color={user.color} size={44} radius={10} shadow={false} />
 
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-                    <div>
-                      <div style={{ fontWeight: 700, fontSize: 15 }}>{user.name}</div>
-                      <div style={{ fontSize: 13, color: "rgba(255,255,255,0.45)", marginTop: 1 }}>
-                        {user.role} · {user.location}
-                      </div>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10 }}>
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ fontWeight: 600, fontSize: 15, color: "var(--foreground)" }}>{user.name}</div>
+                      {subtitle && (
+                        <div style={{ fontSize: 12.5, color: "var(--text-dim)", marginTop: 2 }}>
+                          {subtitle}
+                        </div>
+                      )}
                     </div>
                     {user.id !== currentUserId && (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        toggleFollow(user.id);
-                      }}
-                      style={{
-                        padding: "6px 14px",
-                        borderRadius: 20,
-                        fontSize: 12,
-                        fontWeight: 600,
-                        cursor: "pointer",
-                        flexShrink: 0,
-                        border: followed[user.id]
-                          ? "1px solid rgba(255,255,255,0.15)"
-                          : `1px solid ${user.color}66`,
-                        background: followed[user.id] ? "rgba(255,255,255,0.05)" : `${user.color}18`,
-                        color: followed[user.id] ? "rgba(255,255,255,0.4)" : user.color,
-                      }}
-                    >
-                      {followed[user.id] ? "Gefolgt" : "+ Folgen"}
-                    </button>
+                      <FollowButton
+                        followed={!!followed[user.id]}
+                        onClick={() => toggleFollow(user.id)}
+                        size="sm"
+                      />
                     )}
                   </div>
 
-                  <p
-                    style={{
-                      margin: "8px 0 8px",
-                      fontSize: 13,
-                      color: "rgba(255,255,255,0.55)",
-                      lineHeight: 1.5,
-                      display: "-webkit-box",
-                      WebkitLineClamp: 2,
-                      WebkitBoxOrient: "vertical",
-                      overflow: "hidden",
-                    }}
-                  >
-                    {user.bio}
-                  </p>
-
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 10 }}>
-                    {user.companies
-                      .filter((c) => c.active)
-                      .slice(0, 2)
-                      .map((company, i) => (
-                        <div
-                          key={i}
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 5,
-                            padding: "4px 10px",
-                            borderRadius: 20,
-                            background: `${user.color}12`,
-                            border: `1px solid ${user.color}25`,
-                          }}
-                        >
-                          <span
-                            style={{
-                              width: 16,
-                              height: 16,
-                              borderRadius: 5,
-                              background: `${user.color}44`,
-                              display: "inline-flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              fontSize: 9,
-                              fontWeight: 800,
-                              color: user.color,
-                            }}
-                          >
-                            {company.name.charAt(0)}
-                          </span>
-                          <span style={{ fontSize: 11, color: user.color, fontWeight: 600 }}>
-                            {company.name}
-                          </span>
-                        </div>
-                      ))}
-                  </div>
-
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <div style={{ display: "flex", gap: 6 }}>
-                      {user.tags.slice(0, 2).map((tag) => (
-                        <span
-                          key={tag}
-                          style={{
-                            fontSize: 11,
-                            padding: "3px 9px",
-                            borderRadius: 20,
-                            background: "rgba(255,255,255,0.05)",
-                            border: "1px solid rgba(255,255,255,0.08)",
-                            color: "rgba(255,255,255,0.45)",
-                          }}
-                        >
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                    <div
+                  {user.bio && (
+                    <p
                       style={{
-                        fontSize: 11,
-                        padding: "3px 10px",
-                        borderRadius: 20,
-                        background: `${seekingColors[user.seeking]}15`,
-                        color: seekingColors[user.seeking],
-                        fontWeight: 600,
+                        margin: "8px 0 0",
+                        fontSize: 13,
+                        color: "var(--text-muted)",
+                        lineHeight: 1.5,
+                        display: "-webkit-box",
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: "vertical",
+                        overflow: "hidden",
                       }}
                     >
-                      {user.seeking}
+                      {user.bio}
+                    </p>
+                  )}
+
+                  {(activeCompanies.length > 0 || user.tags.length > 0 || user.seeking) && (
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 10 }}>
+                      {activeCompanies.map((company, i) => (
+                        <Tag key={`c-${i}`}>{company.name}</Tag>
+                      ))}
+                      {user.tags.slice(0, 2).map((tag) => (
+                        <Tag key={`t-${tag}`}>{tag}</Tag>
+                      ))}
+                      {user.seeking && <Tag>{user.seeking}</Tag>}
                     </div>
-                  </div>
+                  )}
                 </div>
               </div>
 
-              <div
-                style={{
-                  marginTop: 12,
-                  paddingTop: 12,
-                  borderTop: "1px solid rgba(255,255,255,0.05)",
-                  display: "flex",
-                  gap: 16,
-                }}
-              >
-                <span style={{ fontSize: 12, color: "rgba(255,255,255,0.3)" }}>
-                  <span style={{ color: "rgba(255,255,255,0.7)", fontWeight: 600 }}>
-                    {user.followers.toLocaleString("de")}
-                  </span>{" "}
-                  Follower
-                </span>
-                <span style={{ fontSize: 12, color: "rgba(255,255,255,0.3)" }}>
-                  <span style={{ color: "rgba(255,255,255,0.7)", fontWeight: 600 }}>
-                    {user.companies.length}
-                  </span>{" "}
-                  {user.companies.length === 1 ? "Firma" : "Firmen"}
-                </span>
-              </div>
+              {hasStats && (
+                <div
+                  style={{
+                    marginTop: 12,
+                    paddingTop: 10,
+                    borderTop: "1px solid var(--border)",
+                    display: "flex",
+                    gap: 16,
+                  }}
+                >
+                  {user.followers > 0 && (
+                    <span style={{ fontSize: 12, color: "var(--text-faint)" }}>
+                      <span style={{ color: "var(--text-muted)", fontWeight: 600 }}>
+                        {user.followers.toLocaleString("de")}
+                      </span>{" "}
+                      Follower
+                    </span>
+                  )}
+                  {user.companies.length > 0 && (
+                    <span style={{ fontSize: 12, color: "var(--text-faint)" }}>
+                      <span style={{ color: "var(--text-muted)", fontWeight: 600 }}>
+                        {user.companies.length}
+                      </span>{" "}
+                      {user.companies.length === 1 ? "Firma" : "Firmen"}
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
           );
         })}

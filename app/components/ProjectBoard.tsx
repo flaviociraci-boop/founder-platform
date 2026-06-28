@@ -3,12 +3,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { MapPin, Search } from "lucide-react";
-import { categories, modelColors, Project } from "@/app/lib/data";
+import { categories, Project } from "@/app/lib/data";
 import { timeAgo } from "@/app/lib/data";
 import { createClient } from "@/utils/supabase/client";
 import ApplicationModal from "@/app/components/ApplicationModal";
 import InfoBox from "@/app/components/InfoBox";
 import { Avatar } from "@/app/components/Avatar";
+import { Tag } from "@/app/components/Tag";
 
 type Props = {
   initialProjects: Project[];
@@ -130,29 +131,27 @@ export default function ProjectBoard({ initialProjects, currentUserId, currentUs
             <h1
               style={{
                 margin: 0,
-                fontSize: 26,
-                fontWeight: 800,
-                letterSpacing: -0.5,
-                background: "linear-gradient(135deg, #fff 0%, rgba(255,255,255,0.6) 100%)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
+                fontSize: 24,
+                fontWeight: 600,
+                letterSpacing: -0.4,
+                color: "var(--foreground)",
               }}
             >
               Projekte
             </h1>
-            <p style={{ margin: "4px 0 0", fontSize: 14, color: "rgba(255,255,255,0.35)" }}>
+            <p style={{ margin: "4px 0 0", fontSize: 13, color: "var(--text-dim)" }}>
               {filtered.length} offene Ausschreibungen
             </p>
           </div>
           <button
             onClick={() => router.push("/projekte/neu")}
             style={{
-              padding: "10px 16px",
-              borderRadius: 14,
-              background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
+              padding: "9px 16px",
+              borderRadius: "var(--radius-button)",
+              background: "var(--brand)",
               border: "none",
               color: "#fff",
-              fontWeight: 700,
+              fontWeight: 600,
               fontSize: 13,
               cursor: "pointer",
               display: "flex",
@@ -171,7 +170,7 @@ export default function ProjectBoard({ initialProjects, currentUserId, currentUs
             strokeWidth={2}
             style={{
               position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)",
-              color: "#fff", opacity: 0.5, pointerEvents: "none",
+              color: "var(--text-dim)", pointerEvents: "none",
             }}
           />
           <input
@@ -180,11 +179,11 @@ export default function ProjectBoard({ initialProjects, currentUserId, currentUs
             placeholder="Projekte suchen…"
             style={{
               width: "100%", boxSizing: "border-box",
-              background: "rgba(255,255,255,0.06)",
-              border: `1px solid ${query ? "rgba(99,102,241,0.5)" : "rgba(255,255,255,0.1)"}`,
-              borderRadius: 14, padding: "12px 14px 12px 40px",
-              color: "#fff", fontSize: 15, outline: "none",
-              fontFamily: "'DM Sans', sans-serif",
+              background: "var(--surface-2)",
+              border: `1px solid ${query ? "var(--brand-soft)" : "var(--border)"}`,
+              borderRadius: 10, padding: "11px 14px 11px 40px",
+              color: "var(--foreground)", fontSize: 14, outline: "none",
+              fontFamily: "var(--font-sans)",
               transition: "border-color 0.15s",
             }}
           />
@@ -195,29 +194,29 @@ export default function ProjectBoard({ initialProjects, currentUserId, currentUs
         className="hide-scrollbar"
         style={{ display: "flex", gap: 8, padding: "0 20px 16px", overflowX: "auto" }}
       >
-        {categories.map((cat) => (
-          <button
-            key={cat.id}
-            onClick={() => setFilterCat(cat.id)}
-            style={{
-              flexShrink: 0,
-              padding: "7px 14px",
-              borderRadius: 20,
-              whiteSpace: "nowrap",
-              border:
-                filterCat === cat.id
-                  ? `1px solid ${cat.color}66`
-                  : "1px solid rgba(255,255,255,0.08)",
-              background: filterCat === cat.id ? `${cat.color}18` : "rgba(255,255,255,0.04)",
-              color: filterCat === cat.id ? cat.color : "rgba(255,255,255,0.5)",
-              fontSize: 12,
-              fontWeight: 600,
-              cursor: "pointer",
-            }}
-          >
-            {cat.label}
-          </button>
-        ))}
+        {categories.map((cat) => {
+          const active = filterCat === cat.id;
+          return (
+            <button
+              key={cat.id}
+              onClick={() => setFilterCat(cat.id)}
+              style={{
+                flexShrink: 0,
+                padding: "6px 12px",
+                borderRadius: "var(--radius-tag)",
+                whiteSpace: "nowrap",
+                border: `1px solid ${active ? "var(--brand)" : "var(--border)"}`,
+                background: active ? "var(--brand-soft)" : "var(--surface-2)",
+                color: active ? "var(--foreground)" : "var(--text-dim)",
+                fontSize: 12,
+                fontWeight: 500,
+                cursor: "pointer",
+              }}
+            >
+              {cat.label}
+            </button>
+          );
+        })}
       </div>
 
       <InfoBox>
@@ -245,92 +244,46 @@ export default function ProjectBoard({ initialProjects, currentUserId, currentUs
               }
             } : undefined}
             style={{
-              background: "rgba(255,255,255,0.04)",
-              border: "1px solid rgba(255,255,255,0.07)",
-              borderRadius: 20,
-              padding: 18,
-              position: "relative",
-              overflow: "hidden",
+              background: "var(--surface-1)",
+              border: "1px solid var(--border)",
+              borderRadius: "var(--radius-card)",
+              padding: 16,
               cursor: isOwn ? "pointer" : "default",
             }}
           >
-            <div
-              style={{
-                position: "absolute",
-                top: 0,
-                right: 0,
-                width: 100,
-                height: 100,
-                background: `radial-gradient(circle at top right, ${project.color}12 0%, transparent 70%)`,
-                pointerEvents: "none",
-              }}
-            />
-
-            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
               <Avatar
                 src={project.avatar}
                 color={project.color}
-                size={36}
-                radius={10}
+                size={32}
+                radius={8}
                 shadow={false}
               />
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 13, fontWeight: 600 }}>{project.userName}</div>
-                <div style={{ fontSize: 11, color: "rgba(255,255,255,0.3)" }}>{project.timeAgo}</div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 13, fontWeight: 500, color: "var(--foreground)" }}>{project.userName}</div>
+                <div style={{ fontSize: 11, color: "var(--text-faint)" }}>{project.timeAgo}</div>
               </div>
-              <div
-                style={{
-                  fontSize: 11,
-                  padding: "4px 10px",
-                  borderRadius: 20,
-                  fontWeight: 700,
-                  background: `${modelColors[project.model] ?? "#6366f1"}18`,
-                  border: `1px solid ${modelColors[project.model] ?? "#6366f1"}33`,
-                  color: modelColors[project.model] ?? "#6366f1",
-                }}
-              >
-                {project.model}
-              </div>
+              <Tag>{project.model}</Tag>
             </div>
 
-            <h3 style={{ margin: "0 0 8px", fontSize: 16, fontWeight: 700, lineHeight: 1.3 }}>
+            <h3 style={{ margin: "0 0 6px", fontSize: 16, fontWeight: 600, lineHeight: 1.3 }}>
               {project.title}
             </h3>
-            <p style={{ margin: "0 0 12px", fontSize: 13, color: "rgba(255,255,255,0.55)", lineHeight: 1.5 }}>
+            <p style={{ margin: "0 0 12px", fontSize: 13, color: "var(--text-muted)", lineHeight: 1.5 }}>
               {project.desc}
             </p>
 
-            {project.tags.length > 0 && (
-              <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 14 }}>
+            {(project.tags.length > 0 || project.location) && (
+              <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 12 }}>
                 {project.tags.map((tag) => (
-                  <span
-                    key={tag}
-                    style={{
-                      fontSize: 11,
-                      padding: "3px 9px",
-                      borderRadius: 20,
-                      background: "rgba(255,255,255,0.05)",
-                      border: "1px solid rgba(255,255,255,0.08)",
-                      color: "rgba(255,255,255,0.4)",
-                    }}
-                  >
-                    {tag}
-                  </span>
+                  <Tag key={tag}>{tag}</Tag>
                 ))}
-                <span
-                  style={{
-                    fontSize: 11,
-                    padding: "3px 9px",
-                    borderRadius: 20,
-                    background: "rgba(255,255,255,0.05)",
-                    border: "1px solid rgba(255,255,255,0.08)",
-                    color: "rgba(255,255,255,0.4)",
-                    display: "inline-flex", alignItems: "center", gap: 4,
-                  }}
-                >
-                  <MapPin size={12} color="#694CBB" strokeWidth={2} />
-                  {project.location}
-                </span>
+                {project.location && (
+                  <Tag>
+                    <MapPin size={11} color="var(--text-dim)" strokeWidth={2} style={{ marginRight: 4 }} />
+                    {project.location}
+                  </Tag>
+                )}
               </div>
             )}
 
@@ -342,49 +295,46 @@ export default function ProjectBoard({ initialProjects, currentUserId, currentUs
                 marginTop: 4,
               }}
             >
-              <span style={{ fontSize: 12, color: "rgba(255,255,255,0.3)" }}>
-                <span style={{ color: "rgba(255,255,255,0.6)", fontWeight: 600 }}>
+              <span style={{ fontSize: 12, color: "var(--text-faint)" }}>
+                <span style={{ color: "var(--text-muted)", fontWeight: 600 }}>
                   {project.applicants}
                 </span>{" "}
                 Bewerber
               </span>
               {(() => {
                 const status = appliedStatus[project.id];
-                // Eigene Projekte: kein Bewerben-Button.
                 if (isOwn) {
-                  return <span style={{ fontSize: 12, color: "rgba(255,255,255,0.3)" }}>Dein Projekt</span>;
+                  return <span style={{ fontSize: 12, color: "var(--text-dim)" }}>Dein Projekt</span>;
                 }
                 let label: string;
                 let disabled = false;
                 let onClick: (() => void) | undefined;
-                let muted = false;
+                let primary = false;
                 if (status === "pending") {
-                  label = "Bewerbung läuft"; disabled = true; muted = true;
+                  label = "Bewerbung läuft"; disabled = true;
                 } else if (status === "accepted") {
-                  label = "Chat öffnen"; onClick = () => router.push(`/?tab=chats&with=${project.userId}`);
+                  label = "Chat öffnen"; onClick = () => router.push(`/?tab=chats&with=${project.userId}`); primary = true;
                 } else if (status === "rejected") {
-                  label = "Abgelehnt"; disabled = true; muted = true;
+                  label = "Abgelehnt"; disabled = true;
                 } else {
-                  label = "Bewerben"; onClick = () => setModalProject(project);
+                  label = "Bewerben"; onClick = () => setModalProject(project); primary = true;
                 }
                 return (
                   <button
-                    onClick={onClick}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onClick?.();
+                    }}
                     disabled={disabled}
                     style={{
-                      padding: "9px 20px",
-                      borderRadius: 20,
+                      padding: "8px 16px",
+                      borderRadius: "var(--radius-button)",
                       fontSize: 13,
-                      fontWeight: 700,
+                      fontWeight: 600,
                       cursor: disabled ? "default" : "pointer",
-                      border: muted
-                        ? "1px solid rgba(255,255,255,0.1)"
-                        : `1px solid ${project.color}55`,
-                      background: muted
-                        ? "rgba(255,255,255,0.04)"
-                        : `linear-gradient(135deg, ${project.color}33, ${project.color}11)`,
-                      color: muted ? "rgba(255,255,255,0.3)" : project.color,
-                      transition: "all 0.2s",
+                      border: primary ? "1px solid var(--brand)" : "1px solid var(--border)",
+                      background: primary ? "var(--brand-soft)" : "var(--surface-2)",
+                      color: disabled ? "var(--text-dim)" : "var(--foreground)",
                     }}
                   >
                     {label}
@@ -408,16 +358,15 @@ export default function ProjectBoard({ initialProjects, currentUserId, currentUs
             zIndex: 200,
             maxWidth: 400,
             width: "calc(100% - 32px)",
-            background: "rgba(16,185,129,0.12)",
-            border: "1px solid rgba(16,185,129,0.4)",
-            borderRadius: 14,
-            padding: "12px 16px",
-            color: "#10b981",
+            background: "var(--brand-soft)",
+            border: "1px solid var(--brand)",
+            borderRadius: "var(--radius-card)",
+            padding: "12px 14px",
+            color: "var(--foreground)",
             fontSize: 13,
-            fontWeight: 600,
+            fontWeight: 500,
             lineHeight: 1.4,
             backdropFilter: "blur(12px)",
-            boxShadow: "0 8px 24px rgba(0,0,0,0.4)",
           }}
         >
           {successMessage}

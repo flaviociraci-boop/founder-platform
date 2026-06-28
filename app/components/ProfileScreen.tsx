@@ -2,8 +2,10 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { MapPin } from "lucide-react";
-import { User, seekingColors } from "@/app/lib/data";
+import { User } from "@/app/lib/data";
 import { Avatar } from "@/app/components/Avatar";
+import { Tag } from "@/app/components/Tag";
+import { FollowButton } from "@/app/components/FollowButton";
 import { createClient } from "@/utils/supabase/client";
 
 type ConnStatus = "none" | "pending_sent" | "pending_received" | "accepted";
@@ -142,19 +144,18 @@ export default function ProfileScreen({ user, onBack, followed, toggleFollow, cu
     <div style={{ paddingBottom: 100 }}>
       <div
         style={{
-          background: `linear-gradient(160deg, ${user.color}22 0%, transparent 60%)`,
           padding: "24px 20px 20px",
-          borderBottom: "1px solid rgba(255,255,255,0.06)",
+          borderBottom: "1px solid var(--border)",
         }}
       >
         <button
           onClick={onBack}
           style={{
-            background: "rgba(255,255,255,0.08)",
-            border: "none",
-            color: "#fff",
-            padding: "8px 14px",
-            borderRadius: 20,
+            background: "var(--surface-2)",
+            border: "1px solid var(--border)",
+            color: "var(--foreground)",
+            padding: "7px 14px",
+            borderRadius: "var(--radius-button)",
             cursor: "pointer",
             fontSize: 13,
             marginBottom: 20,
@@ -200,22 +201,27 @@ export default function ProfileScreen({ user, onBack, followed, toggleFollow, cu
         )}
 
         <div style={{ display: "flex", alignItems: "flex-start", gap: 16 }}>
-          <Avatar src={user.avatar} color={user.color} size={72} radius={20}
-            style={{ boxShadow: `0 8px 24px ${user.color}44` }} />
+          <Avatar src={user.avatar} color={user.color} size={64} radius={14} shadow={false} />
 
-          <div style={{ flex: 1 }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700 }}>{user.name}</h2>
-              <span style={{ fontSize: 13, color: "rgba(255,255,255,0.4)" }}>{user.age} J.</span>
+              <h2 style={{ margin: 0, fontSize: 20, fontWeight: 600 }}>{user.name}</h2>
+              {user.age ? (
+                <span style={{ fontSize: 13, color: "var(--text-dim)" }}>{user.age} J.</span>
+              ) : null}
             </div>
-            <p style={{ margin: "4px 0 0", fontSize: 14, color: "rgba(255,255,255,0.6)" }}>{user.role}</p>
-            <p style={{
-              margin: "2px 0 0", fontSize: 13, color: "rgba(255,255,255,0.35)",
-              display: "inline-flex", alignItems: "center", gap: 4,
-            }}>
-              <MapPin size={14} color="#694CBB" strokeWidth={2} />
-              {user.location}
-            </p>
+            {user.role && (
+              <p style={{ margin: "4px 0 0", fontSize: 14, color: "var(--text-muted)" }}>{user.role}</p>
+            )}
+            {user.location && (
+              <p style={{
+                margin: "2px 0 0", fontSize: 13, color: "var(--text-dim)",
+                display: "inline-flex", alignItems: "center", gap: 4,
+              }}>
+                <MapPin size={13} color="var(--text-dim)" strokeWidth={2} />
+                {user.location}
+              </p>
+            )}
           </div>
         </div>
 
@@ -224,8 +230,8 @@ export default function ProfileScreen({ user, onBack, followed, toggleFollow, cu
             display: "flex",
             gap: 24,
             marginTop: 20,
-            padding: "16px 0",
-            borderTop: "1px solid rgba(255,255,255,0.06)",
+            padding: "14px 0",
+            borderTop: "1px solid var(--border)",
           }}
         >
           {[
@@ -234,32 +240,22 @@ export default function ProfileScreen({ user, onBack, followed, toggleFollow, cu
             { label: "Firmen", value: user.companies.length },
           ].map((s) => (
             <div key={s.label}>
-              <div style={{ fontSize: 20, fontWeight: 700 }}>{s.value}</div>
-              <div style={{ fontSize: 12, color: "rgba(255,255,255,0.4)", marginTop: 2 }}>{s.label}</div>
+              <div style={{ fontSize: 18, fontWeight: 600 }}>{s.value}</div>
+              <div style={{ fontSize: 12, color: "var(--text-dim)", marginTop: 2 }}>{s.label}</div>
             </div>
           ))}
         </div>
 
         <div style={{ display: "flex", gap: 10, marginTop: 4 }}>
           {user.id !== currentUserId && (
-          <button
-            onClick={() => toggleFollow(user.id)}
-            style={{
-              flex: 1,
-              padding: "12px 0",
-              background: followed[user.id]
-                ? "rgba(255,255,255,0.08)"
-                : `linear-gradient(135deg, ${user.color}, ${user.color}cc)`,
-              border: followed[user.id] ? "1px solid rgba(255,255,255,0.12)" : "none",
-              color: "#fff",
-              borderRadius: 14,
-              fontWeight: 600,
-              fontSize: 15,
-              cursor: "pointer",
-            }}
-          >
-            {followed[user.id] ? "Gefolgt" : "Folgen"}
-          </button>
+            <div style={{ flex: 1, display: "flex" }}>
+              <FollowButton
+                followed={!!followed[user.id]}
+                onClick={() => toggleFollow(user.id)}
+                size="lg"
+                block
+              />
+            </div>
           )}
 
           {connStatus === "pending_received" ? (
@@ -267,9 +263,9 @@ export default function ProfileScreen({ user, onBack, followed, toggleFollow, cu
               <button
                 onClick={acceptRequest}
                 style={{
-                  flex: 1, padding: "12px 0",
-                  background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
-                  border: "none", color: "#fff", borderRadius: 14,
+                  flex: 1, padding: "11px 0",
+                  background: "var(--brand)",
+                  border: "none", color: "#fff", borderRadius: "var(--radius-button)",
                   fontWeight: 600, fontSize: 13, cursor: "pointer",
                 }}
               >
@@ -278,11 +274,11 @@ export default function ProfileScreen({ user, onBack, followed, toggleFollow, cu
               <button
                 onClick={rejectRequest}
                 style={{
-                  flex: 1, padding: "12px 0",
-                  background: "rgba(255,255,255,0.06)",
-                  border: "1px solid rgba(255,255,255,0.1)",
-                  color: "rgba(255,255,255,0.5)", borderRadius: 14,
-                  fontWeight: 600, fontSize: 13, cursor: "pointer",
+                  flex: 1, padding: "11px 0",
+                  background: "transparent",
+                  border: "1px solid var(--border)",
+                  color: "var(--text-muted)", borderRadius: "var(--radius-button)",
+                  fontWeight: 500, fontSize: 13, cursor: "pointer",
                 }}
               >
                 Ablehnen
@@ -292,12 +288,10 @@ export default function ProfileScreen({ user, onBack, followed, toggleFollow, cu
             <button
               onClick={() => onOpenChat(user)}
               style={{
-                flex: 1, padding: "12px 0",
-                background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
-                border: "none", color: "#fff", borderRadius: 14,
-                fontWeight: 600, fontSize: 15, cursor: "pointer",
-                boxShadow: "0 4px 12px rgba(99,102,241,0.3)",
-                transition: "all 0.2s",
+                flex: 1, padding: "11px 0",
+                background: "var(--brand)",
+                border: "none", color: "#fff", borderRadius: "var(--radius-button)",
+                fontWeight: 600, fontSize: 14, cursor: "pointer",
               }}
             >
               Chat öffnen
@@ -306,12 +300,11 @@ export default function ProfileScreen({ user, onBack, followed, toggleFollow, cu
             <button
               onClick={withdrawConnect}
               style={{
-                flex: 1, padding: "12px 0",
-                background: "rgba(255,255,255,0.06)",
-                border: "1px solid rgba(255,255,255,0.1)",
-                color: "rgba(255,255,255,0.4)", borderRadius: 14,
-                fontWeight: 600, fontSize: 14, cursor: "pointer",
-                transition: "all 0.2s",
+                flex: 1, padding: "11px 0",
+                background: "transparent",
+                border: "1px solid var(--border)",
+                color: "var(--text-dim)", borderRadius: "var(--radius-button)",
+                fontWeight: 500, fontSize: 13, cursor: "pointer",
               }}
             >
               Anfrage gesendet
@@ -320,12 +313,11 @@ export default function ProfileScreen({ user, onBack, followed, toggleFollow, cu
             <button
               onClick={sendConnect}
               style={{
-                flex: 1, padding: "12px 0",
-                background: "rgba(255,255,255,0.06)",
-                border: "1px solid rgba(255,255,255,0.1)",
-                color: "#fff", borderRadius: 14,
-                fontWeight: 600, fontSize: 15, cursor: "pointer",
-                transition: "all 0.2s",
+                flex: 1, padding: "11px 0",
+                background: "var(--brand-soft)",
+                border: "1px solid var(--brand)",
+                color: "var(--foreground)", borderRadius: "var(--radius-button)",
+                fontWeight: 600, fontSize: 14, cursor: "pointer",
               }}
             >
               Connecten
@@ -334,168 +326,148 @@ export default function ProfileScreen({ user, onBack, followed, toggleFollow, cu
         </div>
       </div>
 
-      <div style={{ padding: "20px 20px 0" }}>
-        <h3
-          style={{
-            margin: "0 0 10px",
-            fontSize: 13,
-            color: "rgba(255,255,255,0.4)",
-            textTransform: "uppercase",
-            letterSpacing: 1,
-          }}
-        >
-          Über mich
-        </h3>
-        <p style={{ margin: 0, fontSize: 15, lineHeight: 1.6, color: "rgba(255,255,255,0.8)" }}>{user.bio}</p>
-      </div>
+      {user.bio && (
+        <div style={{ padding: "20px 20px 0" }}>
+          <h3
+            style={{
+              margin: "0 0 10px",
+              fontSize: 11,
+              color: "var(--text-dim)",
+              textTransform: "uppercase",
+              letterSpacing: 1.2,
+              fontWeight: 600,
+            }}
+          >
+            Über mich
+          </h3>
+          <p style={{ margin: 0, fontSize: 14, lineHeight: 1.6, color: "var(--text-muted)" }}>{user.bio}</p>
+        </div>
+      )}
 
-      <div style={{ padding: "20px 20px 0" }}>
-        <h3
-          style={{
-            margin: "0 0 12px",
-            fontSize: 13,
-            color: "rgba(255,255,255,0.4)",
-            textTransform: "uppercase",
-            letterSpacing: 1,
-          }}
-        >
-          Firmen & Brands
-        </h3>
-        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-          {user.companies.map((company, i) => (
-            <div
-              key={i}
-              style={{
-                background: "rgba(255,255,255,0.04)",
-                border: "1px solid rgba(255,255,255,0.08)",
-                borderRadius: 16,
-                padding: "14px 16px",
-                display: "flex",
-                alignItems: "center",
-                gap: 14,
-              }}
-            >
-              <div
-                style={{
-                  width: 44,
-                  height: 44,
-                  borderRadius: 12,
-                  flexShrink: 0,
-                  background: `linear-gradient(135deg, ${user.color}33, ${user.color}11)`,
-                  border: `1px solid ${user.color}33`,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: 18,
-                  fontWeight: 800,
-                  color: user.color,
-                }}
-              >
-                {company.name.charAt(0)}
-              </div>
-              <div style={{ flex: 1 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <span style={{ fontWeight: 700, fontSize: 15 }}>{company.name}</span>
-                  {company.active ? (
-                    <span
-                      style={{
-                        fontSize: 10,
-                        padding: "2px 8px",
-                        borderRadius: 20,
-                        background: "rgba(16,185,129,0.15)",
-                        border: "1px solid rgba(16,185,129,0.3)",
-                        color: "#10b981",
-                        fontWeight: 600,
-                      }}
-                    >
-                      ● AKTIV
-                    </span>
-                  ) : (
-                    <span
-                      style={{
-                        fontSize: 10,
-                        padding: "2px 8px",
-                        borderRadius: 20,
-                        background: "rgba(255,255,255,0.05)",
-                        border: "1px solid rgba(255,255,255,0.1)",
-                        color: "rgba(255,255,255,0.3)",
-                        fontWeight: 600,
-                      }}
-                    >
-                      INAKTIV
-                    </span>
+      {user.companies.length > 0 && (
+        <div style={{ padding: "20px 20px 0" }}>
+          <h3
+            style={{
+              margin: "0 0 12px",
+              fontSize: 11,
+              color: "var(--text-dim)",
+              textTransform: "uppercase",
+              letterSpacing: 1.2,
+              fontWeight: 600,
+            }}
+          >
+            Firmen & Brands
+          </h3>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {user.companies.map((company, i) => {
+              const sub = [company.role, company.type].filter(Boolean).join(" · ");
+              return (
+                <div
+                  key={i}
+                  style={{
+                    background: "var(--surface-1)",
+                    border: "1px solid var(--border)",
+                    borderRadius: "var(--radius-card)",
+                    padding: "12px 14px",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 12,
+                  }}
+                >
+                  <div
+                    style={{
+                      width: 36,
+                      height: 36,
+                      borderRadius: 8,
+                      flexShrink: 0,
+                      background: "var(--avatar-placeholder)",
+                      border: "1px solid var(--border)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: 14,
+                      fontWeight: 600,
+                      color: "var(--avatar-placeholder-text)",
+                    }}
+                  >
+                    {company.name.charAt(0)}
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <span style={{ fontWeight: 600, fontSize: 14 }}>{company.name}</span>
+                      {company.active && (
+                        <span
+                          style={{
+                            fontSize: 10,
+                            padding: "2px 7px",
+                            borderRadius: "var(--radius-tag)",
+                            background: "var(--brand-soft)",
+                            color: "var(--foreground)",
+                            fontWeight: 600,
+                            letterSpacing: 0.4,
+                          }}
+                        >
+                          AKTIV
+                        </span>
+                      )}
+                    </div>
+                    {sub && (
+                      <div style={{ fontSize: 12.5, color: "var(--text-dim)", marginTop: 2 }}>
+                        {sub}
+                      </div>
+                    )}
+                  </div>
+                  {company.year && (
+                    <div style={{ fontSize: 12, color: "var(--text-faint)", flexShrink: 0 }}>
+                      seit {company.year}
+                    </div>
                   )}
                 </div>
-                <div style={{ fontSize: 13, color: "rgba(255,255,255,0.45)", marginTop: 3 }}>
-                  {company.role} · {company.type}
-                </div>
-              </div>
-              <div style={{ fontSize: 12, color: "rgba(255,255,255,0.25)", flexShrink: 0 }}>
-                seit {company.year}
-              </div>
-            </div>
-          ))}
+              );
+            })}
+          </div>
         </div>
-      </div>
+      )}
 
-      <div style={{ padding: "20px 20px 0" }}>
-        <h3
-          style={{
-            margin: "0 0 10px",
-            fontSize: 13,
-            color: "rgba(255,255,255,0.4)",
-            textTransform: "uppercase",
-            letterSpacing: 1,
-          }}
-        >
-          Sucht gerade
-        </h3>
-        <span
-          style={{
-            display: "inline-block",
-            padding: "8px 16px",
-            borderRadius: 20,
-            background: `${seekingColors[user.seeking]}22`,
-            border: `1px solid ${seekingColors[user.seeking]}44`,
-            color: seekingColors[user.seeking],
-            fontSize: 14,
-            fontWeight: 600,
-          }}
-        >
-          {user.seeking}
-        </span>
-      </div>
-
-      <div style={{ padding: "20px" }}>
-        <h3
-          style={{
-            margin: "0 0 10px",
-            fontSize: 13,
-            color: "rgba(255,255,255,0.4)",
-            textTransform: "uppercase",
-            letterSpacing: 1,
-          }}
-        >
-          Skills & Themen
-        </h3>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-          {user.tags.map((tag) => (
-            <span
-              key={tag}
-              style={{
-                padding: "7px 14px",
-                borderRadius: 20,
-                background: "rgba(255,255,255,0.06)",
-                border: "1px solid rgba(255,255,255,0.1)",
-                fontSize: 13,
-                color: "rgba(255,255,255,0.7)",
-              }}
-            >
-              {tag}
-            </span>
-          ))}
+      {user.seeking && (
+        <div style={{ padding: "20px 20px 0" }}>
+          <h3
+            style={{
+              margin: "0 0 10px",
+              fontSize: 11,
+              color: "var(--text-dim)",
+              textTransform: "uppercase",
+              letterSpacing: 1.2,
+              fontWeight: 600,
+            }}
+          >
+            Sucht gerade
+          </h3>
+          <Tag size="md">{user.seeking}</Tag>
         </div>
-      </div>
+      )}
+
+      {user.tags.length > 0 && (
+        <div style={{ padding: "20px" }}>
+          <h3
+            style={{
+              margin: "0 0 10px",
+              fontSize: 11,
+              color: "var(--text-dim)",
+              textTransform: "uppercase",
+              letterSpacing: 1.2,
+              fontWeight: 600,
+            }}
+          >
+            Skills & Themen
+          </h3>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+            {user.tags.map((tag) => (
+              <Tag key={tag} size="md">{tag}</Tag>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

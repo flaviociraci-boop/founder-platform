@@ -1,8 +1,38 @@
 @import "tailwindcss";
 
 :root {
+  /* Surfaces */
   --background: #0a0a0f;
+  --surface-1: rgba(255, 255, 255, 0.035);
+  --surface-2: rgba(255, 255, 255, 0.06);
+  --surface-3: rgba(255, 255, 255, 0.09);
+
+  /* Borders — Linear/Vercel-style 1px hairlines */
+  --border: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.14);
+
+  /* Text */
   --foreground: #ffffff;
+  --text-muted: rgba(255, 255, 255, 0.62);
+  --text-dim: rgba(255, 255, 255, 0.42);
+  --text-faint: rgba(255, 255, 255, 0.28);
+
+  /* Brand — only primary actions + active states */
+  --brand: #694CBB;
+  --brand-strong: #401586;
+  --brand-soft: rgba(105, 76, 187, 0.16);
+
+  /* Neutral avatar placeholder — kills per-user rainbow */
+  --avatar-placeholder: #1e1e26;
+  --avatar-placeholder-text: rgba(255, 255, 255, 0.78);
+
+  /* Radii */
+  --radius-card: 12px;
+  --radius-button: 10px;
+  --radius-tag: 8px;
+
+  /* Font — DM Sans loaded via next/font in app/layout.tsx (--font-dm-sans) */
+  --font-sans: var(--font-dm-sans, "DM Sans"), -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
 }
 
 * {
@@ -13,13 +43,13 @@
 
 html,
 body {
-  background: #0a0a0f;
-  color: #ffffff;
+  background: var(--background);
+  color: var(--foreground);
   height: 100%;
 }
 
 body {
-  font-family: "DM Sans", "Helvetica Neue", sans-serif;
+  font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -67,9 +97,9 @@ button {
 }
 
 .iubenda-content h2 {
-  color: #6366f1;
+  color: var(--text-muted);
   font-size: 0.75rem;
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   margin: 32px 0 12px 0;
@@ -89,14 +119,14 @@ button {
 }
 
 .iubenda-content a {
-  color: #818cf8;
+  color: var(--brand);
   text-decoration: underline;
-  text-decoration-color: rgba(129, 140, 248, 0.4);
+  text-decoration-color: var(--brand-soft);
   text-underline-offset: 2px;
 }
 
 .iubenda-content a:hover {
-  text-decoration-color: #818cf8;
+  text-decoration-color: var(--brand);
 }
 
 .iubenda-content ul,

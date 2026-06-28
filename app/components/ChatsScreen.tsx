@@ -134,16 +134,14 @@ export default function ChatsScreen({ currentUserId, onOpenChat }: Props) {
       <div style={{ padding: "28px 20px 16px" }}>
         <h1 style={{
           margin: 0,
-          fontSize: 26,
-          fontWeight: 800,
-          letterSpacing: -0.5,
-          background: "linear-gradient(135deg, #fff 0%, rgba(255,255,255,0.6) 100%)",
-          WebkitBackgroundClip: "text",
-          WebkitTextFillColor: "transparent",
+          fontSize: 24,
+          fontWeight: 600,
+          letterSpacing: -0.4,
+          color: "var(--foreground)",
         }}>
           Chats
         </h1>
-        <p style={{ margin: "4px 0 0", fontSize: 14, color: "rgba(255,255,255,0.35)" }}>
+        <p style={{ margin: "4px 0 0", fontSize: 13, color: "var(--text-dim)" }}>
           {loading ? "Lade…" : `${chats.length} ${chats.length === 1 ? "Match" : "Matches"}`}
         </p>
 
@@ -155,7 +153,7 @@ export default function ChatsScreen({ currentUserId, onOpenChat }: Props) {
               strokeWidth={2}
               style={{
                 position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)",
-                color: "#fff", opacity: 0.5, pointerEvents: "none",
+                color: "var(--text-dim)", pointerEvents: "none",
               }}
             />
             <input
@@ -164,11 +162,11 @@ export default function ChatsScreen({ currentUserId, onOpenChat }: Props) {
               placeholder="Chats durchsuchen…"
               style={{
                 width: "100%", boxSizing: "border-box",
-                background: "rgba(255,255,255,0.06)",
-                border: `1px solid ${query ? "rgba(99,102,241,0.5)" : "rgba(255,255,255,0.1)"}`,
-                borderRadius: 14, padding: "12px 14px 12px 40px",
-                color: "#fff", fontSize: 15, outline: "none",
-                fontFamily: "'DM Sans', sans-serif",
+                background: "var(--surface-2)",
+                border: `1px solid ${query ? "var(--brand-soft)" : "var(--border)"}`,
+                borderRadius: 10, padding: "11px 14px 11px 40px",
+                color: "var(--foreground)", fontSize: 14, outline: "none",
+                fontFamily: "var(--font-sans)",
                 transition: "border-color 0.15s",
               }}
             />
@@ -178,12 +176,12 @@ export default function ChatsScreen({ currentUserId, onOpenChat }: Props) {
 
       {!loading && chats.length === 0 && (
         <div style={{ padding: "48px 32px", textAlign: "center" }}>
-          <div style={{ display: "flex", justifyContent: "center", marginBottom: 16 }}>
-            <Users size={52} color="#694CBB" strokeWidth={1.5} />
+          <div style={{ display: "flex", justifyContent: "center", marginBottom: 14 }}>
+            <Users size={40} color="var(--text-dim)" strokeWidth={1.5} />
           </div>
-          <p style={{ margin: "0 0 6px", fontWeight: 700, fontSize: 16 }}>Noch keine Matches</p>
-          <p style={{ margin: 0, fontSize: 14, color: "rgba(255,255,255,0.35)", lineHeight: 1.6 }}>
-            Geh zu <strong style={{ color: "#6366f1" }}>Connect</strong> und schicke Anfragen — sobald jemand zurückschickt, öffnet sich der Chat.
+          <p style={{ margin: "0 0 6px", fontWeight: 600, fontSize: 15 }}>Noch keine Matches</p>
+          <p style={{ margin: 0, fontSize: 13, color: "var(--text-muted)", lineHeight: 1.6 }}>
+            Geh zu <strong style={{ color: "var(--brand)" }}>Connect</strong> und schicke Anfragen — sobald jemand zurückschickt, öffnet sich der Chat.
           </p>
         </div>
       )}
@@ -199,38 +197,37 @@ export default function ChatsScreen({ currentUserId, onOpenChat }: Props) {
               style={{
                 display: "flex",
                 alignItems: "center",
-                gap: 14,
-                padding: "14px 0",
+                gap: 12,
+                padding: "12px 0",
                 background: "none",
                 border: "none",
-                borderBottom: "1px solid rgba(255,255,255,0.05)",
+                borderBottom: "1px solid var(--border)",
                 cursor: "pointer",
                 textAlign: "left",
                 width: "100%",
               }}
             >
-              <Avatar src={chat.avatar} color={chat.color} size={52} radius={16}
-                style={{ boxShadow: `0 4px 16px ${chat.color}33` }} />
+              <Avatar src={chat.avatar} color={chat.color} size={44} radius={10} shadow={false} />
 
               <div style={{ flex: 1, overflow: "hidden" }}>
                 <div style={{
                   display: "flex",
                   justifyContent: "space-between",
                   alignItems: "baseline",
-                  marginBottom: 3,
+                  marginBottom: 2,
                 }}>
-                  <span style={{ fontWeight: 700, fontSize: 15, color: "#fff" }}>
+                  <span style={{ fontWeight: 600, fontSize: 14, color: "var(--foreground)" }}>
                     {chat.name}
                   </span>
                   {chat.lastMessageAt && (
-                    <span style={{ fontSize: 11, color: "rgba(255,255,255,0.25)", flexShrink: 0, marginLeft: 8 }}>
+                    <span style={{ fontSize: 11, color: "var(--text-faint)", flexShrink: 0, marginLeft: 8 }}>
                       {shortTime(chat.lastMessageAt)}
                     </span>
                   )}
                 </div>
                 <div style={{
                   fontSize: 13,
-                  color: chat.lastMessage ? "rgba(255,255,255,0.45)" : "rgba(255,255,255,0.25)",
+                  color: chat.lastMessage ? "var(--text-dim)" : "var(--text-faint)",
                   overflow: "hidden",
                   textOverflow: "ellipsis",
                   whiteSpace: "nowrap",
@@ -239,7 +236,7 @@ export default function ChatsScreen({ currentUserId, onOpenChat }: Props) {
                 </div>
               </div>
 
-              <span style={{ fontSize: 16, color: "rgba(255,255,255,0.15)", flexShrink: 0 }}>›</span>
+              <span style={{ fontSize: 16, color: "var(--text-faint)", flexShrink: 0 }}>›</span>
             </button>
           ))}
         </div>
