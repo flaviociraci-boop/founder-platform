@@ -230,15 +230,8 @@ export default function ProfileDashboard({ currentUserId, onLogout, onOpenChat }
       fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif",
       background: "#0a0a0f", minHeight: "100vh", color: "#fff", paddingBottom: 100,
     }}>
-      <div style={{
-        position: "fixed", top: -100, right: -100, width: 300, height: 300,
-        background: "radial-gradient(circle, rgba(99,102,241,0.12) 0%, transparent 70%)",
-        pointerEvents: "none",
-      }} />
-
       {/* ── Header ── */}
       <div style={{
-        background: "linear-gradient(160deg, rgba(99,102,241,0.1) 0%, transparent 60%)",
         padding: "32px 20px 24px",
         borderBottom: "1px solid rgba(255,255,255,0.06)",
       }}>

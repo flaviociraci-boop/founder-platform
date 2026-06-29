@@ -142,7 +142,6 @@ export default function ProfileScreen({ user, onBack, followed, toggleFollow, cu
     <div style={{ paddingBottom: 100 }}>
       <div
         style={{
-          background: `linear-gradient(160deg, ${user.color}22 0%, transparent 60%)`,
           padding: "24px 20px 20px",
           borderBottom: "1px solid rgba(255,255,255,0.06)",
         }}

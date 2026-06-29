@@ -274,18 +274,6 @@ export default function AppShell({
       margin: "0 auto",
       position: "relative",
     }}>
-      {/* Background glows */}
-      <div style={{
-        position: "fixed", top: -100, left: -100, width: 400, height: 400,
-        background: "radial-gradient(circle, rgba(99,102,241,0.15) 0%, transparent 70%)",
-        pointerEvents: "none", zIndex: 0,
-      }} />
-      <div style={{
-        position: "fixed", bottom: -100, right: -100, width: 400, height: 400,
-        background: "radial-gradient(circle, rgba(249,115,22,0.1) 0%, transparent 70%)",
-        pointerEvents: "none", zIndex: 0,
-      }} />
-
       {/* Main content */}
       <div style={{ position: "relative", zIndex: 1 }}>
         {selectedUser ? (
