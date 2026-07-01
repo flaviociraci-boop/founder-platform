@@ -1,7 +1,8 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { isAppUserAgent } from "@/app/lib/app-context";
 
-const AUTH_PATHS = ["/login", "/register", "/auth"];
+const AUTH_PATHS = ["/login", "/register", "/auth", "/onboarding"];
 
 // Routen, die für anonyme Besucher erreichbar sind (kein /login-Redirect).
 // Seit Juni 2026 ist Connectyfind kostenlos — kein Paywall-Check mehr,
@@ -45,6 +46,14 @@ export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const isAuthPath = AUTH_PATHS.some((p) => pathname.startsWith(p));
   const isPublicPath = PUBLIC_PATHS.includes(pathname);
+  const isApp = isAppUserAgent(request.headers.get("user-agent"));
+
+  // App-Kontext: anonyme User sollen die Marketing-Landing NICHT sehen.
+  // Direkter Einstieg in den Register/Onboarding-Flow — Bestandsuser
+  // finden den prominenten Login-Link oben auf dem Register-Screen.
+  if (isApp && !user && pathname === "/") {
+    return NextResponse.redirect(new URL("/register", request.url));
+  }
 
   // Anonyme User auf geschützten Pfaden → /login.
   if (!user && !isAuthPath && !isPublicPath) {

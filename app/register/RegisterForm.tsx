@@ -2,8 +2,10 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { Check } from "lucide-react";
 import { categories } from "@/app/lib/data";
+import { useIsInApp } from "@/app/lib/app-context.client";
 import { registerUser } from "./actions";
 
 const CATEGORIES = categories.filter((c) => c.id !== "all");
@@ -60,6 +62,8 @@ const label: React.CSSProperties = {
 type Props = { prefilledEmail?: string };
 
 export default function RegisterForm({ prefilledEmail = "" }: Props) {
+  const router = useRouter();
+  const isApp = useIsInApp();
   const [step, setStep] = useState(1);
   const [form, setForm] = useState({
     name: "", email: prefilledEmail, password: "", age: "",
@@ -119,8 +123,19 @@ export default function RegisterForm({ prefilledEmail = "" }: Props) {
       setLoading(false);
       return;
     }
-    setDone(true);
     setLoading(false);
+
+    // App-Kontext: direkt in den strukturierten Onboarding-Flow
+    // weitergeben. Die "Bestätigungsmail verschickt"-Info + der Ask
+    // für Push-Notifications leben dort auf einer eigenen Route.
+    // Web-Kontext: bleibt beim inline "Fast geschafft"-Card unverändert.
+    if (isApp) {
+      router.push(
+        "/onboarding/notifications?email=" + encodeURIComponent(form.email),
+      );
+      return;
+    }
+    setDone(true);
   };
 
   const Progress = () => (
@@ -217,6 +232,40 @@ export default function RegisterForm({ prefilledEmail = "" }: Props) {
           {/* ── STEP 1: Basics ── */}
           {!done && step === 1 && (
             <div>
+              {/* Prominenter Login-Hinweis für Bestandskunden.
+                  Es gibt 300+ bestehende Web-Accounts — die dürfen sich
+                  auf dem Register-Screen nicht durch alle drei Steps
+                  klicken bevor sie merken, dass sie hier falsch sind. */}
+              <a
+                href="/login"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: 12,
+                  background: "rgba(99,102,241,0.1)",
+                  border: "1px solid rgba(99,102,241,0.35)",
+                  borderRadius: 12,
+                  padding: "12px 14px",
+                  marginBottom: 18,
+                  color: "#fff",
+                  textDecoration: "none",
+                }}
+              >
+                <span style={{ fontSize: 13, lineHeight: 1.4 }}>
+                  <strong style={{ color: "#fff", fontWeight: 700 }}>Schon ein Profil?</strong>
+                  <br />
+                  <span style={{ color: "rgba(255,255,255,0.6)" }}>
+                    Wenn du schon mal registriert warst, log dich hier ein.
+                  </span>
+                </span>
+                <span style={{
+                  color: "#a5b4fc", fontWeight: 700, fontSize: 13, whiteSpace: "nowrap",
+                }}>
+                  Einloggen →
+                </span>
+              </a>
+
               <Progress />
 
               {([
